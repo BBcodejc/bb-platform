@@ -19,58 +19,53 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
-// NBA & Pro Results
+// NBA & Pro Results (anonymized)
 const caseStudies = [
   {
-    name: 'Tobias Harris',
+    label: 'NBA Forward',
     team: 'NBA',
     beforeStat: '29%',
     afterStat: '47%',
     metric: '3PT%',
     timeframe: '< 100 Days',
     quote: 'My brain is like AI.',
-    image: '/players/tobias-harris.jpg',
   },
   {
-    name: 'Paul Reed',
+    label: 'NBA Center',
     team: 'NBA',
     beforeStat: '~15%',
     afterStat: '40%',
     metric: '3PT%',
     timeframe: '5 Months',
     quote: 'It feels easy.',
-    image: '/players/paul-reed.jpg',
   },
   {
-    name: 'Tyler Burton',
-    team: 'Villanova / G-League',
+    label: 'G-League Guard',
+    team: 'College / G-League',
     beforeStat: '29%',
     afterStat: '43%',
     metric: '3PT%',
     timeframe: 'In-Season',
     quote: "You're the smartest basketball coach I've ever been around.",
-    image: '/players/tyler-burton.jpg',
   },
   {
-    name: 'OG Anunoby',
+    label: 'NBA Wing',
     team: 'NBA',
     beforeStat: 'Slump',
     afterStat: '~60%',
     metric: '3PT%',
     timeframe: '1 Month',
     quote: "No one's ever broken down film this way.",
-    image: '/players/og-anunoby.jpg',
   },
 ];
 
-// Additional players worked with
-const playerLogos = [
-  'Jabari Smith Jr.',
-  'Kyle Lowry',
-  'Spencer Dinwiddie',
-  'Tim Hardaway Jr.',
-  'Matisse Thybulle',
-  'Jaylen Tyson',
+// Player levels worked with (names removed for privacy)
+const playerLevels = [
+  'NBA',
+  'G-League',
+  'College',
+  'High School',
+  'Youth',
 ];
 
 // Research pillars
@@ -134,16 +129,19 @@ const testimonials = [
     quote: "Tommy, I've never hit shots like this.",
     name: 'Matisse Thybulle',
     context: 'After implementing the dip and deep distance protocol',
+    photo: '/players/matisse-thybulle.jpg',
   },
   {
     quote: "You're going to regret going down the wrong path, because you're a coach. In your heart, you're a coach.",
     name: 'Jenny Schottenheimer',
     context: 'Wife of NFL Coach Brian Schottenheimer',
+    photo: '/players/jenny-schottenheimer.jpg',
   },
   {
     quote: "I've never been coached like that in my life.",
     name: 'Tyler Burton',
     context: 'On the removal of his mechanical hitch',
+    photo: '/players/tyler-burton.jpg',
   },
 ];
 
@@ -188,10 +186,10 @@ export default function LandingPage() {
 
           <div className="mt-12 text-center animate-fade-in">
             <p className="text-gray-500 text-sm mb-4">Trusted by players at every level</p>
-            <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-gray-400 text-sm">
-              {playerLogos.map((name) => (
-                <span key={name} className="opacity-60 hover:opacity-100 transition-opacity">
-                  {name}
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-gray-400 text-sm">
+              {playerLevels.map((level) => (
+                <span key={level} className="px-3 py-1 rounded-full border border-gold-500/30 text-gold-500/80">
+                  {level}
                 </span>
               ))}
             </div>
@@ -216,18 +214,16 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {caseStudies.map((study) => (
-              <div key={study.name} className="animate-fade-in">
+            {caseStudies.map((study, index) => (
+              <div key={index} className="animate-fade-in">
                 <Card variant="glass" className="h-full overflow-hidden">
                   <div className="h-48 bg-gradient-to-br from-gold-500/20 to-transparent flex items-center justify-center">
                     <div className="w-24 h-24 rounded-full bg-bb-card border-2 border-gold-500/30 flex items-center justify-center">
-                      <span className="text-2xl font-bold text-gold-500">
-                        {study.name.split(' ').map(n => n[0]).join('')}
-                      </span>
+                      <Target className="w-10 h-10 text-gold-500" />
                     </div>
                   </div>
                   <CardContent className="p-6">
-                    <h3 className="text-lg font-bold text-white">{study.name}</h3>
+                    <h3 className="text-lg font-bold text-white">{study.label}</h3>
                     <p className="text-sm text-gray-400 mb-4">{study.team}</p>
 
                     <div className="flex items-center gap-2 mb-4">
@@ -486,7 +482,27 @@ export default function LandingPage() {
               <div key={index} className="animate-fade-in">
                 <Card variant="glass" className="h-full">
                   <CardContent className="p-6">
-                    <Quote className="w-8 h-8 text-gold-500/30 mb-4" />
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold-500/30 to-gold-500/10 border-2 border-gold-500/40 flex items-center justify-center shrink-0 overflow-hidden">
+                        {testimonial.photo ? (
+                          <Image
+                            src={testimonial.photo}
+                            alt={testimonial.name}
+                            width={64}
+                            height={64}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              // Fallback to initials if image fails to load
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        ) : null}
+                        <span className="text-lg font-bold text-gold-500">
+                          {testimonial.name.split(' ').map(n => n[0]).join('')}
+                        </span>
+                      </div>
+                      <Quote className="w-8 h-8 text-gold-500/30" />
+                    </div>
                     <p className="text-white text-lg mb-4 italic">
                       &quot;{testimonial.quote}&quot;
                     </p>
