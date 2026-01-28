@@ -1,0 +1,72 @@
+'use client';
+
+import { Input } from '@/components/ui/input';
+import type { IntakeFormData } from '@/types';
+
+interface ParentContactProps {
+  data: Partial<IntakeFormData>;
+  onChange: (fields: Partial<IntakeFormData>) => void;
+  errors?: Record<string, string>;
+}
+
+export function ParentContact({ data, onChange, errors }: ParentContactProps) {
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="text-center mb-6">
+        <h3 className="text-lg font-semibold text-white mb-2">
+          Best email + phone to share evaluations / plans
+        </h3>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Your First Name *
+          </label>
+          <Input
+            value={data.firstName || ''}
+            onChange={(e) => onChange({ firstName: e.target.value })}
+            placeholder="First name"
+            error={errors?.firstName}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Your Last Name *
+          </label>
+          <Input
+            value={data.lastName || ''}
+            onChange={(e) => onChange({ lastName: e.target.value })}
+            placeholder="Last name"
+            error={errors?.lastName}
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Email *
+        </label>
+        <Input
+          type="email"
+          value={data.email || ''}
+          onChange={(e) => onChange({ email: e.target.value })}
+          placeholder="your@email.com"
+          error={errors?.email}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Phone (recommended)
+        </label>
+        <Input
+          type="tel"
+          value={data.phone || ''}
+          onChange={(e) => onChange({ phone: e.target.value })}
+          placeholder="(555) 123-4567"
+        />
+      </div>
+    </div>
+  );
+}
