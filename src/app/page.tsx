@@ -17,6 +17,7 @@ import {
   FlaskConical,
   Eye,
   TrendingUp,
+  Trophy,
 } from 'lucide-react';
 
 // NBA & Pro Results (anonymized)
@@ -249,6 +250,29 @@ export default function LandingPage() {
                 </Card>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Leaderboard Banner */}
+      <section className="py-12 bg-gradient-to-r from-gold-500/10 via-purple-500/10 to-gold-500/10 border-y border-gold-500/20">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold-500 to-yellow-600 flex items-center justify-center">
+                <Trophy className="w-8 h-8 text-black" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">BB Leaderboard</h3>
+                <p className="text-gray-400">See where enrolled players rank in proficiency and badges earned</p>
+              </div>
+            </div>
+            <Link href="/leaderboard">
+              <Button variant="secondary" size="lg" className="group">
+                View Leaderboard
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
