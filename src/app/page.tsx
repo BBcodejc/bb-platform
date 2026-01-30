@@ -17,7 +17,13 @@ import {
   FlaskConical,
   Eye,
   TrendingUp,
-  Trophy,
+  Scan,
+  Hand,
+  Activity,
+  ShieldAlert,
+  Users,
+  ClipboardCheck,
+  GraduationCap,
 } from 'lucide-react';
 
 // NBA & Pro Results (anonymized)
@@ -93,36 +99,98 @@ const researchPillars = [
   },
 ];
 
-// Protocol features
+// Protocol features - updated with LF connections
 const protocols = [
   {
     icon: <Target className="w-6 h-6" />,
     title: '14-Spot Assessment',
-    description: 'Reveals your miss profile patterns across all court positions—short, long, left, right, front rim, back rim.',
+    description: 'Reveals your miss profile and distance control at all court positions. Exposes gaps in energy transfer and shot consistency.',
+    exposes: 'Shooting & Energy Transfer',
   },
   {
     icon: <Crosshair className="w-6 h-6" />,
     title: 'Deep Distance Calibration',
     description: 'Shooting from 3-4 feet behind the line forces total impulse production. If you can hit from there, the regular line feels effortless.',
+    exposes: 'Distance Control & Impulse',
   },
   {
     icon: <BarChart3 className="w-6 h-6" />,
     title: 'Ball Flight Spectrum',
     description: 'Master flat (25°), standard (45°), and high (60°+) trajectories. Game situations demand adaptability, not one "perfect" arc.',
+    exposes: 'Arc Control & Adaptability',
   },
   {
     icon: <Zap className="w-6 h-6" />,
     title: 'Back-Rim Standards',
     description: 'If you can miss back rim on command, a swish is just removing 1% of force. This is calibration, not luck.',
+    exposes: 'Precision & Energy Awareness',
+  },
+];
+
+// Limiting Factors - the BB Lens
+const limitingFactors = [
+  {
+    icon: <Activity className="w-6 h-6" />,
+    title: 'Movement Bandwidth',
+    tag: 'Predictable',
+    description: "You can't access enough movement patterns. Linear only, always on your toes, no hip hinge, missing gallops or delayed accelerations.",
+    example: 'You drive in straight lines and defenders read you before you move.',
+  },
+  {
+    icon: <Scan className="w-6 h-6" />,
+    title: 'Visual Search',
+    tag: 'Blind',
+    description: "Your eyes don't scan. You stare at the ball or rim, look down under stress, and can't read help rotations—so you guess instead of react.",
+    example: 'You get surprised by help defense that everyone else saw coming.',
+  },
+  {
+    icon: <Hand className="w-6 h-6" />,
+    title: 'Ball Manipulation',
+    tag: 'Rushed',
+    description: "Reception location and timing issues. You catch too close to your body, dribble too low/fast, no float—so you have no time to organize feet or decisions.",
+    example: 'You rush every catch and your first dribble is always a reaction, never a choice.',
+  },
+  {
+    icon: <Target className="w-6 h-6" />,
+    title: 'Shooting & Energy Transfer',
+    tag: 'Fragile',
+    description: "You can't control horizontal distance or rely only on arc. Hitch in your shot, two-motion push, or internal cues that break down at game speed.",
+    example: 'Your shot looks different every game and you never know which version will show up.',
+  },
+  {
+    icon: <ShieldAlert className="w-6 h-6" />,
+    title: 'Response to Stress',
+    tag: 'Panicked',
+    description: "Under pressure you revert to stubborn habits: pick the ball up early, turn your back, stop scanning, lose all movement options. Fight-or-flight takes over.",
+    example: 'In clutch moments, you become a different player—and not the good version.',
+  },
+];
+
+// Team integration steps
+const teamSteps = [
+  {
+    step: 1,
+    title: 'BB Lens Audit',
+    description: "We start by evaluating your roster and environment through the BB Lens. Film breakdown, live practice observation, and shooting assessments reveal each player's Limiting Factors—movement bandwidth, visual search, ball manipulation, shooting, and stress response. You get a written report: who is limiting your offense, why, and what needs to change first.",
+  },
+  {
+    step: 2,
+    title: 'System Build-Out',
+    description: "Next, we build BB Blocks that plug directly into your existing practice plan. Shooting calibration progressions, movement and deception work, visual-stress drills, and constraint-based small-sided games—designed around your schemes and personnel, not generic drills. You leave with a seasonal progression, position standards, and a menu of practice blocks you can plug in week to week.",
+  },
+  {
+    step: 3,
+    title: 'Staff Certification & Support',
+    description: "We train your staff to see the game through the BB Lens. Live or virtual clinics, film labs, and on-court sessions show coaches how to identify Limiting Factors in real time and adjust constraints on the fly. Ongoing support includes monthly strategy calls, updates to protocols, and access to our BB library so your staff keeps evolving with your players.",
   },
 ];
 
 const benefits = [
   'Understand WHY you miss, not just that you miss',
   'Protocols based on YOUR constraints, not generic drills',
-  'Know exactly what to work on every single day',
+  'A written BB Profile: your main Limiting Factors + priority roadmap',
   'Track progress with objective standards (BB Levels 1-4)',
-  'Optional path to 3-month mentorship with full equipment',
+  'Option to apply for 3-month mentorship with full equipment (oversized ball, strobes, blockers)',
 ];
 
 const testimonials = [
@@ -168,12 +236,11 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-lg md:text-xl text-gray-400 text-center max-w-2xl mx-auto mt-6 animate-fade-in">
-            The same methodology that took NBA players from career lows to elite
-            efficiency—now available to serious players at every level.
+            A paid shooting and movement evaluation that has taken NBA players from career lows to elite efficiency—now available to serious players at every level.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 animate-fade-in">
-            <Link href="/intake">
+            <Link href="/start">
               <Button size="xl" className="group">
                 Get Your BB Profile
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -203,14 +270,13 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16 animate-fade-in">
             <span className="text-gold-500 font-semibold text-sm tracking-wider">
-              PROVEN RESULTS
+              IN-SEASON TRANSFORMATIONS
             </span>
             <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-4">
-              From Career Lows to Elite Efficiency
+              Calibration, Not Form Changes
             </h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              These aren&apos;t offseason transformations. These are in-season results
-              achieved by changing how players calibrate, not how they look.
+              These aren&apos;t offseason rebuilds. These are in-season results achieved by changing how players calibrate—not how they look.
             </p>
           </div>
 
@@ -254,29 +320,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Leaderboard Banner */}
-      <section className="py-12 bg-gradient-to-r from-gold-500/10 via-purple-500/10 to-gold-500/10 border-y border-gold-500/20">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold-500 to-yellow-600 flex items-center justify-center">
-                <Trophy className="w-8 h-8 text-black" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white">BB Leaderboard</h3>
-                <p className="text-gray-400">See where enrolled players rank in proficiency and badges earned</p>
-              </div>
-            </div>
-            <Link href="/leaderboard">
-              <Button variant="secondary" size="lg" className="group">
-                View Leaderboard
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* The Problem Section */}
       <section className="py-20 bg-bb-dark">
         <div className="max-w-6xl mx-auto px-4">
@@ -289,21 +332,14 @@ export default function LandingPage() {
                 The &quot;Great Transfer&quot; Lie
               </h2>
               <p className="text-gray-400 mb-6">
-                Players dominate in practice but fail in games. Traditional coaching
-                focuses on <span className="text-white">cosmetic mechanics</span> in
-                <span className="text-white"> sterile environments</span>—no pressure,
-                no fatigue, no consequences.
+                Players dominate in practice but fail in games. Traditional coaching focuses on <span className="text-white">cosmetic mechanics</span> in <span className="text-white">sterile environments</span>—no pressure, no fatigue, no consequences.
               </p>
               <p className="text-gray-400 mb-6">
-                They tell you to &quot;tuck your elbow&quot; and &quot;snap your wrist.&quot;
-                Research shows this <span className="text-white">internal focus</span> causes
-                choking under pressure and relies on conscious control that vanishes in games.
+                They tell you to &quot;tuck your elbow&quot; and &quot;snap your wrist.&quot; Research shows this <span className="text-white">internal focus</span> causes choking under pressure and relies on conscious control that vanishes in games.
               </p>
               <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
                 <p className="text-sm text-gray-300">
-                  <span className="text-red-400 font-semibold">The Result:</span> You&apos;re
-                  building &quot;false confidence&quot; with blocked reps that don&apos;t
-                  transfer to competition.
+                  <span className="text-red-400 font-semibold">The Result:</span> You&apos;re building <span className="text-white">&quot;false confidence&quot;</span> with blocked reps that don&apos;t transfer to competition.
                 </p>
               </div>
             </div>
@@ -316,19 +352,14 @@ export default function LandingPage() {
                 Strategic Failure
               </h2>
               <p className="text-gray-400 mb-6">
-                We make training <span className="text-white">harder than the game</span>.
-                Oversized balls. Visual occlusion. Deep distance. Your nervous system
-                learns to function while missing.
+                We make training <span className="text-white">harder than the game</span>. Oversized balls. Visual occlusion. Deep distance. Your nervous system learns to function while missing.
               </p>
               <p className="text-gray-400 mb-6">
-                When the game arrives, the rim looks huge. Time slows down. Your
-                <span className="text-white"> &quot;fight or flight&quot; response quiets</span> because
-                you&apos;ve already trained in chaos.
+                When the game arrives, the rim looks huge. Time slows down. Your <span className="text-white">&quot;fight or flight&quot; response quiets</span> because you&apos;ve already trained in chaos.
               </p>
               <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
                 <p className="text-sm text-gray-300">
-                  <span className="text-green-400 font-semibold">The Result:</span> Skills
-                  that actually show up when it matters. Game performance matches practice.
+                  <span className="text-green-400 font-semibold">The Result:</span> <span className="text-white">Calibrated confidence</span> under stress—skills that actually show up when it matters.
                 </p>
               </div>
             </div>
@@ -347,8 +378,7 @@ export default function LandingPage() {
               Research-Backed Methodology
             </h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              25+ years of research in motor learning, motor control, and movement science.
-              Not opinions—peer-reviewed principles applied to basketball.
+              25+ years of research in motor learning, motor control, and movement science. Not opinions—peer-reviewed principles applied to basketball.
             </p>
           </div>
 
@@ -384,14 +414,13 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16 animate-fade-in">
             <span className="text-gold-500 font-semibold text-sm tracking-wider">
-              THE BB ASSESSMENT
+              BB ASSESSMENT
             </span>
             <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-4">
               Protocols That Reveal Truth
             </h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              We don&apos;t guess. We assess. Four proprietary protocols that expose
-              your limiting factors and create your custom roadmap.
+              We don&apos;t guess. We assess. Four proprietary protocols that expose your limiting factors and create your custom roadmap.
             </p>
           </div>
 
@@ -404,10 +433,58 @@ export default function LandingPage() {
                       {protocol.icon}
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-white mb-2">
-                        {protocol.title}
-                      </h3>
-                      <p className="text-sm text-gray-400">{protocol.description}</p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-lg font-semibold text-white">
+                          {protocol.title}
+                        </h3>
+                      </div>
+                      <p className="text-sm text-gray-400 mb-2">{protocol.description}</p>
+                      <p className="text-xs text-gold-500">Exposes: {protocol.exposes}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Limiting Factors Section - NEW */}
+      <section className="py-20 bg-bb-dark">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-16 animate-fade-in">
+            <span className="text-gold-500 font-semibold text-sm tracking-wider">
+              THE BB LENS
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-4">
+              What&apos;s Actually Limiting You?
+            </h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              Limiting Factors are specific restrictions within your integrated systems that dictate failure when competition stress is applied. They&apos;re functional bottlenecks, not cosmetic &quot;bad form.&quot;
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {limitingFactors.map((lf) => (
+              <div key={lf.title} className="animate-fade-in">
+                <Card variant="glass" hover className="h-full">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400">
+                        {lf.icon}
+                      </div>
+                      <span className="px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-bold uppercase tracking-wider">
+                        {lf.tag}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-white mb-2">
+                      {lf.title}
+                    </h3>
+                    <p className="text-sm text-gray-400 mb-4">{lf.description}</p>
+                    <div className="p-3 bg-bb-black/50 rounded-lg border border-bb-border">
+                      <p className="text-xs text-gray-500">
+                        <span className="text-gold-500 font-semibold">Example:</span> {lf.example}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -418,7 +495,7 @@ export default function LandingPage() {
       </section>
 
       {/* BB Standard Section */}
-      <section className="py-20 bg-bb-dark">
+      <section className="py-20 bg-bb-black">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="animate-fade-in">
@@ -429,30 +506,29 @@ export default function LandingPage() {
                 A Hierarchy of Adaptability
               </h2>
               <p className="text-gray-400 mb-8">
-                This is not a participation trophy system. You don&apos;t advance
-                until you execute the specific energy demands without &quot;bad misses&quot;
-                (left/right/short). The standards are objective and non-negotiable.
+                This is not a participation trophy system. You don&apos;t advance until you execute the specific energy demands without &quot;bad misses&quot; (left/right/short). The standards are objective and non-negotiable.
               </p>
 
               <div className="space-y-4">
                 {[
-                  { level: 1, name: 'Foundation', desc: 'Energy Awareness', criteria: '10/14 makes + 7/10 flat flight reps' },
-                  { level: 2, name: 'Calibrated', desc: 'Impulse & Precision', criteria: '8/10 rim contacts deep + 3 consecutive back rim' },
-                  { level: 3, name: 'Adaptive', desc: 'Constraint Integration', criteria: '7/10 oversized ball gauntlet' },
-                  { level: 4, name: 'Master', desc: 'Reflexive Dominance', criteria: '8/10 full spectrum under strobes' },
+                  { level: 1, name: 'Foundation', desc: 'Energy Awareness', criteria: '14-Spot + basic flat ball flight', detail: '10/14 makes + 7/10 flat flight reps' },
+                  { level: 2, name: 'Calibrated', desc: 'Impulse & Precision', criteria: 'Deep distance + back-rim command', detail: '8/10 rim contacts deep + 3 consecutive back rim' },
+                  { level: 3, name: 'Adaptive', desc: 'Constraint Integration', criteria: 'Oversized ball / blockers / visual stress', detail: '7/10 oversized ball gauntlet' },
+                  { level: 4, name: 'Master', desc: 'Reflexive Dominance', criteria: 'Full spectrum under strobes + live reads', detail: '8/10 full spectrum under strobes' },
                 ].map((item) => (
                   <div
                     key={item.level}
                     className="flex items-center gap-4 p-4 rounded-lg bg-bb-card border border-bb-border hover:border-gold-500/30 transition-colors"
                   >
-                    <div className="w-12 h-12 rounded-full bg-gold-500 flex items-center justify-center text-bb-black font-bold text-lg">
+                    <div className="w-12 h-12 rounded-full bg-gold-500 flex items-center justify-center text-bb-black font-bold text-lg shrink-0">
                       {item.level}
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-white">{item.name}</h4>
                       <p className="text-sm text-gray-400">{item.desc}</p>
+                      <p className="text-xs text-gold-500/70 mt-1">{item.criteria}</p>
                     </div>
-                    <p className="text-xs text-gray-500 max-w-[120px] text-right">{item.criteria}</p>
+                    <p className="text-xs text-gray-500 max-w-[120px] text-right hidden sm:block">{item.detail}</p>
                   </div>
                 ))}
               </div>
@@ -461,7 +537,7 @@ export default function LandingPage() {
             <div className="animate-fade-in">
               <Card variant="gold" className="p-8">
                 <h3 className="text-2xl font-bold text-white mb-6">
-                  What You Get
+                  What You Get — $250 One-Time
                 </h3>
                 <ul className="space-y-4">
                   {benefits.map((benefit, index) => (
@@ -476,7 +552,7 @@ export default function LandingPage() {
                     <span className="text-4xl font-bold text-white">$250</span>
                     <span className="text-gray-400">one-time</span>
                   </div>
-                  <Link href="/intake">
+                  <Link href="/start/shooting">
                     <Button size="lg" className="w-full">
                       Start Your Evaluation
                     </Button>
@@ -488,8 +564,83 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Team / Organization Section - NEW */}
+      <section className="py-20 bg-gradient-to-b from-bb-black to-bb-dark">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-16 animate-fade-in">
+            <span className="text-gold-500 font-semibold text-sm tracking-wider">
+              FOR TEAMS & PROGRAMS
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-4">
+              From Individual Fixes to System-Wide Change
+            </h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              BB isn&apos;t a drill pack. It&apos;s a framework your entire program can run on—integrated into your practices, player development, and staff language.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8 mb-12">
+            {teamSteps.map((step) => (
+              <div key={step.step} className="animate-fade-in">
+                <Card variant="glass" className="h-full">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-full bg-gold-500 flex items-center justify-center text-bb-black font-bold">
+                        {step.step}
+                      </div>
+                      <h3 className="text-lg font-semibold text-white">{step.title}</h3>
+                    </div>
+                    <p className="text-sm text-gray-400 leading-relaxed">{step.description}</p>
+                  </CardContent>
+                </Card>
+              </div>
+            ))}
+          </div>
+
+          <div className="animate-fade-in">
+            <Card className="bg-gradient-to-r from-gold-500/10 to-gold-500/5 border-gold-500/30">
+              <CardContent className="p-8">
+                <div className="grid md:grid-cols-2 gap-8 items-center">
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <Users className="w-8 h-8 text-gold-500" />
+                      <h3 className="text-2xl font-bold text-white">Bring BB To Your Program</h3>
+                    </div>
+                    <p className="text-gray-400 mb-6">
+                      We&apos;ve used this framework with NBA players, G-League guards, and high-level high school programs. The next step is installing it where it matters most—inside your practices, not just on film.
+                    </p>
+                    <Link href="/start/organization">
+                      <Button size="lg" className="group">
+                        Apply for Team / Organization Integration
+                        <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </Button>
+                    </Link>
+                    <p className="text-xs text-gray-500 mt-3">
+                      For colleges, pro teams, academies, and serious high school programs.
+                    </p>
+                  </div>
+                  <div className="hidden md:flex items-center justify-center">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="w-16 h-16 rounded-lg bg-gold-500/20 flex items-center justify-center">
+                        <ClipboardCheck className="w-8 h-8 text-gold-500" />
+                      </div>
+                      <div className="w-16 h-16 rounded-lg bg-gold-500/20 flex items-center justify-center">
+                        <Users className="w-8 h-8 text-gold-500" />
+                      </div>
+                      <div className="w-16 h-16 rounded-lg bg-gold-500/20 flex items-center justify-center">
+                        <GraduationCap className="w-8 h-8 text-gold-500" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials Section */}
-      <section className="py-20 bg-bb-black relative overflow-hidden">
+      <section className="py-20 bg-bb-dark relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-gold-500/5 via-transparent to-gold-500/5" />
         <div className="relative max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
@@ -543,11 +694,10 @@ export default function LandingPage() {
       </section>
 
       {/* Philosophy Quote */}
-      <section className="py-20 bg-gradient-to-b from-bb-black to-bb-dark">
+      <section className="py-20 bg-gradient-to-b from-bb-dark to-bb-black">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <blockquote className="text-2xl md:text-3xl font-medium text-white italic animate-fade-in">
-            &quot;If you are making every shot in practice, you are wasting your
-            time. We calibrate for the miss so we can master the make.&quot;
+            &quot;If you are making every shot in practice, you are wasting your time. We calibrate for the miss so we can master the make.&quot;
           </blockquote>
           <p className="text-gold-500 mt-4 font-semibold">
             — Basketball Biomechanics
@@ -556,17 +706,16 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 bg-gradient-to-t from-gold-500/10 to-bb-dark">
+      <section className="py-20 bg-gradient-to-t from-gold-500/10 to-bb-black">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="animate-fade-in">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Find Out Your BB Level?
+              Ready to Find Your Limiting Factors?
             </h2>
             <p className="text-gray-400 mb-8 max-w-2xl mx-auto">
-              Join the players who stopped guessing and started calibrating.
-              Get your personalized shooting profile and custom protocols.
+              Join the players who stopped guessing and started calibrating. Get your personalized BB Profile—your Limiting Factors exposed, your roadmap built.
             </p>
-            <Link href="/intake">
+            <Link href="/start">
               <Button size="xl" className="group">
                 Get Your BB Profile — $250
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
