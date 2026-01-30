@@ -31,7 +31,7 @@ function ThankYouContent() {
       description: 'We\'ll review your submission and reach out within 48 hours to discuss next steps.',
       icon: CheckCircle,
       nextSteps: [
-        { icon: Mail, text: 'Watch for an email from jake@basketballbiomechanics.com' },
+        { icon: Mail, text: 'Watch for an email from Jake (jake@trainwjc.com)' },
         { icon: Calendar, text: 'We\'ll schedule a brief call to learn more about your game' },
         { icon: Target, text: 'If it\'s a fit, we\'ll discuss the full assessment process' },
       ],
@@ -47,7 +47,7 @@ function ThankYouContent() {
       description: 'We\'re excited to potentially have you join the BB coaching network.',
       icon: CheckCircle,
       nextSteps: [
-        { icon: Mail, text: 'Watch for an email from jake@basketballbiomechanics.com' },
+        { icon: Mail, text: 'Watch for an email from Jake (jake@trainwjc.com)' },
         { icon: Calendar, text: 'We\'ll schedule a call to discuss your coaching background' },
         { icon: Target, text: 'Learn about the BB certification process and what\'s involved' },
       ],
@@ -63,7 +63,7 @@ function ThankYouContent() {
       description: 'We\'ll review your needs and reach out to discuss how BB can support your program.',
       icon: CheckCircle,
       nextSteps: [
-        { icon: Mail, text: 'Watch for an email from jake@basketballbiomechanics.com' },
+        { icon: Mail, text: 'Watch for an email from Jake (jake@trainwjc.com)' },
         { icon: Calendar, text: 'We\'ll schedule a discovery call to understand your program' },
         { icon: Target, text: 'We\'ll prepare a customized proposal based on your needs' },
       ],

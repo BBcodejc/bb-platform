@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
 
-const NOTIFICATION_EMAIL = 'jake@basketballbiomechanics.com';
+const NOTIFICATION_EMAIL = 'bbcodejc@gmail.com';
+const FROM_EMAIL = 'Jake from BB <jake@trainwjc.com>';
 
 interface ApplicationData {
   type: 'full_assessment_application' | 'coach_cert_application' | 'organization_inquiry';
@@ -29,7 +30,7 @@ async function sendEmailNotification(subject: string, html: string) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'BB Platform <notifications@basketballbiomechanics.com>',
+        from: FROM_EMAIL,
         to: NOTIFICATION_EMAIL,
         subject,
         html,
@@ -178,30 +179,30 @@ export async function POST(request: NextRequest) {
       first_name: firstName,
       last_name: lastName,
       phone: formData.phone || null,
-      pipeline_status: 'application_submitted',
+      pipeline_status: 'new',
       high_ticket_prospect: type === 'organization_inquiry' || type === 'full_assessment_application',
-      application_type: type,
-      application_data: formData,
+      notes: `Application Type: ${type}`,
     };
 
     // Add type-specific fields
     if (type === 'full_assessment_application') {
       Object.assign(prospectData, {
-        player_age: formData.age || null,
-        player_level: formData.level || null,
-        player_position: formData.position || null,
-        goals: formData.currentSituation || null,
+        player_age: formData.playerAge || formData.age || null,
+        player_level: formData.playerLevel || formData.level || null,
+        goals: formData.biggestProblems || formData.currentSituation || null,
         commitment_level: formData.commitmentLevel || null,
+        notes: `Application Type: ${type}\nPosition: ${formData.position || 'N/A'}\nCurrent Situation: ${formData.currentSituation || 'N/A'}\nBiggest Problems: ${formData.biggestProblems || 'N/A'}\nWhat Tried: ${formData.whatTried || 'N/A'}`,
       });
     } else if (type === 'coach_cert_application') {
       Object.assign(prospectData, {
         coaching_level: formData.coachingRole || null,
         player_location: formData.location || null,
+        notes: `Application Type: ${type}\nYears Coaching: ${formData.yearsCoaching || 'N/A'}\nWorks With: ${formData.playerLevelWorkWith || 'N/A'}\nWhy Interested: ${formData.whyInterested || 'N/A'}\nCurrent Training Style: ${formData.currentTrainingStyle || 'N/A'}`,
       });
     } else if (type === 'organization_inquiry') {
       Object.assign(prospectData, {
         org_name: formData.orgName || null,
-        org_type: formData.orgType || null,
+        notes: `Application Type: ${type}\nOrg Type: ${formData.orgType || 'N/A'}\nPlayer Count: ${formData.playerCount || 'N/A'}\nChallenge: ${formData.currentChallenge || 'N/A'}\nIdeal Outcome: ${formData.idealOutcome || 'N/A'}\nSupport Needed: ${formData.supportNeeded || 'N/A'}\nTimeline: ${formData.timeline || 'N/A'}`,
       });
     }
 
@@ -255,7 +256,10 @@ export async function POST(request: NextRequest) {
       await supabase.from('activity_log').insert({
         prospect_id: prospect.id,
         action: 'application_submitted',
-        details: { type, timestamp: new Date().toISOString() },
+        entity_type: 'prospect',
+        entity_id: prospect.id,
+        description: `${type} submitted`,
+        new_value: { type, timestamp: new Date().toISOString() },
       });
     } catch (logError) {
       console.error('Activity log error:', logError);

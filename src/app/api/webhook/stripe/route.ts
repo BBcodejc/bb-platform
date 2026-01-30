@@ -3,7 +3,9 @@ import { createServerSupabaseClient } from '@/lib/supabase';
 import { verifyWebhookSignature } from '@/lib/stripe';
 import Stripe from 'stripe';
 
-const NOTIFICATION_EMAIL = 'jake@basketballbiomechanics.com';
+const NOTIFICATION_EMAIL = 'bbcodejc@gmail.com';
+const FROM_EMAIL = 'Jake from BB <jake@trainwjc.com>';
+const REPLY_TO_EMAIL = 'bbcodejc@gmail.com';
 
 // Send email notification using Resend (or fallback to console log if not configured)
 async function sendEmailNotification(subject: string, html: string, toEmail?: string) {
@@ -27,7 +29,8 @@ async function sendEmailNotification(subject: string, html: string, toEmail?: st
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'BB Platform <notifications@basketballbiomechanics.com>',
+        from: FROM_EMAIL,
+        reply_to: REPLY_TO_EMAIL,
         to: recipient,
         subject,
         html,
@@ -121,22 +124,141 @@ export async function POST(request: NextRequest) {
             `
           );
 
-          // Send customer confirmation email
+          // Send customer confirmation email with detailed instructions
           await sendEmailNotification(
-            'Your BB Shooting Evaluation is Confirmed!',
+            'Your BB Shooting Evaluation - Next Steps Inside',
             `
-              <h2>Thanks for your purchase, ${prospect.first_name}!</h2>
-              <p>Your BB Shooting Evaluation is confirmed and we're excited to help you improve your shot.</p>
-              <hr />
-              <h3>Next Steps:</h3>
-              <ol>
-                <li><strong>Record your videos</strong> - You'll receive detailed instructions shortly on what to record.</li>
-                <li><strong>Submit within 48 hours</strong> - The sooner you submit, the sooner you'll get your personalized BB Profile.</li>
-                <li><strong>Get your results</strong> - Your BB Profile will be delivered within 5 business days after submission.</li>
-              </ol>
-              <hr />
-              <p>If you have any questions, reply to this email or reach out to jake@basketballbiomechanics.com</p>
-              <p style="color: #b8860b; font-weight: bold;">Basketball Biomechanics</p>
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #1a1a1a; color: #d4af37; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+    .step { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #d4af37; }
+    .step-number { background: #d4af37; color: black; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
+    .test-box { background: #1a1a1a; color: white; padding: 20px; margin: 10px 0; border-radius: 8px; }
+    .test-title { color: #d4af37; font-weight: bold; margin-bottom: 10px; }
+    .highlight { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; }
+    .button { display: inline-block; background: #d4af37; color: black; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 10px 0; }
+    .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+    ul { padding-left: 20px; }
+    li { margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 style="margin: 0; font-size: 24px;">BASKETBALL BIOMECHANICS</h1>
+      <p style="margin: 10px 0 0 0; opacity: 0.9;">Your BB Shooting Evaluation</p>
+    </div>
+
+    <div class="content">
+      <h2 style="color: #1a1a1a;">Hey ${prospect.first_name}!</h2>
+      <p>Your payment is confirmed. Let's get you dialed in. Here's exactly what to do next:</p>
+
+      <div class="highlight">
+        <strong>Complete within 48 hours</strong> - The sooner you submit, the sooner you get your personalized BB Profile and roadmap.
+      </div>
+
+      <div class="step">
+        <h3><span class="step-number">1</span> Complete the BB Standard Session</h3>
+        <p>Find a gym, grab a ball, and run through these 4 tests. Film each one.</p>
+
+        <div class="test-box">
+          <div class="test-title">TEST 1: 14-Spot Baseline (3 Rounds)</div>
+          <ul>
+            <li>Shoot from all 14 spots around the arc (7 on each side)</li>
+            <li>1 shot per spot, 3 full rounds</li>
+            <li>Track makes and note your miss tendencies (short, long, left, right)</li>
+          </ul>
+        </div>
+
+        <div class="test-box">
+          <div class="test-title">TEST 2: Deep Distance Test</div>
+          <ul>
+            <li>Start at the 3-point line, take 5 shots</li>
+            <li>Step back 1 step, take 5 more shots</li>
+            <li>Keep stepping back until you can't reach the rim cleanly</li>
+            <li>Note how many steps back and rim contacts at each distance</li>
+          </ul>
+        </div>
+
+        <div class="test-box">
+          <div class="test-title">TEST 3: Back-Rim Challenge</div>
+          <ul>
+            <li>Shoot free throws with the goal of hitting BACK RIM only</li>
+            <li>Level 1: Hit 3 back-rim shots in a row</li>
+            <li>Level 2: Hit 5 back-rim shots in a row</li>
+            <li>Level 3: Hit 7 back-rim shots in a row</li>
+            <li>Track attempts and time for each level</li>
+          </ul>
+        </div>
+
+        <div class="test-box">
+          <div class="test-title">TEST 4: Ball Flight Spectrum</div>
+          <ul>
+            <li>From the elbow, shoot 5 shots with FLAT arc</li>
+            <li>Shoot 5 shots with NORMAL arc</li>
+            <li>Shoot 5 shots with HIGH arc</li>
+            <li>Note makes and miss profile for each arc type</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="step">
+        <h3><span class="step-number">2</span> Film Requirements</h3>
+        <ul>
+          <li><strong>Angle:</strong> Side view (dominant hand side) so we can see your full release</li>
+          <li><strong>Distance:</strong> Full body visible, close enough to see hand position</li>
+          <li><strong>Quality:</strong> Good lighting, stable camera (tripod or friend holding)</li>
+          <li><strong>Include:</strong> All 4 tests in separate clips or one continuous video</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h3><span class="step-number">3</span> Upload Your Videos</h3>
+        <p>Upload your videos to Google Drive and share the folder link with us:</p>
+        <ol>
+          <li>Go to <a href="https://drive.google.com">drive.google.com</a></li>
+          <li>Create a new folder named "BB Evaluation - ${prospect.first_name} ${prospect.last_name}"</li>
+          <li>Upload all your test videos</li>
+          <li>Right-click the folder → Share → Change to "Anyone with the link"</li>
+          <li>Copy the link and reply to this email with your Google Drive link</li>
+        </ol>
+
+        <p style="margin-top: 20px;"><strong>Reply to this email with:</strong></p>
+        <ul>
+          <li>Your Google Drive folder link</li>
+          <li>Your scores/notes from each test (makes, misses, tendencies)</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h3><span class="step-number">4</span> What Happens Next</h3>
+        <ul>
+          <li>We review your film and test results</li>
+          <li>You receive your personalized BB Profile within 5 business days</li>
+          <li>Your profile includes: BB Level, Miss Profile, Priority Protocols, and 4-Week Roadmap</li>
+        </ul>
+      </div>
+
+      <div class="highlight">
+        <strong>Questions?</strong> Just reply directly to this email and I'll get back to you.
+      </div>
+
+      <p style="margin-top: 30px;">Let's get to work.</p>
+      <p style="color: #d4af37; font-weight: bold;">— Jake & the BB Team</p>
+    </div>
+
+    <div class="footer">
+      <p>Basketball Biomechanics</p>
+      <p style="font-size: 12px; color: #999;">You're receiving this because you purchased a BB Shooting Evaluation.</p>
+    </div>
+  </div>
+</body>
+</html>
             `,
             prospect.email
           );

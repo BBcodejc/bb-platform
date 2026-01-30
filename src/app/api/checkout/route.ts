@@ -31,7 +31,9 @@ export async function POST(request: NextRequest) {
     if (formData.role === 'player') {
       Object.assign(prospectData, {
         player_level: formData.playerLevel || null,
-        player_main_goal: formData.playerMainGoal || null,
+        player_main_goal: Array.isArray(formData.playerMainGoal)
+          ? formData.playerMainGoal.join(', ')
+          : formData.playerMainGoal || null,
         game_vs_workout: formData.gameVsWorkout || null,
         three_pt_percentage: formData.threePtPercentage || null,
         player_problem: formData.playerProblem || null,
