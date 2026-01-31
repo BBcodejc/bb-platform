@@ -26,27 +26,32 @@ import {
   GraduationCap,
 } from 'lucide-react';
 
-// NBA & Pro Results (anonymized)
+// NBA & Pro Results
 const caseStudies = [
   {
+    name: 'Tobias Harris',
     label: 'NBA Forward',
     team: 'NBA',
     beforeStat: '29%',
     afterStat: '47%',
     metric: '3PT%',
     timeframe: '< 100 Days',
-    quote: 'My brain is like AI.',
+    quote: "Coach Tempesta's brain is like AI.",
+    photo: '/players/tobiasharrislandingpage.webp',
   },
   {
+    name: 'Paul Reed',
     label: 'NBA Center',
     team: 'NBA',
     beforeStat: '~15%',
     afterStat: '40%',
     metric: '3PT%',
     timeframe: '5 Months',
-    quote: 'It feels easy.',
+    quote: 'My shot feels effortless now after doing calibration.',
+    photo: '/players/paulreedlandngpage.webp',
   },
   {
+    name: 'Tyler Burton',
     label: 'G-League Guard',
     team: 'College / G-League',
     beforeStat: '29%',
@@ -54,15 +59,18 @@ const caseStudies = [
     metric: '3PT%',
     timeframe: 'In-Season',
     quote: "You're the smartest basketball coach I've ever been around.",
+    photo: '/players/tylerburtonlandingpage.jpg',
   },
   {
+    name: 'OG Anunoby',
     label: 'NBA Wing',
     team: 'NBA',
     beforeStat: 'Slump',
     afterStat: '~60%',
     metric: '3PT%',
     timeframe: '1 Month',
-    quote: "No one's ever broken down film this way.",
+    quote: 'OG shot near career highs while being consulted by Coach Tempesta.',
+    photo: '/players/OGA landing page.jpeg',
   },
 ];
 
@@ -96,34 +104,6 @@ const researchPillars = [
     icon: <TrendingUp className="w-6 h-6" />,
     title: 'Dynamic Systems Theory',
     description: 'We identify attractor states and use fluctuators to destabilize inefficient patterns.',
-  },
-];
-
-// Protocol features - updated with LF connections
-const protocols = [
-  {
-    icon: <Target className="w-6 h-6" />,
-    title: '14-Spot Assessment',
-    description: 'Reveals your miss profile and distance control at all court positions. Exposes gaps in energy transfer and shot consistency.',
-    exposes: 'Shooting & Energy Transfer',
-  },
-  {
-    icon: <Crosshair className="w-6 h-6" />,
-    title: 'Deep Distance Calibration',
-    description: 'Shooting from 3-4 feet behind the line forces total impulse production. If you can hit from there, the regular line feels effortless.',
-    exposes: 'Distance Control & Impulse',
-  },
-  {
-    icon: <BarChart3 className="w-6 h-6" />,
-    title: 'Ball Flight Spectrum',
-    description: 'Master flat (25°), standard (45°), and high (60°+) trajectories. Game situations demand adaptability, not one "perfect" arc.',
-    exposes: 'Arc Control & Adaptability',
-  },
-  {
-    icon: <Zap className="w-6 h-6" />,
-    title: 'Back-Rim Standards',
-    description: 'If you can miss back rim on command, a swish is just removing 1% of force. This is calibration, not luck.',
-    exposes: 'Precision & Energy Awareness',
   },
 ];
 
@@ -198,7 +178,7 @@ const testimonials = [
     quote: "Tommy, I've never hit shots like this.",
     name: 'Matisse Thybulle',
     context: 'After implementing the dip and deep distance protocol',
-    photo: '/players/matisse-thybulle.jpg',
+    photo: '/players/mattiselandingpage.jpg',
   },
   {
     quote: "You're going to regret going down the wrong path, because you're a coach. In your heart, you're a coach.",
@@ -210,7 +190,7 @@ const testimonials = [
     quote: "I've never been coached like that in my life.",
     name: 'Tyler Burton',
     context: 'On the removal of his mechanical hitch',
-    photo: '/players/tyler-burton.jpg',
+    photo: '/players/tylerburtonlandingpage.jpg',
   },
 ];
 
@@ -235,8 +215,8 @@ export default function LandingPage() {
             <span className="text-gradient-gold">Start Calibrating.</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-gray-400 text-center max-w-2xl mx-auto mt-6 animate-fade-in">
-            A paid shooting and movement evaluation that has taken NBA players from career lows to elite efficiency—now available to serious players at every level.
+          <p className="text-lg md:text-xl text-gray-400 text-center max-w-3xl mx-auto mt-6 animate-fade-in">
+            Basketball Biomechanics is a research-driven system for shooting, movement, and deception that has taken NBA players from career lows to elite efficiency—now available to serious players at every level.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 animate-fade-in">
@@ -284,14 +264,26 @@ export default function LandingPage() {
             {caseStudies.map((study, index) => (
               <div key={index} className="animate-fade-in">
                 <Card variant="glass" className="h-full overflow-hidden">
-                  <div className="h-48 bg-gradient-to-br from-gold-500/20 to-transparent flex items-center justify-center">
-                    <div className="w-24 h-24 rounded-full bg-bb-card border-2 border-gold-500/30 flex items-center justify-center">
-                      <Target className="w-10 h-10 text-gold-500" />
-                    </div>
+                  <div className="h-48 bg-gradient-to-br from-gold-500/20 to-transparent flex items-center justify-center relative">
+                    {study.photo ? (
+                      <div className="w-32 h-32 rounded-full overflow-hidden border-3 border-gold-500/50">
+                        <Image
+                          src={study.photo}
+                          alt={study.name}
+                          width={128}
+                          height={128}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-24 h-24 rounded-full bg-bb-card border-2 border-gold-500/30 flex items-center justify-center">
+                        <Target className="w-10 h-10 text-gold-500" />
+                      </div>
+                    )}
                   </div>
                   <CardContent className="p-6">
-                    <h3 className="text-lg font-bold text-white">{study.label}</h3>
-                    <p className="text-sm text-gray-400 mb-4">{study.team}</p>
+                    <h3 className="text-lg font-bold text-white">{study.name}</h3>
+                    <p className="text-sm text-gray-400 mb-4">{study.label} • {study.team}</p>
 
                     <div className="flex items-center gap-2 mb-4">
                       <div className="text-center">
@@ -316,6 +308,134 @@ export default function LandingPage() {
                 </Card>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* What Is BB Section */}
+      <section className="py-20 bg-bb-dark">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-12 animate-fade-in">
+            <span className="text-gold-500 font-semibold text-sm tracking-wider">
+              THE SYSTEM
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-6">
+              What Is Basketball Biomechanics?
+            </h2>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <p className="text-lg text-gray-300 mb-6 animate-fade-in">
+              Basketball Biomechanics (BB) is a method-based development system built on motor-learning science, ecological dynamics, and visual-motor control—not opinions about &quot;pretty&quot; form.
+            </p>
+
+            <p className="text-gray-400 mb-8 animate-fade-in">
+              Instead of changing how you look, we measure how you calibrate under stress:
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <Card variant="glass" className="animate-fade-in">
+                <CardContent className="p-6">
+                  <div className="w-10 h-10 rounded-lg bg-gold-500/10 flex items-center justify-center text-gold-500 mb-4">
+                    <Target className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-white font-semibold mb-2">Shooting</h3>
+                  <p className="text-sm text-gray-400">
+                    Miss profile, ball-flight spectrum, deep-distance impulse, back-rim standards.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card variant="glass" className="animate-fade-in">
+                <CardContent className="p-6">
+                  <div className="w-10 h-10 rounded-lg bg-gold-500/10 flex items-center justify-center text-gold-500 mb-4">
+                    <Activity className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-white font-semibold mb-2">Movement & Deception</h3>
+                  <p className="text-sm text-gray-400">
+                    Trail legs, stops, hinges, gallops, delayed accelerations, and full-foot control.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card variant="glass" className="animate-fade-in">
+                <CardContent className="p-6">
+                  <div className="w-10 h-10 rounded-lg bg-gold-500/10 flex items-center justify-center text-gold-500 mb-4">
+                    <Eye className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-white font-semibold mb-2">Vision & Decision Making</h3>
+                  <p className="text-sm text-gray-400">
+                    Reception time/location, visual search strategy, and passing solutions.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="p-6 bg-gold-500/10 border border-gold-500/30 rounded-xl text-center animate-fade-in">
+              <p className="text-gray-300">
+                The result is a clear <span className="text-gold-500 font-semibold">BB Profile</span> that tells you exactly what&apos;s limiting you and gives you protocols that scale from youth to NBA.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Who Are We Section */}
+      <section className="py-20 bg-bb-black">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-12 animate-fade-in">
+            <span className="text-gold-500 font-semibold text-sm tracking-wider">
+              THE TEAM
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-4">
+              Who Are We?
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Tommy Tempesta */}
+            <Card variant="glass" className="animate-fade-in">
+              <CardContent className="p-8">
+                <div className="flex flex-col items-center text-center mb-6">
+                  <div className="w-32 h-32 rounded-full overflow-hidden border-3 border-gold-500/50 mb-4">
+                    <Image
+                      src="/players/tommylandingpage.JPEG"
+                      alt="Coach Tommy Tempesta"
+                      width={128}
+                      height={128}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">Tommy Tempesta</h3>
+                  <p className="text-gold-500 text-sm">Founder & Head of Methodology</p>
+                </div>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  Tommy Tempesta is the founder of Basketball Biomechanics and the architect of the BB methodology. With a background in physical therapy, strength & conditioning, and 25+ years studying motor-learning and movement science, he&apos;s built assessment-based systems used by NBA players, high-major programs, and serious skill coaches around the world. Tommy&apos;s lens isolates real limiting factors—movement, vision, and energy transfer—and turns them into repeatable methods, not one-off drills. Coach Tempesta has coached thousands of players over the past 25 years.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Jake Cioe */}
+            <Card variant="glass" className="animate-fade-in">
+              <CardContent className="p-8">
+                <div className="flex flex-col items-center text-center mb-6">
+                  <div className="w-32 h-32 rounded-full overflow-hidden border-3 border-gold-500/50 mb-4">
+                    <Image
+                      src="/players/COACHJAKELANDING.JPEG"
+                      alt="Coach Jake Cioe"
+                      width={128}
+                      height={128}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">Jake Cioe</h3>
+                  <p className="text-gold-500 text-sm">BB-Certified Coach & Implementation Lead</p>
+                </div>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  Jake Cioe is a BB-certified Coach and former Division I guard at the University of San Francisco. Jake runs day-to-day implementation of BB protocols with pros, college players, and high-level youth, translating the research into on-court language players benefit from all over the world. He leads the BB online education, shooting calibration masterclass, and 1-on-1 mentorships for athletes and coaches.
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
@@ -409,47 +529,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Protocols Section */}
-      <section className="py-20 bg-gradient-to-b from-bb-black to-bb-dark">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-16 animate-fade-in">
-            <span className="text-gold-500 font-semibold text-sm tracking-wider">
-              BB ASSESSMENT
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-4">
-              Protocols That Reveal Truth
-            </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              We don&apos;t guess. We assess. Four proprietary protocols that expose your limiting factors and create your custom roadmap.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {protocols.map((protocol) => (
-              <div key={protocol.title} className="animate-fade-in">
-                <Card hover className="h-full">
-                  <CardContent className="p-6 flex gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-gold-500/10 flex items-center justify-center text-gold-500 shrink-0">
-                      {protocol.icon}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-lg font-semibold text-white">
-                          {protocol.title}
-                        </h3>
-                      </div>
-                      <p className="text-sm text-gray-400 mb-2">{protocol.description}</p>
-                      <p className="text-xs text-gold-500">Exposes: {protocol.exposes}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Limiting Factors Section - NEW */}
+      {/* Limiting Factors Section */}
       <section className="py-20 bg-bb-dark">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16 animate-fade-in">
@@ -511,10 +591,10 @@ export default function LandingPage() {
 
               <div className="space-y-4">
                 {[
-                  { level: 1, name: 'Foundation', desc: 'Energy Awareness', criteria: '14-Spot + basic flat ball flight', detail: '10/14 makes + 7/10 flat flight reps' },
-                  { level: 2, name: 'Calibrated', desc: 'Impulse & Precision', criteria: 'Deep distance + back-rim command', detail: '8/10 rim contacts deep + 3 consecutive back rim' },
-                  { level: 3, name: 'Adaptive', desc: 'Constraint Integration', criteria: 'Oversized ball / blockers / visual stress', detail: '7/10 oversized ball gauntlet' },
-                  { level: 4, name: 'Master', desc: 'Reflexive Dominance', criteria: 'Full spectrum under strobes + live reads', detail: '8/10 full spectrum under strobes' },
+                  { level: 1, name: 'Foundation', desc: 'Energy Awareness', detail: '10/14 makes' },
+                  { level: 2, name: 'Calibrated', desc: 'Precise back rim on target', detail: 'Back rim command' },
+                  { level: 3, name: 'Adaptive', desc: 'Oversized ball gauntlet + strobes', detail: 'Constraint mastery' },
+                  { level: 4, name: 'Master', desc: 'Professional level BB calibrated shooter', detail: 'Can shoot at any level' },
                 ].map((item) => (
                   <div
                     key={item.level}
@@ -526,9 +606,8 @@ export default function LandingPage() {
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-white">{item.name}</h4>
                       <p className="text-sm text-gray-400">{item.desc}</p>
-                      <p className="text-xs text-gold-500/70 mt-1">{item.criteria}</p>
                     </div>
-                    <p className="text-xs text-gray-500 max-w-[120px] text-right hidden sm:block">{item.detail}</p>
+                    <p className="text-sm text-gold-500 font-medium text-right hidden sm:block">{item.detail}</p>
                   </div>
                 ))}
               </div>

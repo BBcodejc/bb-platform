@@ -21,7 +21,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn, timeAgo, formatLevel, formatPipelineStatus, getStatusColor, formatCurrency } from '@/lib/utils';
-import { getSupabase } from '@/lib/supabase';
 
 interface Prospect {
   id: string;
@@ -84,36 +83,20 @@ function ProspectsPageContent() {
   const fetchProspects = useCallback(async () => {
     setLoading(true);
     try {
-      const supabase = getSupabase();
+      const params = new URLSearchParams();
+      if (statusFilter !== 'all') params.set('status', statusFilter);
+      if (roleFilter !== 'all') params.set('role', roleFilter);
+      if (highTicketOnly) params.set('high_ticket', 'true');
+      if (searchQuery) params.set('search', searchQuery);
+      params.set('page', currentPage.toString());
 
-      let query = supabase
-        .from('prospects')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE - 1);
+      const response = await fetch(`/api/admin/prospects?${params.toString()}`);
+      const data = await response.json();
 
-      if (statusFilter && statusFilter !== 'all') {
-        query = query.eq('pipeline_status', statusFilter);
-      }
+      if (!response.ok) throw new Error(data.error);
 
-      if (roleFilter && roleFilter !== 'all') {
-        query = query.eq('role', roleFilter);
-      }
-
-      if (highTicketOnly) {
-        query = query.eq('high_ticket_prospect', true);
-      }
-
-      if (searchQuery) {
-        query = query.or(`email.ilike.%${searchQuery}%,first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%`);
-      }
-
-      const { data, count, error } = await query;
-
-      if (error) throw error;
-
-      setProspects(data || []);
-      setTotalCount(count || 0);
+      setProspects(data.prospects || []);
+      setTotalCount(data.total || 0);
     } catch (error) {
       console.error('Error fetching prospects:', error);
     } finally {
@@ -123,23 +106,6 @@ function ProspectsPageContent() {
 
   useEffect(() => {
     fetchProspects();
-
-    // Setup realtime subscription
-    const supabase = getSupabase();
-    const channel = supabase
-      .channel('prospects-list')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'prospects' },
-        () => {
-          fetchProspects();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [fetchProspects]);
 
   // Update URL when filters change

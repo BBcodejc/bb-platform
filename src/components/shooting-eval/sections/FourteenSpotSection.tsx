@@ -55,11 +55,11 @@ export function FourteenSpotSection({ data, onChange }: FourteenSpotSectionProps
       <div className="text-center mb-6">
         <h2 className="text-xl font-bold text-white mb-2">14-Spot Baseline</h2>
         <p className="text-sm text-gray-400 mb-4">
-          7 spots around the arc × 2 shots each = 14 total per round
+          14 spots around the arc, 1 shot per spot, 3 full rounds
         </p>
         <div className="bg-bb-card border border-bb-border rounded-lg p-3 text-xs text-gray-400">
-          <strong className="text-gold-500">Pattern:</strong> Start left corner → wing → elbow → top → elbow → wing → right corner.
-          Take 2 shots at each spot, then repeat for 3 total rounds.
+          <strong className="text-gold-500">Pattern:</strong> Corner → Wing → Slot → Top of Key → Other Slot → Other Wing → Other Corner,
+          then double up and come back around (7 spots × 2 = 14 per round).
         </div>
       </div>
 

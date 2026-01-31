@@ -457,13 +457,20 @@ export default function ShootingEvaluationPage() {
                     : 'border-bb-border bg-bb-card hover:border-gold-500/50'
                 )}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-3">
                   <div>
                     <p className="text-white font-semibold">BB Shooting Evaluation</p>
                     <p className="text-sm text-gray-400">Personalized profile + roadmap</p>
                   </div>
                   <p className="text-xl font-bold text-white">$250</p>
                 </div>
+                <ul className="text-xs text-gray-400 space-y-1 border-t border-bb-border pt-3">
+                  <li>• How does it work?</li>
+                  <li>• Complete BB Standard Calibration Test (Info Emailed after purchase)</li>
+                  <li>• BB Profile built depending on the test + video submission</li>
+                  <li>• Full Assessment of Your Shot Reviewed</li>
+                  <li>• Personalized Protocols Installed In a Weekly Plan</li>
+                </ul>
               </button>
 
               {/* Masterclass */}
@@ -477,13 +484,19 @@ export default function ShootingEvaluationPage() {
                     : 'border-bb-border bg-bb-card hover:border-gold-500/50'
                 )}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-3">
                   <div>
                     <p className="text-white font-semibold">BB Masterclass</p>
                     <p className="text-sm text-gray-400">Learn the complete system</p>
                   </div>
                   <p className="text-xl font-bold text-white">$150</p>
                 </div>
+                <ul className="text-xs text-gray-400 space-y-1 border-t border-bb-border pt-3">
+                  <li>• Learn the Complete System</li>
+                  <li>• Live Coaching Sessions</li>
+                  <li>• Behind the Scenes of NBA Case Studies</li>
+                  <li>• For Coaches and Players who want to know the Why</li>
+                </ul>
               </button>
             </div>
             {errors.selectedProduct && <p className="text-red-400 text-sm">{errors.selectedProduct}</p>}

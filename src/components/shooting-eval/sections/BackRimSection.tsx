@@ -63,10 +63,10 @@ export function BackRimSection({ data, onChange }: BackRimSectionProps) {
       <div className="text-center mb-6">
         <h2 className="text-xl font-bold text-white mb-2">Back-Rim Challenge</h2>
         <p className="text-sm text-gray-400 mb-4">
-          All shots from 3PT top of key
+          Shoot 3's with the goal of hitting BACK RIM only
         </p>
         <div className="bg-bb-card border border-bb-border rounded-lg p-3 text-xs text-gray-400">
-          <strong className="text-gold-500">Goal:</strong> Hit back-rim shots in a row, then make the final shot.
+          <strong className="text-gold-500">Goal:</strong> Hit back-rim shots in a row, then make the consecutive shot.
           Record how many total shots it takes and how long.
         </div>
       </div>
@@ -74,21 +74,21 @@ export function BackRimSection({ data, onChange }: BackRimSectionProps) {
       <div className="space-y-4">
         <LevelInput
           level={1}
-          description="1 back-rim → make"
+          description="1 back-rim + consecutive make"
           data={data.level_1}
           onChange={(level_1) => onChange({ ...data, level_1: level_1 as BackRimLevel })}
         />
 
         <LevelInput
           level={2}
-          description="2 back-rim → make"
+          description="2 back-rim + consecutive make"
           data={data.level_2}
           onChange={(level_2) => onChange({ ...data, level_2: level_2 as BackRimLevel })}
         />
 
         <LevelInput
           level={3}
-          description="3 back-rim → make"
+          description="3 back-rim + consecutive make"
           data={data.level_3}
           onChange={(level_3) => onChange({ ...data, level_3: level_3 as BackRimLevel })}
         />

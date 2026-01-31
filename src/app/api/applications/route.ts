@@ -195,9 +195,7 @@ export async function POST(request: NextRequest) {
       });
     } else if (type === 'coach_cert_application') {
       Object.assign(prospectData, {
-        coaching_level: formData.coachingRole || null,
-        player_location: formData.location || null,
-        notes: `Application Type: ${type}\nYears Coaching: ${formData.yearsCoaching || 'N/A'}\nWorks With: ${formData.playerLevelWorkWith || 'N/A'}\nWhy Interested: ${formData.whyInterested || 'N/A'}\nCurrent Training Style: ${formData.currentTrainingStyle || 'N/A'}`,
+        notes: `Application Type: ${type}\nCoaching Role: ${formData.coachingRole || 'N/A'}\nYears Coaching: ${formData.yearsCoaching || 'N/A'}\nWorks With: ${formData.playerLevelWorkWith || 'N/A'}\nWhy Interested: ${formData.whyInterested || 'N/A'}\nCurrent Training Style: ${formData.currentTrainingStyle || 'N/A'}\nLocation: ${formData.location || 'N/A'}`,
       });
     } else if (type === 'organization_inquiry') {
       Object.assign(prospectData, {
@@ -272,8 +270,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Application error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { success: false, error: 'Failed to submit application' },
+      { success: false, error: 'Failed to submit application', details: errorMessage },
       { status: 500 }
     );
   }

@@ -169,7 +169,8 @@ export async function POST(request: NextRequest) {
         <div class="test-box">
           <div class="test-title">TEST 1: 14-Spot Baseline (3 Rounds)</div>
           <ul>
-            <li>Shoot from all 14 spots around the arc (7 on each side)</li>
+            <li>Shoot from all 14 spots around the arc</li>
+            <li>Corner, Wing, slot, top of key, other slot, other wing, other corner, double up and come back around</li>
             <li>1 shot per spot, 3 full rounds</li>
             <li>Track makes and note your miss tendencies (short, long, left, right)</li>
           </ul>
@@ -188,10 +189,10 @@ export async function POST(request: NextRequest) {
         <div class="test-box">
           <div class="test-title">TEST 3: Back-Rim Challenge</div>
           <ul>
-            <li>Shoot free throws with the goal of hitting BACK RIM only</li>
-            <li>Level 1: Hit 3 back-rim shots in a row</li>
-            <li>Level 2: Hit 5 back-rim shots in a row</li>
-            <li>Level 3: Hit 7 back-rim shots in a row</li>
+            <li>Shoot 3's with the goal of hitting BACK RIM only</li>
+            <li>Level 1: Hit 1 back-rim shot + consecutive make</li>
+            <li>Level 2: Hit 2 back-rim shots + consecutive make</li>
+            <li>Level 3: Hit 3 back-rim shots + consecutive make</li>
             <li>Track attempts and time for each level</li>
           </ul>
         </div>
@@ -199,9 +200,10 @@ export async function POST(request: NextRequest) {
         <div class="test-box">
           <div class="test-title">TEST 4: Ball Flight Spectrum</div>
           <ul>
-            <li>From the elbow, shoot 5 shots with FLAT arc</li>
-            <li>Shoot 5 shots with NORMAL arc</li>
-            <li>Shoot 5 shots with HIGH arc</li>
+            <li>Complete 3 more 14 spot test outs</li>
+            <li>Round 1: FLAT arc</li>
+            <li>Round 2: NORMAL arc</li>
+            <li>Round 3: HIGH arc</li>
             <li>Note makes and miss profile for each arc type</li>
           </ul>
         </div>
@@ -215,24 +217,22 @@ export async function POST(request: NextRequest) {
           <li><strong>Quality:</strong> Good lighting, stable camera (tripod or friend holding)</li>
           <li><strong>Include:</strong> All 4 tests in separate clips or one continuous video</li>
         </ul>
+        <p style="font-size: 13px; color: #666; margin-top: 10px;"><em>*Every test doesn't have to be filmed just make sure you capture reps from each test.</em></p>
       </div>
 
       <div class="step">
-        <h3><span class="step-number">3</span> Upload Your Videos</h3>
-        <p>Upload your videos to Google Drive and share the folder link with us:</p>
-        <ol>
-          <li>Go to <a href="https://drive.google.com">drive.google.com</a></li>
-          <li>Create a new folder named "BB Evaluation - ${prospect.first_name} ${prospect.last_name}"</li>
-          <li>Upload all your test videos</li>
-          <li>Right-click the folder → Share → Change to "Anyone with the link"</li>
-          <li>Copy the link and reply to this email with your Google Drive link</li>
-        </ol>
+        <h3><span class="step-number">3</span> Submit Your Results</h3>
+        <p>Click the button below to access your personal evaluation portal. Enter your test results and upload your videos directly:</p>
 
-        <p style="margin-top: 20px;"><strong>Reply to this email with:</strong></p>
-        <ul>
-          <li>Your Google Drive folder link</li>
-          <li>Your scores/notes from each test (makes, misses, tendencies)</li>
-        </ul>
+        <div style="text-align: center; margin: 25px 0;">
+          <a href="https://bb-platform-virid.vercel.app/portal/${prospectId}" class="button" style="display: inline-block; background: #d4af37; color: black; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+            Access Your Evaluation Portal →
+          </a>
+        </div>
+
+        <p style="font-size: 14px; color: #666; text-align: center;">
+          Your unique portal link: <a href="https://bb-platform-virid.vercel.app/portal/${prospectId}">bb-platform-virid.vercel.app/portal/${prospectId}</a>
+        </p>
       </div>
 
       <div class="step">
@@ -240,7 +240,7 @@ export async function POST(request: NextRequest) {
         <ul>
           <li>We review your film and test results</li>
           <li>You receive your personalized BB Profile within 5 business days</li>
-          <li>Your profile includes: BB Level, Miss Profile, Priority Protocols, and 4-Week Roadmap</li>
+          <li>Your profile includes: BB Level, Miss Profile, Priority Protocols, and personalized Week of Calibration</li>
         </ul>
       </div>
 
@@ -249,7 +249,7 @@ export async function POST(request: NextRequest) {
       </div>
 
       <p style="margin-top: 30px;">Let's get to work.</p>
-      <p style="color: #d4af37; font-weight: bold;">— Jake & the BB Team</p>
+      <p style="color: #d4af37; font-weight: bold;">— Coach Jake & the BB Team</p>
     </div>
 
     <div class="footer">

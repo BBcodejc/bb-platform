@@ -37,9 +37,9 @@ function ArcInput({
         value={data?.makes_or_backrim_7}
         onChange={(makes_or_backrim_7) => onChange({ ...data, makes_or_backrim_7 })}
         min={0}
-        max={7}
+        max={14}
         required
-        helper="Out of 7 attempts"
+        helper="Out of 14 spots"
       />
 
       <RadioGroup
@@ -60,35 +60,35 @@ export function BallFlightSection({ data, onChange }: BallFlightSectionProps) {
       <div className="text-center mb-6">
         <h2 className="text-xl font-bold text-white mb-2">Ball Flight Spectrum</h2>
         <p className="text-sm text-gray-400 mb-4">
-          Testing different arc trajectories
+          Complete 3 more 14-spot test outs at different arcs
         </p>
         <div className="bg-bb-card border border-bb-border rounded-lg p-3 text-xs text-gray-400">
-          <strong className="text-gold-500">Goal:</strong> Take 7 shots at each arc type.
-          Count makes + back-rim hits as successes.
+          <strong className="text-gold-500">Goal:</strong> Complete one full 14-spot round at each arc type (flat, normal, high).
+          Note makes and miss profile for each arc.
         </div>
       </div>
 
       <div className="space-y-4">
         <ArcInput
           arcType="flat"
-          angle="~25°"
-          description="Low, line-drive trajectory"
+          angle="Round 1"
+          description="14-spot round with FLAT arc trajectory"
           data={data.flat}
           onChange={(flat) => onChange({ ...data, flat: flat as BallFlightArc })}
         />
 
         <ArcInput
           arcType="normal"
-          angle="~45°"
-          description="Standard mid-arc trajectory"
+          angle="Round 2"
+          description="14-spot round with NORMAL arc trajectory"
           data={data.normal}
           onChange={(normal) => onChange({ ...data, normal: normal as BallFlightArc })}
         />
 
         <ArcInput
           arcType="high"
-          angle="~60°"
-          description="High rainbow trajectory"
+          angle="Round 3"
+          description="14-spot round with HIGH arc trajectory"
           data={data.high}
           onChange={(high) => onChange({ ...data, high: high as BallFlightArc })}
         />
@@ -102,15 +102,15 @@ export function BallFlightSection({ data, onChange }: BallFlightSectionProps) {
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <p className="text-xs text-gray-400">Flat</p>
-                <p className="text-xl font-bold text-white">{data.flat.makes_or_backrim_7}/7</p>
+                <p className="text-xl font-bold text-white">{data.flat.makes_or_backrim_7}/14</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400">Normal</p>
-                <p className="text-xl font-bold text-gold-500">{data.normal.makes_or_backrim_7}/7</p>
+                <p className="text-xl font-bold text-gold-500">{data.normal.makes_or_backrim_7}/14</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400">High</p>
-                <p className="text-xl font-bold text-white">{data.high.makes_or_backrim_7}/7</p>
+                <p className="text-xl font-bold text-white">{data.high.makes_or_backrim_7}/14</p>
               </div>
             </div>
           </div>
