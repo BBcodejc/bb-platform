@@ -32,27 +32,15 @@ function LevelInput({
         <span className="text-xs text-gray-400">{description}</span>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <NumberInput
-          label="Total Shots"
-          value={data?.total_shots}
-          onChange={(total_shots) => onChange({ ...data, total_shots })}
-          min={1}
-          max={100}
-          required
-          showStepper={false}
-        />
-
-        <NumberInput
-          label="Time (seconds)"
-          value={data?.time_seconds}
-          onChange={(time_seconds) => onChange({ ...data, time_seconds })}
-          min={1}
-          max={600}
-          required
-          showStepper={false}
-        />
-      </div>
+      <NumberInput
+        label="Total Shots"
+        value={data?.total_shots}
+        onChange={(total_shots) => onChange({ ...data, total_shots })}
+        min={1}
+        max={100}
+        required
+        showStepper={false}
+      />
     </div>
   );
 }
@@ -67,7 +55,7 @@ export function BackRimSection({ data, onChange }: BackRimSectionProps) {
         </p>
         <div className="bg-bb-card border border-bb-border rounded-lg p-3 text-xs text-gray-400">
           <strong className="text-gold-500">Goal:</strong> Hit back-rim shots in a row, then make the consecutive shot.
-          Record how many total shots it takes and how long.
+          Record how many total shots it takes.
         </div>
       </div>
 

@@ -51,7 +51,10 @@ export default function PortalPage() {
     isSectionComplete('fades');
 
   const handleSubmit = async () => {
-    if (!allRequiredComplete) return;
+    if (!allRequiredComplete) {
+      alert('Please complete all required sections before submitting.');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -65,14 +68,19 @@ export default function PortalPage() {
         }),
       });
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (response.ok && data.success) {
         clearData();
         router.push(`/portal/${prospectId}/success`);
       } else {
-        throw new Error('Failed to submit');
+        console.error('Submit failed:', data);
+        alert(`Submission failed: ${data.error || 'Unknown error'}`);
+        setIsSubmitting(false);
       }
     } catch (error) {
       console.error('Submit error:', error);
+      alert('Failed to submit. Please try again.');
       setIsSubmitting(false);
     }
   };

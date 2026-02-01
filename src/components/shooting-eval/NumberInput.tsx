@@ -67,11 +67,26 @@ export function NumberInput({
           type="number"
           value={value ?? ''}
           onChange={(e) => {
-            const val = parseInt(e.target.value);
-            if (!isNaN(val) && val >= min && val <= max) {
+            const rawValue = e.target.value;
+            if (rawValue === '') {
+              // Allow empty - will be handled by validation
+              onChange(undefined as unknown as number);
+              return;
+            }
+            const val = parseInt(rawValue);
+            if (!isNaN(val)) {
+              // Allow any number while typing, clamp on blur if needed
               onChange(val);
-            } else if (e.target.value === '') {
-              onChange(min);
+            }
+          }}
+          onBlur={(e) => {
+            const val = parseInt(e.target.value);
+            if (!isNaN(val)) {
+              // Clamp value to min/max on blur
+              const clamped = Math.min(Math.max(val, min), max);
+              if (clamped !== val) {
+                onChange(clamped);
+              }
             }
           }}
           min={min}

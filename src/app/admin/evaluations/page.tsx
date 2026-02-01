@@ -19,7 +19,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn, timeAgo, formatLevel } from '@/lib/utils';
-import { getSupabase } from '@/lib/supabase';
 
 interface ShootingEvaluation {
   id: string;
@@ -64,49 +63,18 @@ function EvaluationsPageContent() {
   const fetchEvaluations = useCallback(async () => {
     setLoading(true);
     try {
-      const supabase = getSupabase();
-
-      let query = supabase
-        .from('shooting_evaluations')
-        .select(`
-          id,
-          prospect_id,
-          status,
-          player_full_name,
-          player_level,
-          player_age,
-          fourteen_spot_round_1_score,
-          fourteen_spot_round_2_score,
-          fourteen_spot_round_3_score,
-          total_fourteen_spot_average,
-          created_at,
-          updated_at,
-          prospects (
-            first_name,
-            last_name,
-            email,
-            high_ticket_prospect,
-            pipeline_status
-          )
-        `, { count: 'exact' })
-        .order('created_at', { ascending: false });
-
+      const url = new URL('/api/admin/evaluations', window.location.origin);
       if (statusFilter && statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
+        url.searchParams.set('status', statusFilter);
       }
 
-      const { data, count, error } = await query.limit(50);
+      const response = await fetch(url.toString());
+      const data = await response.json();
 
-      if (error) throw error;
+      if (!response.ok) throw new Error(data.error);
 
-      // Transform data to handle Supabase's array return for single relations
-      const transformedData = (data || []).map((item: any) => ({
-        ...item,
-        prospects: Array.isArray(item.prospects) ? item.prospects[0] : item.prospects,
-      }));
-
-      setEvaluations(transformedData);
-      setTotalCount(count || 0);
+      setEvaluations(data.evaluations || []);
+      setTotalCount(data.count || 0);
     } catch (error) {
       console.error('Error fetching evaluations:', error);
     } finally {
@@ -116,23 +84,6 @@ function EvaluationsPageContent() {
 
   useEffect(() => {
     fetchEvaluations();
-
-    // Setup realtime subscription
-    const supabase = getSupabase();
-    const channel = supabase
-      .channel('evaluations-list')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'shooting_evaluations' },
-        () => {
-          fetchEvaluations();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [fetchEvaluations]);
 
   // Filter by search

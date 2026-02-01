@@ -96,38 +96,23 @@ export default function ProspectDetailPage() {
     const fetchProspect = async () => {
       setLoading(true);
       try {
-        const supabase = getSupabase();
+        // Use server-side API to bypass RLS
+        const response = await fetch(`/api/admin/prospects/${prospectId}`);
 
-        // Fetch prospect
-        const { data: prospectData, error: prospectError } = await supabase
-          .from('prospects')
-          .select('*')
-          .eq('id', prospectId)
-          .single();
+        if (!response.ok) {
+          throw new Error('Failed to fetch prospect');
+        }
 
-        if (prospectError) throw prospectError;
-        setProspect(prospectData);
-        setEditedNotes(prospectData.internal_notes || '');
-        setEditedStatus(prospectData.pipeline_status || 'new');
+        const data = await response.json();
 
-        // Fetch payments
-        const { data: paymentsData } = await supabase
-          .from('payments')
-          .select('*')
-          .eq('prospect_id', prospectId)
-          .order('created_at', { ascending: false });
+        if (data.prospect) {
+          setProspect(data.prospect);
+          setEditedNotes(data.prospect.internal_notes || '');
+          setEditedStatus(data.prospect.pipeline_status || 'new');
+        }
 
-        setPayments(paymentsData || []);
-
-        // Fetch activity
-        const { data: activityData } = await supabase
-          .from('activity_log')
-          .select('*')
-          .eq('prospect_id', prospectId)
-          .order('created_at', { ascending: false })
-          .limit(20);
-
-        setActivity(activityData || []);
+        setPayments(data.payments || []);
+        setActivity([]);
       } catch (error) {
         console.error('Error fetching prospect:', error);
       } finally {
@@ -143,17 +128,16 @@ export default function ProspectDetailPage() {
 
     setSaving(true);
     try {
-      const supabase = getSupabase();
-
-      const { error } = await supabase
-        .from('prospects')
-        .update({
+      const response = await fetch(`/api/admin/prospects/${prospectId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           internal_notes: editedNotes,
           pipeline_status: editedStatus,
-        })
-        .eq('id', prospectId);
+        }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error('Failed to save');
 
       // Update local state
       setProspect({

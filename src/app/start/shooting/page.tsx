@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { TestimonialsInline, FEATURED_TESTIMONIALS } from '@/components/testimonials';
 import {
   PLAYER_LEVELS,
   PLAYER_MAIN_GOALS,
@@ -147,9 +148,10 @@ export default function ShootingEvaluationPage() {
       } else {
         throw new Error(data.error || 'Failed to create checkout session');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Checkout error:', error);
-      setErrors({ form: 'Something went wrong. Please try again.' });
+      const errorMsg = error?.message || 'Something went wrong';
+      setErrors({ form: `Error: ${errorMsg}. Please try again or contact support.` });
       setIsSubmitting(false);
     }
   };
@@ -559,7 +561,7 @@ export default function ShootingEvaluationPage() {
               BB Shooting Evaluation
             </h1>
             <p className="text-gray-400">
-              $250 • Your personalized shooting profile + roadmap
+              Your personalized shooting profile + roadmap
             </p>
           </div>
         )}
@@ -616,17 +618,24 @@ export default function ShootingEvaluationPage() {
 
         {/* What you get (only show on first step) */}
         {currentStep === 0 && (
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-500 mb-3">What&apos;s included:</p>
-            <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-400">
-              <span className="px-3 py-1 bg-bb-card rounded-full">14-Spot Assessment</span>
-              <span className="px-3 py-1 bg-bb-card rounded-full">Deep Distance Test</span>
-              <span className="px-3 py-1 bg-bb-card rounded-full">Back-Rim Protocol</span>
-              <span className="px-3 py-1 bg-bb-card rounded-full">Ball Flight Spectrum</span>
-              <span className="px-3 py-1 bg-bb-card rounded-full">Written BB Profile</span>
-              <span className="px-3 py-1 bg-bb-card rounded-full">Priority Roadmap</span>
+          <>
+            <div className="mt-8 text-center">
+              <p className="text-sm text-gray-500 mb-3">What&apos;s included:</p>
+              <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-400">
+                <span className="px-3 py-1 bg-bb-card rounded-full">14-Spot Assessment</span>
+                <span className="px-3 py-1 bg-bb-card rounded-full">Deep Distance Test</span>
+                <span className="px-3 py-1 bg-bb-card rounded-full">Back-Rim Protocol</span>
+                <span className="px-3 py-1 bg-bb-card rounded-full">Ball Flight Spectrum</span>
+                <span className="px-3 py-1 bg-bb-card rounded-full">Written BB Profile</span>
+                <span className="px-3 py-1 bg-bb-card rounded-full">Priority Roadmap</span>
+              </div>
             </div>
-          </div>
+
+            {/* Testimonials */}
+            <div className="mt-10">
+              <TestimonialsInline testimonials={FEATURED_TESTIMONIALS.slice(0, 3)} />
+            </div>
+          </>
         )}
       </div>
     </main>

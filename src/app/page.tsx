@@ -177,14 +177,14 @@ const testimonials = [
   {
     quote: "Tommy, I've never hit shots like this.",
     name: 'Matisse Thybulle',
-    context: 'After implementing the dip and deep distance protocol',
+    context: '',
     photo: '/players/mattiselandingpage.jpg',
   },
   {
-    quote: "You're going to regret going down the wrong path, because you're a coach. In your heart, you're a coach.",
-    name: 'Jenny Schottenheimer',
-    context: 'Wife of NFL Coach Brian Schottenheimer',
-    photo: '/players/jenny-schottenheimer.jpg',
+    quote: "Tommy does a great job of adding a dynamic to skill development with different scenarios and obstacles that allow a player to try new things! Tommy has been someone I look to with advice for the depth of my shot the movement on defense and also my reads on offense! I enjoy the basketball knowledge and honesty Tommy shares with me on a consistent basis",
+    name: 'Georges Niang',
+    context: '',
+    photo: '/players/georges-niang.jpg',
   },
   {
     quote: "I've never been coached like that in my life.",
@@ -204,6 +204,15 @@ export default function LandingPage() {
 
         <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-32">
           <div className="text-center mb-8 animate-fade-in">
+            <div className="flex justify-center mb-6">
+              <Image
+                src="/players/bb-logo.png"
+                alt="Basketball Biomechanics Logo"
+                width={120}
+                height={120}
+                className="object-contain"
+              />
+            </div>
             <span className="text-gold-500 font-bold tracking-widest text-sm">
               BASKETBALL BIOMECHANICS
             </span>
@@ -216,7 +225,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-lg md:text-xl text-gray-400 text-center max-w-3xl mx-auto mt-6 animate-fade-in">
-            Basketball Biomechanics is a research-driven system for shooting, movement, and deception that has taken NBA players from career lows to elite efficiency—now available to serious players at every level.
+            Basketball Biomechanics is a research-driven system for shooting, movement, and deception that has taken NBA players from career lows to over 45% from 3, now available to players/coaches at every level.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 animate-fade-in">
@@ -226,10 +235,12 @@ export default function LandingPage() {
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Button variant="secondary" size="xl">
-              <Play className="mr-2 w-5 h-5" />
-              Watch How It Works
-            </Button>
+            <a href="https://www.youtube.com/watch?v=Bpm-jAX8c38" target="_blank" rel="noopener noreferrer">
+              <Button variant="secondary" size="xl">
+                <Play className="mr-2 w-5 h-5" />
+                Watch How It Works
+              </Button>
+            </a>
           </div>
 
           <div className="mt-12 text-center animate-fade-in">
@@ -737,23 +748,13 @@ export default function LandingPage() {
                 <Card variant="glass" className="h-full">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4 mb-4">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold-500/30 to-gold-500/10 border-2 border-gold-500/40 flex items-center justify-center shrink-0 overflow-hidden">
-                        {testimonial.photo ? (
-                          <Image
-                            src={testimonial.photo}
-                            alt={testimonial.name}
-                            width={64}
-                            height={64}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              // Fallback to initials if image fails to load
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        ) : null}
-                        <span className="text-lg font-bold text-gold-500">
-                          {testimonial.name.split(' ').map(n => n[0]).join('')}
-                        </span>
+                      <div className="w-16 h-16 rounded-full border-2 border-gold-500/40 shrink-0 overflow-hidden relative">
+                        <Image
+                          src={testimonial.photo}
+                          alt={testimonial.name}
+                          fill
+                          className="object-cover object-top"
+                        />
                       </div>
                       <Quote className="w-8 h-8 text-gold-500/30" />
                     </div>
@@ -762,7 +763,9 @@ export default function LandingPage() {
                     </p>
                     <div className="border-t border-bb-border pt-4">
                       <p className="text-gold-500 font-semibold">{testimonial.name}</p>
-                      <p className="text-sm text-gray-500">{testimonial.context}</p>
+                      {testimonial.context && (
+                        <p className="text-sm text-gray-500">{testimonial.context}</p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

@@ -112,15 +112,15 @@ export function useShootingEval(prospectId: string) {
       case 'player_info':
         return !!(data as any).full_name && !!(data as any).age && !!(data as any).level && !!(data as any).dominant_hand;
       case 'fourteen_spot':
-        return !!(data as any).round_1?.score !== undefined && !!(data as any).round_2?.score !== undefined && !!(data as any).round_3?.score !== undefined;
+        return (data as any).round_1?.score !== undefined && (data as any).round_2?.score !== undefined && (data as any).round_3?.score !== undefined;
       case 'deep_distance':
-        return !!(data as any).deep_distance_steps_behind_line !== undefined && !!(data as any).deep_line_rim_hits_10 !== undefined;
+        return (data as any).deep_distance_steps_behind_line !== undefined;
       case 'back_rim':
-        return !!(data as any).level_1?.total_shots !== undefined;
+        return (data as any).level_1?.total_shots !== undefined;
       case 'ball_flight':
-        return !!(data as any).flat?.makes_or_backrim_7 !== undefined && !!(data as any).normal?.makes_or_backrim_7 !== undefined && !!(data as any).high?.makes_or_backrim_7 !== undefined;
+        return (data as any).flat?.makes_or_backrim_7 !== undefined && (data as any).normal?.makes_or_backrim_7 !== undefined && (data as any).high?.makes_or_backrim_7 !== undefined;
       case 'fades':
-        return !!(data as any).fade_right?.makes_or_backrim_7 !== undefined && !!(data as any).fade_left?.makes_or_backrim_7 !== undefined;
+        return (data as any).fade_right?.makes_or_backrim_7 !== undefined && (data as any).fade_left?.makes_or_backrim_7 !== undefined;
       case 'final_notes':
         return true; // Optional section, always complete
       default:

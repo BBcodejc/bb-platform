@@ -8,12 +8,13 @@ export async function POST(request: NextRequest) {
     const { formData }: { formData: IntakeFormData } = await request.json();
     const supabase = createServerSupabaseClient();
 
-    // Determine if this is a high-ticket prospect
+    // Determine if this is a high-ticket prospect (safely handle undefined values)
     const isHighTicket =
-      formData.investmentLevel === 'premium' ||
-      formData.parentInvestmentLevel === 'premium' ||
-      formData.playerLookingFor === 'full_game_audit' ||
-      formData.parentInterest === 'high_touch_mentorship';
+      formData?.investmentLevel === 'premium' ||
+      formData?.parentInvestmentLevel === 'premium' ||
+      formData?.playerLookingFor === 'full_game_audit' ||
+      formData?.parentInterest === 'high_touch_mentorship' ||
+      false;
 
     // Build prospect data with new field structure
     const prospectData: Record<string, unknown> = {
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Store pending payment record
-    await supabase.from('payments').insert({
+    const { error: paymentError } = await supabase.from('payments').insert({
       prospect_id: prospectId,
       stripe_checkout_session_id: session.id,
       amount: formData.assessmentType === 'complete_game' ? 50000 : 25000,
@@ -119,13 +120,21 @@ export async function POST(request: NextRequest) {
       product_type: productType,
     });
 
+    if (paymentError) {
+      console.error('Payment record insert error:', paymentError);
+      // Don't throw - the Stripe session was created successfully, we can proceed
+    }
+
     return NextResponse.json({
       success: true,
       sessionId: session.id,
       url: session.url,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Checkout error:', error);
+    console.error('Error name:', error?.name);
+    console.error('Error message:', error?.message);
+    console.error('Error code:', error?.code);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       { success: false, error: 'Failed to create checkout session', details: errorMessage },

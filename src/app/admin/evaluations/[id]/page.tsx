@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -10,6 +10,7 @@ import {
   Save,
   Send,
   Star,
+  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,50 +21,50 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn, formatLevel } from '@/lib/utils';
 import type { MissType } from '@/types';
 
-// Mock data - in production this would come from API
-const mockEvaluation = {
-  id: '1',
-  prospect: {
-    firstName: 'John',
-    lastName: 'Smith',
-    email: 'john@example.com',
-    phone: '(555) 123-4567',
-    playerLevel: 'high_school',
-    playerPosition: 'SG',
-    playerAge: 17,
-    playerHeight: "6'2\"",
-    threePtPercentage: 35,
-    ftPercentage: 72,
-    primaryStruggles: ['distance', 'consistency'],
-    deepDistanceBreakdown: 'I can hit from the college 3 but the NBA line feels impossible',
-    goals: 'Extend my range to NBA 3 and become more consistent in games',
-    commitmentLevel: 'serious',
-  },
-  testResults: {
-    fourteenSpot: {
-      makes: 8,
-      backRim: 2,
-      short: 3,
-      left: 1,
-    },
-    deepDistance: {
-      distanceBehindLine: 4,
-      rimContacts: 6,
-      shortMisses: 4,
-      total: 10,
-    },
-    backRim: {
-      bestConsecutive: 2,
-      spots: [
-        { name: 'Left Wing', best: 2 },
-        { name: 'Top', best: 1 },
-        { name: 'Right Wing', best: 2 },
-      ],
-    },
-  },
-  videoUrl: 'https://drive.google.com/drive/folders/example',
-  status: 'pending',
-};
+interface ShootingEvaluation {
+  id: string;
+  prospect_id: string;
+  status: string;
+  player_full_name: string;
+  player_level: string;
+  player_age: number;
+  player_position: string;
+  player_dominant_hand: string;
+  fourteen_spot_round_1_score: number;
+  fourteen_spot_round_1_miss_profile: string;
+  fourteen_spot_round_2_score: number;
+  fourteen_spot_round_2_miss_profile: string;
+  fourteen_spot_round_3_score: number;
+  fourteen_spot_round_3_miss_profile: string;
+  fourteen_spot_video_url: string;
+  deep_distance_steps_behind: number;
+  deep_distance_video_url: string;
+  back_rim_level_1_shots: number;
+  back_rim_level_2_shots: number;
+  back_rim_level_3_shots: number;
+  back_rim_video_url: string;
+  ball_flight_flat_makes: number;
+  ball_flight_flat_miss_profile: string;
+  ball_flight_normal_makes: number;
+  ball_flight_normal_miss_profile: string;
+  ball_flight_high_makes: number;
+  ball_flight_high_miss_profile: string;
+  ball_flight_video_url: string;
+  fade_right_makes: number;
+  fade_right_miss_profile: string;
+  fade_left_makes: number;
+  fade_left_miss_profile: string;
+  fades_video_url: string;
+  additional_notes: string;
+  created_at: string;
+  prospects?: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    high_ticket_prospect: boolean;
+  };
+}
 
 const missTypeOptions = [
   { value: 'short', label: 'Short' },
@@ -97,7 +98,11 @@ const protocolOptions = [
 export default function EvaluationReviewPage() {
   const params = useParams();
   const router = useRouter();
-  const evaluationId = params.id as string;
+  const prospectId = params.id as string;
+
+  const [evaluation, setEvaluation] = useState<ShootingEvaluation | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [assessment, setAssessment] = useState({
     currentBBLevel: 1,
@@ -119,6 +124,27 @@ export default function EvaluationReviewPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
+  useEffect(() => {
+    async function fetchEvaluation() {
+      try {
+        const response = await fetch(`/api/admin/evaluations/${prospectId}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch evaluation');
+        }
+
+        setEvaluation(data.evaluation);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchEvaluation();
+  }, [prospectId]);
+
   const handleSave = async () => {
     setIsSaving(true);
     // API call to save draft
@@ -134,7 +160,45 @@ export default function EvaluationReviewPage() {
     router.push('/admin/evaluations');
   };
 
-  const data = mockEvaluation;
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-bb-black flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 animate-spin text-gray-500" />
+      </main>
+    );
+  }
+
+  if (error || !evaluation) {
+    return (
+      <main className="min-h-screen bg-bb-black flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">{error || 'Evaluation not found'}</p>
+          <Link href="/admin/evaluations">
+            <Button variant="secondary">Back to Evaluations</Button>
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const playerName = evaluation.player_full_name ||
+    `${evaluation.prospects?.first_name || ''} ${evaluation.prospects?.last_name || ''}`.trim() ||
+    'Unknown';
+
+  const avgScore = (
+    (evaluation.fourteen_spot_round_1_score || 0) +
+    (evaluation.fourteen_spot_round_2_score || 0) +
+    (evaluation.fourteen_spot_round_3_score || 0)
+  ) / 3;
+
+  // Collect all video URLs
+  const videoUrls = [
+    { label: '14-Spot Video', url: evaluation.fourteen_spot_video_url },
+    { label: 'Deep Distance Video', url: evaluation.deep_distance_video_url },
+    { label: 'Back-Rim Video', url: evaluation.back_rim_video_url },
+    { label: 'Ball Flight Video', url: evaluation.ball_flight_video_url },
+    { label: 'Fades Video', url: evaluation.fades_video_url },
+  ].filter(v => v.url);
 
   return (
     <main className="min-h-screen bg-bb-black">
@@ -149,8 +213,16 @@ export default function EvaluationReviewPage() {
               </Button>
             </Link>
             <h1 className="text-lg font-semibold text-white">
-              Evaluation: {data.prospect.firstName} {data.prospect.lastName}
+              Evaluation: {playerName}
             </h1>
+            <span className={cn(
+              'px-2 py-1 rounded text-xs font-medium',
+              evaluation.status === 'pending_review' ? 'bg-orange-500/20 text-orange-400' :
+              evaluation.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+              'bg-gray-500/20 text-gray-400'
+            )}>
+              {evaluation.status?.replace(/_/g, ' ')}
+            </span>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="secondary" onClick={handleSave} disabled={isSaving}>
@@ -178,69 +250,48 @@ export default function EvaluationReviewPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-400">Name</span>
-                    <p className="text-white font-medium">
-                      {data.prospect.firstName} {data.prospect.lastName}
-                    </p>
+                    <p className="text-white font-medium">{playerName}</p>
                   </div>
                   <div>
                     <span className="text-gray-400">Level</span>
                     <p className="text-white font-medium">
-                      {formatLevel(data.prospect.playerLevel)}
+                      {formatLevel(evaluation.player_level) || 'N/A'}
                     </p>
                   </div>
                   <div>
-                    <span className="text-gray-400">Age / Height</span>
+                    <span className="text-gray-400">Age</span>
                     <p className="text-white font-medium">
-                      {data.prospect.playerAge} / {data.prospect.playerHeight}
+                      {evaluation.player_age || 'N/A'}
                     </p>
                   </div>
                   <div>
                     <span className="text-gray-400">Position</span>
                     <p className="text-white font-medium">
-                      {data.prospect.playerPosition}
+                      {evaluation.player_position || 'N/A'}
                     </p>
                   </div>
                   <div>
-                    <span className="text-gray-400">3PT%</span>
+                    <span className="text-gray-400">Dominant Hand</span>
                     <p className="text-white font-medium">
-                      {data.prospect.threePtPercentage}%
+                      {evaluation.player_dominant_hand || 'N/A'}
                     </p>
                   </div>
                   <div>
-                    <span className="text-gray-400">FT%</span>
+                    <span className="text-gray-400">Email</span>
                     <p className="text-white font-medium">
-                      {data.prospect.ftPercentage}%
+                      {evaluation.prospects?.email || 'N/A'}
                     </p>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-bb-border">
-                  <span className="text-gray-400 text-sm">Primary Struggles</span>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {data.prospect.primaryStruggles.map((s) => (
-                      <span
-                        key={s}
-                        className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded"
-                      >
-                        {s}
-                      </span>
-                    ))}
+                {evaluation.additional_notes && (
+                  <div className="pt-4 border-t border-bb-border">
+                    <span className="text-gray-400 text-sm">Player Notes</span>
+                    <p className="text-white text-sm mt-1">
+                      {evaluation.additional_notes}
+                    </p>
                   </div>
-                </div>
-
-                <div>
-                  <span className="text-gray-400 text-sm">
-                    Where shot breaks down
-                  </span>
-                  <p className="text-white text-sm mt-1">
-                    {data.prospect.deepDistanceBreakdown}
-                  </p>
-                </div>
-
-                <div>
-                  <span className="text-gray-400 text-sm">Goals</span>
-                  <p className="text-white text-sm mt-1">{data.prospect.goals}</p>
-                </div>
+                )}
               </CardContent>
             </Card>
 
@@ -255,38 +306,47 @@ export default function EvaluationReviewPage() {
                   <h4 className="text-sm font-medium text-gold-400 mb-2">
                     14-Spot Baseline
                   </h4>
-                  <div className="grid grid-cols-4 gap-2 text-center">
-                    <div className="p-2 bg-green-500/20 rounded">
-                      <p className="text-xl font-bold text-green-500">
-                        {data.testResults.fourteenSpot.makes}
+                  <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                    <div className="p-2 bg-bb-card rounded border border-bb-border">
+                      <p className="text-xl font-bold text-white">
+                        {evaluation.fourteen_spot_round_1_score ?? '-'}
                       </p>
-                      <p className="text-xs text-gray-400">Makes</p>
+                      <p className="text-xs text-gray-400">Round 1</p>
+                      {evaluation.fourteen_spot_round_1_miss_profile && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Miss: {evaluation.fourteen_spot_round_1_miss_profile}
+                        </p>
+                      )}
                     </div>
-                    <div className="p-2 bg-gold-500/20 rounded">
-                      <p className="text-xl font-bold text-gold-500">
-                        {data.testResults.fourteenSpot.backRim}
+                    <div className="p-2 bg-bb-card rounded border border-bb-border">
+                      <p className="text-xl font-bold text-white">
+                        {evaluation.fourteen_spot_round_2_score ?? '-'}
                       </p>
-                      <p className="text-xs text-gray-400">Back Rim</p>
+                      <p className="text-xs text-gray-400">Round 2</p>
+                      {evaluation.fourteen_spot_round_2_miss_profile && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Miss: {evaluation.fourteen_spot_round_2_miss_profile}
+                        </p>
+                      )}
                     </div>
-                    <div className="p-2 bg-red-500/20 rounded">
-                      <p className="text-xl font-bold text-red-500">
-                        {data.testResults.fourteenSpot.short}
+                    <div className="p-2 bg-bb-card rounded border border-bb-border">
+                      <p className="text-xl font-bold text-white">
+                        {evaluation.fourteen_spot_round_3_score ?? '-'}
                       </p>
-                      <p className="text-xs text-gray-400">Short</p>
-                    </div>
-                    <div className="p-2 bg-blue-500/20 rounded">
-                      <p className="text-xl font-bold text-blue-500">
-                        {data.testResults.fourteenSpot.left}
-                      </p>
-                      <p className="text-xs text-gray-400">Left/Right</p>
+                      <p className="text-xs text-gray-400">Round 3</p>
+                      {evaluation.fourteen_spot_round_3_miss_profile && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Miss: {evaluation.fourteen_spot_round_3_miss_profile}
+                        </p>
+                      )}
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    {data.testResults.fourteenSpot.makes}/14 makes
-                    {data.testResults.fourteenSpot.makes >= 10
-                      ? ' ✓ Passes Level 1'
-                      : ' ✗ Does not pass Level 1'}
-                  </p>
+                  <div className="p-3 bg-gold-500/10 border border-gold-500/30 rounded text-center">
+                    <p className="text-2xl font-bold text-gold-500">
+                      {avgScore.toFixed(1)}/14
+                    </p>
+                    <p className="text-xs text-gray-400">Average</p>
+                  </div>
                 </div>
 
                 {/* Deep Distance */}
@@ -294,36 +354,12 @@ export default function EvaluationReviewPage() {
                   <h4 className="text-sm font-medium text-gold-400 mb-2">
                     Deep Distance Test
                   </h4>
-                  <p className="text-sm text-gray-400 mb-2">
-                    {data.testResults.deepDistance.distanceBehindLine}ft behind
-                    the line
-                  </p>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="p-2 bg-gold-500/20 rounded">
-                      <p className="text-xl font-bold text-gold-500">
-                        {data.testResults.deepDistance.rimContacts}
-                      </p>
-                      <p className="text-xs text-gray-400">Rim Contacts</p>
-                    </div>
-                    <div className="p-2 bg-red-500/20 rounded">
-                      <p className="text-xl font-bold text-red-500">
-                        {data.testResults.deepDistance.shortMisses}
-                      </p>
-                      <p className="text-xs text-gray-400">Short</p>
-                    </div>
-                    <div className="p-2 bg-bb-border rounded">
-                      <p className="text-xl font-bold text-white">
-                        {data.testResults.deepDistance.total}
-                      </p>
-                      <p className="text-xs text-gray-400">Total</p>
-                    </div>
+                  <div className="p-3 bg-bb-card rounded border border-bb-border text-center">
+                    <p className="text-2xl font-bold text-white">
+                      {evaluation.deep_distance_steps_behind ?? '-'}
+                    </p>
+                    <p className="text-xs text-gray-400">Steps behind 3PT line</p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    {data.testResults.deepDistance.rimContacts}/10 rim contacts
-                    {data.testResults.deepDistance.rimContacts >= 8
-                      ? ' ✓ Passes Level 2'
-                      : ' ✗ Does not pass Level 2'}
-                  </p>
                 </div>
 
                 {/* Back Rim */}
@@ -331,55 +367,128 @@ export default function EvaluationReviewPage() {
                   <h4 className="text-sm font-medium text-gold-400 mb-2">
                     Back-Rim Challenge
                   </h4>
-                  <div className="space-y-1">
-                    {data.testResults.backRim.spots.map((spot) => (
-                      <div
-                        key={spot.name}
-                        className="flex items-center justify-between text-sm"
-                      >
-                        <span className="text-gray-400">{spot.name}</span>
-                        <span
-                          className={cn(
-                            'font-medium',
-                            spot.best >= 3 ? 'text-green-500' : 'text-gray-400'
-                          )}
-                        >
-                          Best: {spot.best}{' '}
-                          {spot.best >= 3 && '✓'}
-                        </span>
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-2 bg-bb-card rounded border border-bb-border">
+                      <p className="text-xl font-bold text-white">
+                        {evaluation.back_rim_level_1_shots ?? '-'}
+                      </p>
+                      <p className="text-xs text-gray-400">Level 1 Shots</p>
+                    </div>
+                    <div className="p-2 bg-bb-card rounded border border-bb-border">
+                      <p className="text-xl font-bold text-white">
+                        {evaluation.back_rim_level_2_shots ?? '-'}
+                      </p>
+                      <p className="text-xs text-gray-400">Level 2 Shots</p>
+                    </div>
+                    <div className="p-2 bg-bb-card rounded border border-bb-border">
+                      <p className="text-xl font-bold text-white">
+                        {evaluation.back_rim_level_3_shots ?? '-'}
+                      </p>
+                      <p className="text-xs text-gray-400">Level 3 Shots</p>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Best consecutive: {data.testResults.backRim.bestConsecutive}
-                    {data.testResults.backRim.bestConsecutive >= 3
-                      ? ' ✓ Passes Level 2'
-                      : ' ✗ Does not pass Level 2'}
-                  </p>
+                </div>
+
+                {/* Ball Flight Spectrum */}
+                <div>
+                  <h4 className="text-sm font-medium text-gold-400 mb-2">
+                    Ball Flight Spectrum
+                  </h4>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-2 bg-bb-card rounded border border-bb-border">
+                      <p className="text-xl font-bold text-white">
+                        {evaluation.ball_flight_flat_makes ?? '-'}/7
+                      </p>
+                      <p className="text-xs text-gray-400">Flat Arc</p>
+                      {evaluation.ball_flight_flat_miss_profile && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {evaluation.ball_flight_flat_miss_profile}
+                        </p>
+                      )}
+                    </div>
+                    <div className="p-2 bg-bb-card rounded border border-bb-border">
+                      <p className="text-xl font-bold text-white">
+                        {evaluation.ball_flight_normal_makes ?? '-'}/7
+                      </p>
+                      <p className="text-xs text-gray-400">Normal Arc</p>
+                      {evaluation.ball_flight_normal_miss_profile && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {evaluation.ball_flight_normal_miss_profile}
+                        </p>
+                      )}
+                    </div>
+                    <div className="p-2 bg-bb-card rounded border border-bb-border">
+                      <p className="text-xl font-bold text-white">
+                        {evaluation.ball_flight_high_makes ?? '-'}/7
+                      </p>
+                      <p className="text-xs text-gray-400">High Arc</p>
+                      {evaluation.ball_flight_high_miss_profile && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {evaluation.ball_flight_high_miss_profile}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fades */}
+                <div>
+                  <h4 className="text-sm font-medium text-gold-400 mb-2">
+                    Fades
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2 text-center">
+                    <div className="p-2 bg-bb-card rounded border border-bb-border">
+                      <p className="text-xl font-bold text-white">
+                        {evaluation.fade_right_makes ?? '-'}/7
+                      </p>
+                      <p className="text-xs text-gray-400">Fade Right</p>
+                      {evaluation.fade_right_miss_profile && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {evaluation.fade_right_miss_profile}
+                        </p>
+                      )}
+                    </div>
+                    <div className="p-2 bg-bb-card rounded border border-bb-border">
+                      <p className="text-xl font-bold text-white">
+                        {evaluation.fade_left_makes ?? '-'}/7
+                      </p>
+                      <p className="text-xs text-gray-400">Fade Left</p>
+                      {evaluation.fade_left_miss_profile && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {evaluation.fade_left_miss_profile}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Video link */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Video className="w-5 h-5 text-gold-500" />
-                  Video Footage
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <a
-                  href={data.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-gold-500 hover:text-gold-400 transition-colors"
-                >
-                  Open Google Drive Folder
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              </CardContent>
-            </Card>
+            {/* Video links */}
+            {videoUrls.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Video className="w-5 h-5 text-gold-500" />
+                    Video Footage
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {videoUrls.map((video, index) => (
+                    <a
+                      key={index}
+                      href={video.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-2 rounded bg-bb-card border border-bb-border hover:border-gold-500 transition-colors"
+                    >
+                      <span className="text-sm text-white">{video.label}</span>
+                      <ExternalLink className="w-4 h-4 text-gold-500" />
+                    </a>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Right column - Assessment form */}
