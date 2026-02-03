@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Loader2, CheckCircle2, Send } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { ArrowLeft, ArrowRight, Loader2, CheckCircle2, Send, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   PlayerInfoSection,
@@ -163,20 +165,40 @@ export default function PortalPage() {
     <main className="min-h-screen bg-bb-black">
       {/* Header */}
       <header className="border-b border-bb-border bg-bb-dark/50 backdrop-blur-lg sticky top-0 z-50">
-        <div className="max-w-2xl mx-auto px-4 py-4">
+        <div className="max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <span className="text-gold-500 font-bold tracking-wider text-sm">
-              BB SHOOTING EVALUATION
-            </span>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-gray-500">
-                {getCompletionPercentage()}% complete
-              </span>
-              <div className="w-20 h-1.5 bg-bb-border rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gold-500 transition-all duration-300"
-                  style={{ width: `${getCompletionPercentage()}%` }}
+              <Link href="/">
+                <Image
+                  src="/players/bb-logo.png"
+                  alt="BB"
+                  width={32}
+                  height={32}
+                  className="rounded-lg"
                 />
+              </Link>
+              <span className="text-gold-500 font-bold tracking-wider text-xs">
+                BB EVALUATION
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/protocols"
+                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gold-500 transition-colors"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Protocols</span>
+              </Link>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500">
+                  {getCompletionPercentage()}%
+                </span>
+                <div className="w-16 h-1.5 bg-bb-border rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gold-500 transition-all duration-300"
+                    style={{ width: `${getCompletionPercentage()}%` }}
+                  />
+                </div>
               </div>
             </div>
           </div>

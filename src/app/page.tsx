@@ -197,12 +197,45 @@ const testimonials = [
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-bb-black">
+      {/* Sticky Header with Logo */}
+      <header className="sticky top-0 z-50 bg-bb-black/90 backdrop-blur-lg border-b border-bb-border/50">
+        <div className="max-w-6xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-3">
+              <Image
+                src="/players/bb-logo.png"
+                alt="BB"
+                width={36}
+                height={36}
+                className="rounded-lg"
+              />
+              <span className="text-gold-500 font-bold tracking-wider text-xs hidden sm:block">
+                BASKETBALL BIOMECHANICS
+              </span>
+            </Link>
+            <nav className="flex items-center gap-4 sm:gap-6">
+              <Link
+                href="/gear"
+                className="text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                BB Gear
+              </Link>
+              <Link href="/start/shooting">
+                <Button size="sm" className="text-xs">
+                  Get Evaluated
+                </Button>
+              </Link>
+            </nav>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-gold-500/5 via-transparent to-transparent" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-gold-500/10 rounded-full blur-[120px] -translate-y-1/2" />
 
-        <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-32">
+        <div className="relative max-w-6xl mx-auto px-4 pt-12 pb-32">
           <div className="text-center mb-8 animate-fade-in">
             <div className="flex justify-center mb-6">
               <Image
@@ -822,6 +855,9 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="flex gap-6 text-sm text-gray-500">
+            <Link href="/gear" className="hover:text-white transition-colors">
+              BB Gear
+            </Link>
             <a href="#" className="hover:text-white transition-colors">
               Privacy
             </a>
