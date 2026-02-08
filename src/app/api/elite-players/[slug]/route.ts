@@ -8,13 +8,16 @@ import type {
   GameScoutingReport,
   PlayerStats,
   VideoClip,
-  DailyCue,
+  PregameCue,
   PlayerInput,
+  GameDayProtocol,
+  WeeklyReview,
+  CoachNote,
+  VoiceNote,
 } from '@/types/elite-player';
 
 export const dynamic = 'force-dynamic';
 
-// Initialize Supabase client
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -37,9 +40,6 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const { searchParams } = new URL(request.url);
-    const token = searchParams.get('token');
-
     const supabase = getSupabaseClient();
 
     // Fetch player by slug
@@ -56,14 +56,6 @@ export async function GET(
       );
     }
 
-    // Check access token if required
-    if (player.access_token && player.access_token !== token) {
-      return NextResponse.json(
-        { error: 'Unauthorized - invalid access token' },
-        { status: 401 }
-      );
-    }
-
     // Fetch all related data in parallel
     const [
       focusResult,
@@ -73,6 +65,10 @@ export async function GET(
       videosResult,
       cuesResult,
       inputsResult,
+      protocolResult,
+      weeklyResult,
+      coachNotesResult,
+      voiceNotesResult,
     ] = await Promise.all([
       // Today's focus
       supabase
@@ -114,7 +110,7 @@ export async function GET(
         .order('created_at', { ascending: false })
         .limit(50),
 
-      // Daily cues
+      // Daily cues (pregame cues)
       supabase
         .from('elite_daily_cues')
         .select('*')
@@ -129,17 +125,55 @@ export async function GET(
         .eq('player_id', player.id)
         .gte('date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
         .order('date', { ascending: false }),
+
+      // Game Day Protocol
+      supabase
+        .from('elite_game_protocols')
+        .select('*')
+        .eq('player_id', player.id)
+        .single(),
+
+      // Weekly Review (most recent)
+      supabase
+        .from('elite_weekly_reviews')
+        .select('*')
+        .eq('player_id', player.id)
+        .order('week_end', { ascending: false })
+        .limit(1),
+
+      // Coach Notes (last 10)
+      supabase
+        .from('elite_coach_notes')
+        .select('*')
+        .eq('player_id', player.id)
+        .order('date', { ascending: false })
+        .limit(10),
+
+      // Voice Notes
+      supabase
+        .from('elite_voice_notes')
+        .select('*')
+        .eq('player_id', player.id)
+        .order('created_at', { ascending: false })
+        .limit(20),
     ]);
+
+    const pregameCues = (cuesResult.data || []).map(transformCue);
 
     // Transform to camelCase for frontend
     const dashboard: ElitePlayerDashboard = {
       player: transformPlayer(player),
       todaysFocus: focusResult.data?.[0] ? transformFocus(focusResult.data[0]) : null,
+      pregameCues,
       limitingFactors: (factorsResult.data || []).map(transformFactor),
+      gameDayProtocol: protocolResult.data ? transformProtocol(protocolResult.data) : null,
+      weeklyReview: weeklyResult.data?.[0] ? transformWeeklyReview(weeklyResult.data[0]) : null,
       recentGames: (gamesResult.data || []).map(transformGame),
       stats: statsResult.data ? transformStats(statsResult.data) : null,
       videoLibrary: (videosResult.data || []).map(transformVideo),
-      dailyCues: (cuesResult.data || []).map(transformCue),
+      coachNotes: (coachNotesResult.data || []).map(transformCoachNote),
+      voiceNotes: (voiceNotesResult.data || []).map(transformVoiceNote),
+      dailyCues: pregameCues, // alias for backwards compatibility
       recentInputs: (inputsResult.data || []).map(transformInput),
     };
 
@@ -169,6 +203,7 @@ function transformPlayer(data: any): ElitePlayer {
     teamLogo: data.team_logo,
     headshotUrl: data.headshot_url,
     bbLevel: data.bb_level,
+    bbLevelName: data.bb_level_name,
     seasonStatus: data.season_status,
     accessToken: data.access_token,
     isActive: data.is_active,
@@ -195,7 +230,9 @@ function transformFactor(data: any): LimitingFactor {
     name: data.name,
     shortDescription: data.short_description,
     awarenesssCue: data.awareness_cue,
+    severity: data.severity || data.priority,
     priority: data.priority,
+    notes: data.notes,
     isActive: data.is_active,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
@@ -251,16 +288,19 @@ function transformVideo(data: any): VideoClip {
     duration: data.duration,
     tags: data.tags || [],
     bbCue: data.bb_cue,
+    category: data.category,
     createdAt: data.created_at,
   };
 }
 
-function transformCue(data: any): DailyCue {
+function transformCue(data: any): PregameCue {
   return {
     id: data.id,
     playerId: data.player_id,
     cueText: data.cue_text,
-    category: data.category,
+    category: data.category || 'shooting',
+    icon: data.icon,
+    priority: data.priority,
     displayOrder: data.display_order,
     isActive: data.is_active,
     createdAt: data.created_at,
@@ -275,7 +315,70 @@ function transformInput(data: any): PlayerInput {
     date: data.date,
     shotFeeling: data.shot_feeling,
     confidence: data.confidence,
+    energyLevel: data.energy_level,
+    focusLevel: data.focus_level,
     notes: data.notes,
+    createdAt: data.created_at,
+  };
+}
+
+function transformProtocol(data: any): GameDayProtocol {
+  return {
+    id: data.id,
+    playerId: data.player_id,
+    name: data.name,
+    duration: data.duration,
+    scoringSettings: data.scoring_settings,
+    spots: data.spots,
+    shotTypeVariety: data.shot_type_variety,
+    postSection: data.post_section,
+    offBallPrinciples: data.off_ball_principles,
+    defensePrinciples: data.defense_principles,
+    reboundingPrinciples: data.rebounding_principles,
+    handlePrinciples: data.handle_principles,
+    finishingPrinciples: data.finishing_principles,
+    isActive: data.is_active,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  };
+}
+
+function transformWeeklyReview(data: any): WeeklyReview {
+  return {
+    id: data.id,
+    playerId: data.player_id,
+    weekStart: data.week_start,
+    weekEnd: data.week_end,
+    summary: data.summary,
+    whatChanged: data.what_changed,
+    priorities: data.priorities,
+    shootingTrend: data.shooting_trend,
+    createdBy: data.created_by,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  };
+}
+
+function transformCoachNote(data: any): CoachNote {
+  return {
+    id: data.id,
+    playerId: data.player_id,
+    date: data.date,
+    text: data.text,
+    createdBy: data.created_by,
+    createdAt: data.created_at,
+  };
+}
+
+function transformVoiceNote(data: any): VoiceNote {
+  return {
+    id: data.id,
+    playerId: data.player_id,
+    title: data.title,
+    url: data.url,
+    duration: data.duration,
+    transcript: data.transcript,
+    createdBy: data.created_by,
     createdAt: data.created_at,
   };
 }
