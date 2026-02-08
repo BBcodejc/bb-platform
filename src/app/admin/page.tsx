@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Users,
   ClipboardCheck,
@@ -18,6 +19,8 @@ import {
   Zap,
   CheckCircle,
   Calendar,
+  BarChart3,
+  Trophy,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -202,9 +205,18 @@ export default function AdminDashboard() {
       <header className="border-b border-bb-border bg-bb-dark/50 backdrop-blur-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <span className="text-gold-500 font-bold tracking-wider text-sm">
-              BB ADMIN
-            </span>
+            <Link href="/" className="flex items-center gap-3">
+              <Image
+                src="/players/bb-logo.png"
+                alt="BB"
+                width={32}
+                height={32}
+                className="rounded-lg"
+              />
+              <span className="text-gold-500 font-bold tracking-wider text-sm">
+                BB ADMIN
+              </span>
+            </Link>
             <nav className="hidden md:flex items-center gap-4">
               <Link
                 href="/admin"
@@ -223,6 +235,20 @@ export default function AdminDashboard() {
                 className="text-sm text-gray-400 hover:text-white transition-colors"
               >
                 Prospects
+              </Link>
+              <Link
+                href="/admin/players"
+                className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1"
+              >
+                <Trophy className="w-3.5 h-3.5 text-gold-500" />
+                BB Players
+              </Link>
+              <Link
+                href="/admin/analytics"
+                className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1"
+              >
+                <BarChart3 className="w-3.5 h-3.5" />
+                Analytics
               </Link>
             </nav>
           </div>
@@ -332,9 +358,9 @@ export default function AdminDashboard() {
               bgColor: 'bg-gold-500/20',
             },
             {
-              label: 'Total Revenue',
+              label: 'Monthly Revenue',
               value: loading ? '...' : formatCurrency(stats.totalRevenue * 100),
-              subValue: loading ? '' : `${formatCurrency(stats.thisMonthRevenue * 100)} this month`,
+              subValue: loading ? '' : new Date().toLocaleString('default', { month: 'long', year: 'numeric' }),
               icon: <DollarSign className="w-5 h-5" />,
               color: 'text-green-500',
               bgColor: 'bg-green-500/20',

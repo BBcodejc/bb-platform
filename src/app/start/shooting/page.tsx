@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { TestimonialsInline, FEATURED_TESTIMONIALS } from '@/components/testimonials';
+import { TestimonialsInline, FEATURED_TESTIMONIALS, TESTIMONIALS } from '@/components/testimonials';
 import {
   PLAYER_LEVELS,
   PLAYER_MAIN_GOALS,
@@ -502,6 +502,36 @@ export default function ShootingEvaluationPage() {
               </button>
             </div>
             {errors.selectedProduct && <p className="text-red-400 text-sm">{errors.selectedProduct}</p>}
+
+            {/* Case Studies */}
+            <div className="mt-8 pt-6 border-t border-bb-border">
+              <p className="text-sm text-gray-400 font-medium uppercase tracking-wider mb-4">
+                Trusted by players at every level
+              </p>
+              <div className="space-y-3">
+                {TESTIMONIALS.map((t) => (
+                  <div
+                    key={t.id}
+                    className="flex items-start gap-3 p-3 bg-bb-card/50 rounded-lg border border-bb-border/50"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gold-500/20 flex items-center justify-center text-gold-500 text-xs font-semibold shrink-0">
+                      {t.playerName
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')
+                        .slice(0, 2)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-gold-500 text-sm font-semibold">{t.result}</p>
+                      <p className="text-white text-xs mt-1 leading-snug">{t.details}</p>
+                      <p className="text-gray-500 text-xs mt-1">
+                        {t.playerName} • {t.context}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         );
     }

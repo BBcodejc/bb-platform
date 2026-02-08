@@ -5,7 +5,26 @@ import type { IntakeFormData } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
-    const { formData }: { formData: IntakeFormData } = await request.json();
+    const body = await request.json();
+    const formData: IntakeFormData = body.formData;
+
+    // Debug logging
+    console.log('Checkout request body:', JSON.stringify(body, null, 2));
+
+    if (!formData) {
+      return NextResponse.json(
+        { success: false, error: 'Missing formData in request body' },
+        { status: 400 }
+      );
+    }
+
+    if (!formData.email || !formData.firstName || !formData.lastName) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required fields: email, firstName, or lastName' },
+        { status: 400 }
+      );
+    }
+
     const supabase = createServerSupabaseClient();
 
     // Determine if this is a high-ticket prospect (safely handle undefined values)
@@ -28,43 +47,9 @@ export async function POST(request: NextRequest) {
       high_ticket_prospect: isHighTicket,
     };
 
-    // Add player fields if applicable
-    if (formData.role === 'player') {
-      Object.assign(prospectData, {
-        player_level: formData.playerLevel || null,
-        player_main_goal: Array.isArray(formData.playerMainGoal)
-          ? formData.playerMainGoal.join(', ')
-          : formData.playerMainGoal || null,
-        game_vs_workout: formData.gameVsWorkout || null,
-        three_pt_percentage: formData.threePtPercentage || null,
-        player_problem: formData.playerProblem || null,
-        workout_style: formData.workoutStyle || null,
-        days_per_week: formData.daysPerWeek || null,
-        player_looking_for: formData.playerLookingFor || null,
-        investment_level: formData.investmentLevel || null,
-        player_age: formData.playerAge || null,
-        player_location: formData.playerLocation || null,
-        player_instagram: formData.playerInstagram || null,
-      });
-    }
-
-    // Add parent fields if applicable
-    if (formData.role === 'parent') {
-      Object.assign(prospectData, {
-        child_name: formData.childName || null,
-        child_age: formData.childAge || null,
-        child_level: formData.childLevel || null,
-        child_strengths: formData.childStrengths || null,
-        parent_issues: formData.parentIssues || null,
-        parent_issue_other: formData.parentIssueOther || null,
-        child_confidence: formData.childConfidence || null,
-        parent_main_goal: formData.parentMainGoal || null,
-        weekly_training_hours: formData.weeklyTrainingHours || null,
-        previous_trainer_experience: formData.previousTrainerExperience || null,
-        parent_interest: formData.parentInterest || null,
-        parent_involvement: formData.parentInvolvement || null,
-        parent_investment_level: formData.parentInvestmentLevel || null,
-      });
+    // Add player level if provided (basic field that exists in DB)
+    if (formData.playerLevel) {
+      prospectData.player_level = formData.playerLevel;
     }
 
     // Check if prospect exists
@@ -132,10 +117,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Checkout error:', error);
-    console.error('Error name:', error?.name);
-    console.error('Error message:', error?.message);
-    console.error('Error code:', error?.code);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error type:', typeof error);
+    console.error('Error stringified:', JSON.stringify(error, Object.getOwnPropertyNames(error || {})));
+    const errorMessage = error?.message || error?.toString?.() || JSON.stringify(error) || 'Unknown error';
     return NextResponse.json(
       { success: false, error: 'Failed to create checkout session', details: errorMessage },
       { status: 500 }

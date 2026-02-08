@@ -326,23 +326,78 @@ export default function ProspectDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Assessment type */}
+                {(prospect as any).assessment_type && (
+                  <div>
+                    <label className="text-xs text-gray-500 uppercase">Assessment Type</label>
+                    <p className="text-white mt-1 capitalize">{(prospect as any).assessment_type.replace(/_/g, ' ')}</p>
+                  </div>
+                )}
+                {/* Main Goal */}
                 {prospect.player_main_goal && (
                   <div>
                     <label className="text-xs text-gray-500 uppercase">Main Goal</label>
-                    <p className="text-white mt-1">{prospect.player_main_goal.replace(/_/g, ' ')}</p>
+                    <p className="text-white mt-1 capitalize">{prospect.player_main_goal.replace(/_/g, ' ')}</p>
                   </div>
                 )}
+                {/* Main Problem */}
                 {prospect.player_problem && (
                   <div>
                     <label className="text-xs text-gray-500 uppercase">Main Problem</label>
-                    <p className="text-white mt-1">{prospect.player_problem.replace(/_/g, ' ')}</p>
+                    <p className="text-white mt-1 capitalize">{prospect.player_problem.replace(/_/g, ' ')}</p>
                   </div>
                 )}
+                {/* 3PT % */}
+                {(prospect as any).three_pt_percentage && (
+                  <div>
+                    <label className="text-xs text-gray-500 uppercase">3PT Percentage</label>
+                    <p className="text-white mt-1">{(prospect as any).three_pt_percentage.replace(/_/g, ' ')}</p>
+                  </div>
+                )}
+                {/* Game vs Workout */}
+                {(prospect as any).game_vs_workout && (
+                  <div>
+                    <label className="text-xs text-gray-500 uppercase">Game vs Workout</label>
+                    <p className="text-white mt-1 capitalize">{(prospect as any).game_vs_workout.replace(/_/g, ' ')}</p>
+                  </div>
+                )}
+                {/* Workout Style */}
+                {(prospect as any).workout_style && (
+                  <div>
+                    <label className="text-xs text-gray-500 uppercase">Workout Style</label>
+                    <p className="text-white mt-1 capitalize">{(prospect as any).workout_style.replace(/_/g, ' ')}</p>
+                  </div>
+                )}
+                {/* Days Per Week */}
+                {(prospect as any).days_per_week && (
+                  <div>
+                    <label className="text-xs text-gray-500 uppercase">Days Per Week</label>
+                    <p className="text-white mt-1">{(prospect as any).days_per_week}</p>
+                  </div>
+                )}
+                {/* Routing Recommendation */}
                 {prospect.routing_recommendation && (
                   <div>
                     <label className="text-xs text-gray-500 uppercase">Routing Recommendation</label>
-                    <p className="text-white mt-1">{prospect.routing_recommendation.replace(/_/g, ' ')}</p>
+                    <p className="text-white mt-1 capitalize">{prospect.routing_recommendation.replace(/_/g, ' ')}</p>
                   </div>
+                )}
+                {/* Notes / Message from prospect */}
+                {prospect.notes && (
+                  <div>
+                    <label className="text-xs text-gray-500 uppercase">Message / Notes from Prospect</label>
+                    <p className="text-white mt-1 whitespace-pre-wrap bg-bb-dark p-3 rounded-lg border border-bb-border">{prospect.notes}</p>
+                  </div>
+                )}
+                {/* If nothing submitted */}
+                {!prospect.player_main_goal &&
+                 !prospect.player_problem &&
+                 !(prospect as any).game_vs_workout &&
+                 !(prospect as any).three_pt_percentage &&
+                 !(prospect as any).assessment_type &&
+                 !prospect.routing_recommendation &&
+                 !prospect.notes && (
+                  <p className="text-gray-500 text-sm italic">No intake information submitted yet.</p>
                 )}
               </CardContent>
             </Card>

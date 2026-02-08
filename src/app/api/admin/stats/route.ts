@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
+import Stripe from 'stripe';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function GET() {
   try {
@@ -23,22 +29,31 @@ export async function GET() {
       .eq('high_ticket_prospect', true)
       .in('pipeline_status', ['paid', 'evaluation_submitted', 'tests_submitted', 'in_pipeline', 'review_in_progress']);
 
-    // Get total revenue from payments
-    const { data: payments } = await supabase
-      .from('payments')
-      .select('amount, completed_at')
-      .eq('status', 'completed');
+    // Get this month's revenue from Stripe
+    let thisMonthRevenue = 0;
 
-    const totalRevenue = payments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+    try {
+      // Get start of current month timestamp
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      const startOfMonthTimestamp = Math.floor(startOfMonth.getTime() / 1000);
 
-    // Calculate this month's revenue
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
+      // Fetch only this month's successful payments from Stripe
+      const charges = await stripe.charges.list({
+        limit: 100,
+        created: { gte: startOfMonthTimestamp },
+      });
 
-    const thisMonthRevenue = payments
-      ?.filter((p) => p.completed_at && new Date(p.completed_at) >= startOfMonth)
-      .reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+      // Calculate this month's total from successful charges
+      for (const charge of charges.data) {
+        if (charge.status === 'succeeded' && !charge.refunded) {
+          thisMonthRevenue += charge.amount;
+        }
+      }
+    } catch (stripeError) {
+      console.error('Stripe fetch error:', stripeError);
+    }
 
     // Calculate conversion rate
     const { count: paidProspects } = await supabase
@@ -89,7 +104,7 @@ export async function GET() {
         totalProspects: totalProspects || 0,
         pendingReviews: pendingReviews || 0,
         highTicketProspects: highTicketProspects || 0,
-        totalRevenue: totalRevenue / 100, // Convert cents to dollars
+        totalRevenue: thisMonthRevenue / 100, // Monthly revenue in dollars
         thisMonthRevenue: thisMonthRevenue / 100,
         conversionRate,
       },
