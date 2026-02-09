@@ -302,10 +302,14 @@ export async function PATCH(
       default:
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Admin update error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: error?.message || 'Internal server error',
+        details: error?.details || error?.hint || null,
+        code: error?.code || null
+      },
       { status: 500 }
     );
   }

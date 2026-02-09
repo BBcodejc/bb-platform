@@ -438,6 +438,7 @@ export default function ElitePlayerDashboardPage() {
   }
 
   async function saveAction(action: string, payload: any) {
+    console.log('saveAction called:', action, payload);
     setSaving(true);
     try {
       const res = await fetch(`/api/elite-players/${slug}/admin`, {
@@ -445,14 +446,27 @@ export default function ElitePlayerDashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, ...payload }),
       });
-      const data = await res.json();
+      console.log('Response status:', res.status);
+      const responseText = await res.text();
+      console.log('Response text:', responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        console.error('Failed to parse response:', responseText);
+        alert(`Server error: ${responseText}`);
+        return false;
+      }
+
       if (res.ok && data.success) {
+        console.log('Save successful, refreshing dashboard');
         await fetchDashboard();
         setEditingSection(null);
         return true;
       } else {
         console.error('Save failed:', data);
-        alert(`Save failed: ${data.error || 'Unknown error'}`);
+        alert(`Save failed: ${data.error || JSON.stringify(data)}`);
       }
     } catch (err) {
       console.error('Save error:', err);
