@@ -909,7 +909,7 @@ export default function ElitePlayerDashboardPage() {
                 </div>
               </div>
             </div>
-            <BBLevelBadge level={player.bbLevel} levelName={player.bbLevelName} />
+{/* BB Level Badge - hidden for now */}
           </div>
         </div>
       </header>
