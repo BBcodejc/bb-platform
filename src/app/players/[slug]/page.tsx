@@ -292,6 +292,12 @@ export default function ElitePlayerDashboardPage() {
   // New coach note state
   const [newCoachNote, setNewCoachNote] = useState('');
 
+  // Protocol editing state
+  const [editingProtocol, setEditingProtocol] = useState<GameDayProtocol | null>(null);
+  const [newShotType, setNewShotType] = useState('');
+  const [newPostMove, setNewPostMove] = useState('');
+  const [newPrinciple, setNewPrinciple] = useState({ category: 'offBall', text: '' });
+
   // Fetch dashboard
   useEffect(() => {
     fetchDashboard();
@@ -379,6 +385,8 @@ export default function ElitePlayerDashboardPage() {
       });
     } else if (section === 'notes') {
       setNewCoachNote('');
+    } else if (section === 'protocol') {
+      setEditingProtocol(dashboard?.gameDayProtocol ? JSON.parse(JSON.stringify(dashboard.gameDayProtocol)) : null);
     }
   }
 
@@ -401,6 +409,10 @@ export default function ElitePlayerDashboardPage() {
     });
     setNewVideo({ title: '', url: '', tags: [], bbCue: '' });
     setNewCoachNote('');
+    setEditingProtocol(null);
+    setNewShotType('');
+    setNewPostMove('');
+    setNewPrinciple({ category: 'offBall', text: '' });
   }
 
   // Save handlers
@@ -498,6 +510,120 @@ export default function ElitePlayerDashboardPage() {
       createdBy: selectedCoach,
     });
     setNewCoachNote('');
+  }
+
+  async function saveProtocol() {
+    if (!editingProtocol) return;
+    await saveAction('update_protocol', {
+      scoringSettings: editingProtocol.scoringSettings,
+      spots: editingProtocol.spots,
+      shotTypeVariety: editingProtocol.shotTypeVariety,
+      postSection: editingProtocol.postSection,
+      offBallPrinciples: editingProtocol.offBallPrinciples,
+      defensePrinciples: editingProtocol.defensePrinciples,
+      reboundingPrinciples: editingProtocol.reboundingPrinciples,
+      handlePrinciples: editingProtocol.handlePrinciples,
+      finishingPrinciples: editingProtocol.finishingPrinciples,
+    });
+  }
+
+  // Protocol editing helpers
+  function updateSpotReps(spotId: string, reps: number) {
+    if (!editingProtocol) return;
+    setEditingProtocol({
+      ...editingProtocol,
+      spots: editingProtocol.spots.map(s =>
+        s.id === spotId ? { ...s, reps } : s
+      ),
+    });
+  }
+
+  function toggleShotType(shotId: string) {
+    if (!editingProtocol) return;
+    setEditingProtocol({
+      ...editingProtocol,
+      shotTypeVariety: editingProtocol.shotTypeVariety.map(s =>
+        s.id === shotId ? { ...s, isActive: !s.isActive } : s
+      ),
+    });
+  }
+
+  function addShotType() {
+    if (!editingProtocol || !newShotType.trim()) return;
+    const newShot = {
+      id: `custom-${Date.now()}`,
+      name: newShotType,
+      category: 'off-dribble' as const,
+      isActive: true,
+    };
+    setEditingProtocol({
+      ...editingProtocol,
+      shotTypeVariety: [...editingProtocol.shotTypeVariety, newShot],
+    });
+    setNewShotType('');
+  }
+
+  function removeShotType(shotId: string) {
+    if (!editingProtocol) return;
+    setEditingProtocol({
+      ...editingProtocol,
+      shotTypeVariety: editingProtocol.shotTypeVariety.filter(s => s.id !== shotId),
+    });
+  }
+
+  function addPostMove() {
+    if (!editingProtocol || !newPostMove.trim()) return;
+    setEditingProtocol({
+      ...editingProtocol,
+      postSection: {
+        ...editingProtocol.postSection,
+        moves: [...editingProtocol.postSection.moves, newPostMove],
+      },
+    });
+    setNewPostMove('');
+  }
+
+  function removePostMove(index: number) {
+    if (!editingProtocol) return;
+    setEditingProtocol({
+      ...editingProtocol,
+      postSection: {
+        ...editingProtocol.postSection,
+        moves: editingProtocol.postSection.moves.filter((_, i) => i !== index),
+      },
+    });
+  }
+
+  function addPrinciple() {
+    if (!editingProtocol || !newPrinciple.text.trim()) return;
+    const key = `${newPrinciple.category}Principles` as keyof GameDayProtocol;
+    const currentPrinciples = (editingProtocol[key] as string[]) || [];
+    setEditingProtocol({
+      ...editingProtocol,
+      [key]: [...currentPrinciples, newPrinciple.text],
+    });
+    setNewPrinciple({ ...newPrinciple, text: '' });
+  }
+
+  function removePrinciple(category: string, index: number) {
+    if (!editingProtocol) return;
+    const key = `${category}Principles` as keyof GameDayProtocol;
+    const currentPrinciples = (editingProtocol[key] as string[]) || [];
+    setEditingProtocol({
+      ...editingProtocol,
+      [key]: currentPrinciples.filter((_, i) => i !== index),
+    });
+  }
+
+  function updateTargetScore(score: number) {
+    if (!editingProtocol) return;
+    setEditingProtocol({
+      ...editingProtocol,
+      scoringSettings: {
+        ...editingProtocol.scoringSettings,
+        targetScore: score,
+      },
+    });
   }
 
   // Cue handlers
@@ -775,111 +901,320 @@ export default function ElitePlayerDashboardPage() {
         </section>
 
         {/* GAME DAY PROTOCOL */}
-        {gameDayProtocol && (
-          <section className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl overflow-hidden">
-            <SectionHeader
-              title="Game Day Protocol"
-              icon={<CircleDot className="w-5 h-5" />}
-              isOpen={openSections.protocol}
-              onToggle={() => toggleSection('protocol')}
-              badge={<span className="text-xs text-gray-500">{gameDayProtocol.duration}</span>}
-            />
-            {openSections.protocol && (
-              <div className="px-4 pb-4 space-y-6">
-                {/* Scoring */}
-                <div className="p-4 bg-[#0D0D0D] rounded-xl">
-                  <h4 className="text-sm font-medium text-gray-400 mb-3">Scoring: Plus {gameDayProtocol.scoringSettings.targetScore}</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-400" />
-                      <span className="text-gray-300 text-sm">Make = +1</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MinusCircle className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-300 text-sm">Back Rim = 0</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <XCircle className="w-4 h-4 text-red-400" />
-                      <span className="text-gray-300 text-sm">Front Rim = -1</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <XCircle className="w-4 h-4 text-red-400" />
-                      <span className="text-gray-300 text-sm">L/R Miss = -1</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 5-Spot Rotation */}
-                <div>
-                  <h4 className="text-sm font-medium text-gray-400 mb-3">5-Spot Rotation</h4>
-                  <div className="grid grid-cols-5 gap-2">
-                    {gameDayProtocol.spots.map((spot) => (
-                      <div key={spot.id} className="p-3 bg-[#0D0D0D] rounded-xl text-center border border-[#2A2A2A] hover:border-gold-500/30 transition-colors">
-                        <p className="text-white font-medium text-sm">{spot.name}</p>
-                        <p className="text-xs text-gray-500">{spot.reps} reps</p>
+        <section className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl overflow-hidden">
+          <SectionHeader
+            title="Game Day Protocol"
+            icon={<CircleDot className="w-5 h-5" />}
+            isOpen={openSections.protocol}
+            onToggle={() => toggleSection('protocol')}
+            isAdmin={isAdmin}
+            isEditing={editingSection === 'protocol'}
+            onEdit={() => startEditing('protocol')}
+            onSave={saveProtocol}
+            onCancel={cancelEditing}
+            saving={saving}
+            badge={<span className="text-xs text-gray-500">{gameDayProtocol?.duration || '15-20 min'}</span>}
+          />
+          {openSections.protocol && (
+            <div className="px-4 pb-4 space-y-6">
+              {editingSection === 'protocol' && editingProtocol ? (
+                <>
+                  {/* Editable Scoring */}
+                  <div className="p-4 bg-[#0D0D0D] rounded-xl">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-medium text-gray-400">Scoring Target</h4>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-400 text-sm">Plus</span>
+                        <select
+                          value={editingProtocol.scoringSettings.targetScore}
+                          onChange={(e) => updateTargetScore(parseInt(e.target.value))}
+                          className="px-3 py-1 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] text-white"
+                        >
+                          {[3, 5, 7, 10].map(n => (
+                            <option key={n} value={n}>{n}</option>
+                          ))}
+                        </select>
                       </div>
-                    ))}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-400">
+                      <span>Make = +1</span>
+                      <span>Back Rim = 0</span>
+                      <span>Front Rim = -1</span>
+                      <span>L/R Miss = -1</span>
+                    </div>
                   </div>
-                </div>
 
-                {/* Shot Type Variety */}
-                <div>
-                  <h4 className="text-sm font-medium text-gray-400 mb-3">Shot Type Variety</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {gameDayProtocol.shotTypeVariety.filter(s => s.isActive).map((shot) => (
-                      <div key={shot.id} className="flex items-center gap-2 p-2 bg-[#0D0D0D]/50 rounded-lg">
-                        <div className={cn(
-                          'w-2 h-2 rounded-full',
-                          shot.category === 'catch-shoot' ? 'bg-blue-400' :
-                          shot.category === 'off-dribble' ? 'bg-purple-400' :
-                          shot.category === 'pull-up' ? 'bg-orange-400' : 'bg-gray-400'
-                        )} />
-                        <span className="text-sm text-gray-300">{shot.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Post Work */}
-                {gameDayProtocol.postSection.enabled && (
+                  {/* Editable 5-Spot Rotation */}
                   <div>
-                    <h4 className="text-sm font-medium text-gray-400 mb-3">Post Work</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {gameDayProtocol.postSection.moves.map((move, i) => (
-                        <span key={i} className="px-3 py-1.5 rounded-full bg-[#0D0D0D] border border-[#2A2A2A] text-sm text-gray-300">
-                          {move}
-                        </span>
+                    <h4 className="text-sm font-medium text-gray-400 mb-3">5-Spot Rotation (adjust reps)</h4>
+                    <div className="grid grid-cols-5 gap-2">
+                      {editingProtocol.spots.map((spot) => (
+                        <div key={spot.id} className="p-3 bg-[#0D0D0D] rounded-xl text-center border border-[#2A2A2A]">
+                          <p className="text-white font-medium text-sm mb-2">{spot.name}</p>
+                          <Input
+                            type="number"
+                            value={spot.reps}
+                            onChange={(e) => updateSpotReps(spot.id, parseInt(e.target.value) || 0)}
+                            className="w-full text-center bg-[#1A1A1A] border-[#2A2A2A] text-sm"
+                            min={1}
+                            max={20}
+                          />
+                          <p className="text-xs text-gray-500 mt-1">reps</p>
+                        </div>
                       ))}
                     </div>
                   </div>
-                )}
 
-                {/* Principles Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {[
-                    { title: 'Off Ball', items: gameDayProtocol.offBallPrinciples, icon: Move },
-                    { title: 'Defense', items: gameDayProtocol.defensePrinciples, icon: Shield },
-                    { title: 'Rebounding', items: gameDayProtocol.reboundingPrinciples, icon: Zap },
-                    { title: 'Handle', items: gameDayProtocol.handlePrinciples, icon: Hand },
-                    { title: 'Finishing', items: gameDayProtocol.finishingPrinciples, icon: CircleDot },
-                  ].map((section) => section.items && section.items.length > 0 && (
-                    <div key={section.title} className="p-3 bg-[#0D0D0D]/50 rounded-xl">
-                      <div className="flex items-center gap-2 mb-2 text-gray-400">
-                        <section.icon className="w-3 h-3" />
-                        <span className="text-xs font-medium uppercase">{section.title}</span>
-                      </div>
-                      <ul className="space-y-1">
-                        {section.items.map((item, i) => (
-                          <li key={i} className="text-xs text-gray-400">• {item}</li>
-                        ))}
-                      </ul>
+                  {/* Editable Shot Types */}
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-400 mb-3">Shot Type Variety (click to toggle)</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {editingProtocol.shotTypeVariety.map((shot) => (
+                        <div
+                          key={shot.id}
+                          onClick={() => toggleShotType(shot.id)}
+                          className={cn(
+                            'flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all',
+                            shot.isActive
+                              ? 'bg-[#0D0D0D] border border-gold-500/30'
+                              : 'bg-[#0D0D0D]/30 border border-[#2A2A2A] opacity-50'
+                          )}
+                        >
+                          <div className={cn(
+                            'w-2 h-2 rounded-full',
+                            shot.category === 'catch-shoot' ? 'bg-blue-400' :
+                            shot.category === 'off-dribble' ? 'bg-purple-400' :
+                            shot.category === 'pull-up' ? 'bg-orange-400' : 'bg-gray-400'
+                          )} />
+                          <span className={cn('text-sm flex-1', shot.isActive ? 'text-gray-300' : 'text-gray-500')}>
+                            {shot.name}
+                          </span>
+                          {shot.id.startsWith('custom-') && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); removeShotType(shot.id); }}
+                              className="p-1 hover:bg-red-500/20 rounded"
+                            >
+                              <Trash2 className="w-3 h-3 text-red-400" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </section>
-        )}
+                    <div className="flex items-center gap-2 mt-3">
+                      <Input
+                        value={newShotType}
+                        onChange={(e) => setNewShotType(e.target.value)}
+                        placeholder="Add custom shot type..."
+                        className="flex-1 bg-[#0D0D0D] border-[#2A2A2A]"
+                        onKeyDown={(e) => e.key === 'Enter' && addShotType()}
+                      />
+                      <Button onClick={addShotType} size="sm" className="bg-gold-500 hover:bg-gold-600 text-black">
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Editable Post Work */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-medium text-gray-400">Post Work</h4>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={editingProtocol.postSection.enabled}
+                          onChange={(e) => setEditingProtocol({
+                            ...editingProtocol,
+                            postSection: { ...editingProtocol.postSection, enabled: e.target.checked }
+                          })}
+                          className="rounded border-[#2A2A2A]"
+                        />
+                        <span className="text-xs text-gray-400">Enabled</span>
+                      </label>
+                    </div>
+                    {editingProtocol.postSection.enabled && (
+                      <>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {editingProtocol.postSection.moves.map((move, i) => (
+                            <span key={i} className="group px-3 py-1.5 rounded-full bg-[#0D0D0D] border border-[#2A2A2A] text-sm text-gray-300 flex items-center gap-2">
+                              {move}
+                              <button onClick={() => removePostMove(i)} className="opacity-0 group-hover:opacity-100">
+                                <X className="w-3 h-3 text-red-400" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            value={newPostMove}
+                            onChange={(e) => setNewPostMove(e.target.value)}
+                            placeholder="Add post move..."
+                            className="flex-1 bg-[#0D0D0D] border-[#2A2A2A]"
+                            onKeyDown={(e) => e.key === 'Enter' && addPostMove()}
+                          />
+                          <Button onClick={addPostMove} size="sm" className="bg-gold-500 hover:bg-gold-600 text-black">
+                            Add
+                          </Button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Editable Principles */}
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-400 mb-3">Movement Principles</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {[
+                        { key: 'offBall', title: 'Off Ball', items: editingProtocol.offBallPrinciples, icon: Move },
+                        { key: 'defense', title: 'Defense', items: editingProtocol.defensePrinciples, icon: Shield },
+                        { key: 'rebounding', title: 'Rebounding', items: editingProtocol.reboundingPrinciples, icon: Zap },
+                        { key: 'handle', title: 'Handle', items: editingProtocol.handlePrinciples, icon: Hand },
+                        { key: 'finishing', title: 'Finishing', items: editingProtocol.finishingPrinciples, icon: CircleDot },
+                      ].map((section) => (
+                        <div key={section.key} className="p-3 bg-[#0D0D0D]/50 rounded-xl">
+                          <div className="flex items-center gap-2 mb-2 text-gray-400">
+                            <section.icon className="w-3 h-3" />
+                            <span className="text-xs font-medium uppercase">{section.title}</span>
+                          </div>
+                          <ul className="space-y-1 mb-2">
+                            {(section.items || []).map((item, i) => (
+                              <li key={i} className="flex items-center justify-between text-xs text-gray-400 group">
+                                <span>• {item}</span>
+                                <button
+                                  onClick={() => removePrinciple(section.key, i)}
+                                  className="opacity-0 group-hover:opacity-100 p-1"
+                                >
+                                  <X className="w-3 h-3 text-red-400" />
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2 mt-3">
+                      <select
+                        value={newPrinciple.category}
+                        onChange={(e) => setNewPrinciple({ ...newPrinciple, category: e.target.value })}
+                        className="px-3 py-2 rounded-lg bg-[#0D0D0D] border border-[#2A2A2A] text-white text-sm"
+                      >
+                        <option value="offBall">Off Ball</option>
+                        <option value="defense">Defense</option>
+                        <option value="rebounding">Rebounding</option>
+                        <option value="handle">Handle</option>
+                        <option value="finishing">Finishing</option>
+                      </select>
+                      <Input
+                        value={newPrinciple.text}
+                        onChange={(e) => setNewPrinciple({ ...newPrinciple, text: e.target.value })}
+                        placeholder="Add principle..."
+                        className="flex-1 bg-[#0D0D0D] border-[#2A2A2A]"
+                        onKeyDown={(e) => e.key === 'Enter' && addPrinciple()}
+                      />
+                      <Button onClick={addPrinciple} size="sm" className="bg-gold-500 hover:bg-gold-600 text-black">
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : gameDayProtocol ? (
+                <>
+                  {/* Display Mode - Scoring */}
+                  <div className="p-4 bg-[#0D0D0D] rounded-xl">
+                    <h4 className="text-sm font-medium text-gray-400 mb-3">Scoring: Plus {gameDayProtocol.scoringSettings.targetScore}</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-400" />
+                        <span className="text-gray-300 text-sm">Make = +1</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MinusCircle className="w-4 h-4 text-gray-500" />
+                        <span className="text-gray-300 text-sm">Back Rim = 0</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <XCircle className="w-4 h-4 text-red-400" />
+                        <span className="text-gray-300 text-sm">Front Rim = -1</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <XCircle className="w-4 h-4 text-red-400" />
+                        <span className="text-gray-300 text-sm">L/R Miss = -1</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Display Mode - 5-Spot Rotation */}
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-400 mb-3">5-Spot Rotation</h4>
+                    <div className="grid grid-cols-5 gap-2">
+                      {gameDayProtocol.spots.map((spot) => (
+                        <div key={spot.id} className="p-3 bg-[#0D0D0D] rounded-xl text-center border border-[#2A2A2A] hover:border-gold-500/30 transition-colors">
+                          <p className="text-white font-medium text-sm">{spot.name}</p>
+                          <p className="text-xs text-gray-500">{spot.reps} reps</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Display Mode - Shot Type Variety */}
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-400 mb-3">Shot Type Variety</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {gameDayProtocol.shotTypeVariety.filter(s => s.isActive).map((shot) => (
+                        <div key={shot.id} className="flex items-center gap-2 p-2 bg-[#0D0D0D]/50 rounded-lg">
+                          <div className={cn(
+                            'w-2 h-2 rounded-full',
+                            shot.category === 'catch-shoot' ? 'bg-blue-400' :
+                            shot.category === 'off-dribble' ? 'bg-purple-400' :
+                            shot.category === 'pull-up' ? 'bg-orange-400' : 'bg-gray-400'
+                          )} />
+                          <span className="text-sm text-gray-300">{shot.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Display Mode - Post Work */}
+                  {gameDayProtocol.postSection.enabled && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-400 mb-3">Post Work</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {gameDayProtocol.postSection.moves.map((move, i) => (
+                          <span key={i} className="px-3 py-1.5 rounded-full bg-[#0D0D0D] border border-[#2A2A2A] text-sm text-gray-300">
+                            {move}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Display Mode - Principles Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {[
+                      { title: 'Off Ball', items: gameDayProtocol.offBallPrinciples, icon: Move },
+                      { title: 'Defense', items: gameDayProtocol.defensePrinciples, icon: Shield },
+                      { title: 'Rebounding', items: gameDayProtocol.reboundingPrinciples, icon: Zap },
+                      { title: 'Handle', items: gameDayProtocol.handlePrinciples, icon: Hand },
+                      { title: 'Finishing', items: gameDayProtocol.finishingPrinciples, icon: CircleDot },
+                    ].map((section) => section.items && section.items.length > 0 && (
+                      <div key={section.title} className="p-3 bg-[#0D0D0D]/50 rounded-xl">
+                        <div className="flex items-center gap-2 mb-2 text-gray-400">
+                          <section.icon className="w-3 h-3" />
+                          <span className="text-xs font-medium uppercase">{section.title}</span>
+                        </div>
+                        <ul className="space-y-1">
+                          {section.items.map((item, i) => (
+                            <li key={i} className="text-xs text-gray-400">• {item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="text-gray-500 text-center py-6 italic">No protocol configured yet</p>
+              )}
+            </div>
+          )}
+        </section>
 
         {/* BB LIMITING FACTORS */}
         <section className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl overflow-hidden">
