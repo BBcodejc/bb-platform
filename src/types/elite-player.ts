@@ -44,6 +44,12 @@ export interface PregameCue {
 // Alias for backwards compatibility
 export type DailyCue = PregameCue;
 
+export interface VideoExample {
+  url: string;
+  caption?: string;
+  thumbnailUrl?: string;
+}
+
 export interface LimitingFactor {
   id: string;
   playerId: string;
@@ -53,6 +59,8 @@ export interface LimitingFactor {
   severity?: 'low' | 'medium' | 'high';
   priority: 'low' | 'medium' | 'high';
   notes?: string;
+  failureExample?: VideoExample;
+  successExample?: VideoExample;
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;

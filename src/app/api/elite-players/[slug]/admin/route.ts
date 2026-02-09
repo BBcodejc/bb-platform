@@ -71,6 +71,8 @@ export async function PATCH(
         if (data.severity !== undefined) updateData.priority = data.severity;
         if (data.notes !== undefined) updateData.notes = data.notes;
         if (data.isActive !== undefined) updateData.is_active = data.isActive;
+        if (data.failureExample !== undefined) updateData.failure_example = data.failureExample;
+        if (data.successExample !== undefined) updateData.success_example = data.successExample;
 
         const { error } = await supabase
           .from('elite_limiting_factors')
@@ -91,6 +93,8 @@ export async function PATCH(
             awareness_cue: data.awarenesssCue,
             priority: data.severity || 'medium',
             notes: data.notes,
+            failure_example: data.failureExample || null,
+            success_example: data.successExample || null,
             is_active: true,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),

@@ -233,6 +233,8 @@ function transformFactor(data: any): LimitingFactor {
     severity: data.severity || data.priority,
     priority: data.priority,
     notes: data.notes,
+    failureExample: data.failure_example || undefined,
+    successExample: data.success_example || undefined,
     isActive: data.is_active,
     createdAt: data.created_at,
     updatedAt: data.updated_at,

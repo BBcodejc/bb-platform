@@ -339,6 +339,125 @@ function VideoTag({ tag }: { tag: string }) {
   );
 }
 
+// Helper to extract YouTube video ID
+function getYouTubeId(url: string): string | null {
+  if (!url) return null;
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
+    /youtube\.com\/shorts\/([^&\s?]+)/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+// Helper to check if URL is a Google Drive link
+function getGoogleDriveId(url: string): string | null {
+  if (!url) return null;
+  const match = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+  return match ? match[1] : null;
+}
+
+// Responsive Video Embed Component (works on iPhone, iPad, Desktop)
+function VideoEmbed({ url, caption, type }: { url: string; caption?: string; type: 'success' | 'failure' }) {
+  const youtubeId = getYouTubeId(url);
+  const driveId = getGoogleDriveId(url);
+
+  const borderColor = type === 'success' ? 'border-green-500/30' : 'border-red-500/30';
+  const bgColor = type === 'success' ? 'bg-green-500/5' : 'bg-red-500/5';
+  const labelColor = type === 'success' ? 'text-green-400' : 'text-red-400';
+  const label = type === 'success' ? '✓ Success Example' : '✗ Failure Example';
+
+  return (
+    <div className={cn('rounded-lg border overflow-hidden', borderColor, bgColor)}>
+      <div className={cn('px-3 py-1.5 text-xs font-medium', labelColor)}>
+        {label}
+      </div>
+      {/* Responsive 16:9 aspect ratio container */}
+      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+        {youtubeId ? (
+          <iframe
+            className="absolute inset-0 w-full h-full"
+            src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`}
+            title={caption || 'Video example'}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : driveId ? (
+          <iframe
+            className="absolute inset-0 w-full h-full"
+            src={`https://drive.google.com/file/d/${driveId}/preview`}
+            title={caption || 'Video example'}
+            frameBorder="0"
+            allow="autoplay"
+            allowFullScreen
+          />
+        ) : url ? (
+          <video
+            className="absolute inset-0 w-full h-full object-contain bg-black"
+            src={url}
+            controls
+            playsInline
+            preload="metadata"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#0D0D0D]">
+            <Play className="w-8 h-8 text-gray-600" />
+          </div>
+        )}
+      </div>
+      {caption && (
+        <div className="px-3 py-2 text-sm text-gray-300 border-t border-[#2A2A2A]">
+          {caption}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Video Input Component for editing
+function VideoExampleInput({
+  label,
+  type,
+  value,
+  onChange,
+}: {
+  label: string;
+  type: 'success' | 'failure';
+  value: { url: string; caption?: string } | undefined;
+  onChange: (value: { url: string; caption?: string } | undefined) => void;
+}) {
+  const borderColor = type === 'success' ? 'border-green-500/30' : 'border-red-500/30';
+  const bgColor = type === 'success' ? 'bg-green-500/5' : 'bg-red-500/5';
+  const labelColor = type === 'success' ? 'text-green-400' : 'text-red-400';
+
+  return (
+    <div className={cn('p-3 rounded-lg border', borderColor, bgColor)}>
+      <label className={cn('text-xs font-medium mb-2 block', labelColor)}>{label}</label>
+      <Input
+        value={value?.url || ''}
+        onChange={(e) => onChange({ url: e.target.value, caption: value?.caption })}
+        placeholder="YouTube or Google Drive URL..."
+        className="bg-[#0D0D0D] border-[#2A2A2A] mb-2"
+      />
+      <Input
+        value={value?.caption || ''}
+        onChange={(e) => onChange({ url: value?.url || '', caption: e.target.value })}
+        placeholder="Caption (what to notice)..."
+        className="bg-[#0D0D0D] border-[#2A2A2A] text-sm"
+      />
+      {value?.url && (
+        <div className="mt-2">
+          <VideoEmbed url={value.url} caption={value.caption} type={type} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ============================================
 // MAIN COMPONENT
 // ============================================
@@ -578,6 +697,8 @@ export default function ElitePlayerDashboardPage() {
           awarenesssCue: factor.awarenesssCue,
           severity: factor.severity || factor.priority,
           notes: factor.notes,
+          failureExample: factor.failureExample,
+          successExample: factor.successExample,
         });
       } else {
         await saveAction('update_limiting_factor', {
@@ -587,6 +708,8 @@ export default function ElitePlayerDashboardPage() {
           awarenesssCue: factor.awarenesssCue,
           severity: factor.severity || factor.priority,
           notes: factor.notes,
+          failureExample: factor.failureExample,
+          successExample: factor.successExample,
         });
       }
     }
@@ -855,7 +978,7 @@ export default function ElitePlayerDashboardPage() {
     ]);
   }
 
-  function updateFactor(index: number, field: string, value: string) {
+  function updateFactor(index: number, field: string, value: any) {
     const updated = [...editingFactors];
     (updated[index] as any)[field] = value;
     setEditingFactors(updated);
@@ -1572,6 +1695,22 @@ export default function ElitePlayerDashboardPage() {
                           rows={2}
                         />
                       </div>
+
+                      {/* Video Examples */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                        <VideoExampleInput
+                          label="✗ Failure Example"
+                          type="failure"
+                          value={factor.failureExample}
+                          onChange={(val) => updateFactor(i, 'failureExample', val)}
+                        />
+                        <VideoExampleInput
+                          label="✓ Success Example"
+                          type="success"
+                          value={factor.successExample}
+                          onChange={(val) => updateFactor(i, 'successExample', val)}
+                        />
+                      </div>
                     </div>
                   ))}
                   <button
@@ -1593,10 +1732,29 @@ export default function ElitePlayerDashboardPage() {
                       <p className="text-gray-400 text-sm mb-3">{factor.shortDescription}</p>
                     )}
                     {factor.awarenesssCue && (
-                      <div className="p-3 bg-gold-500/5 rounded-lg border border-gold-500/20">
+                      <div className="p-3 bg-gold-500/5 rounded-lg border border-gold-500/20 mb-3">
                         <p className="text-gold-400 text-sm">
                           <span className="font-medium">Awareness Cue:</span> {factor.awarenesssCue}
                         </p>
+                      </div>
+                    )}
+                    {/* Video Examples - Responsive grid for all devices */}
+                    {(factor.failureExample?.url || factor.successExample?.url) && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                        {factor.failureExample?.url && (
+                          <VideoEmbed
+                            url={factor.failureExample.url}
+                            caption={factor.failureExample.caption}
+                            type="failure"
+                          />
+                        )}
+                        {factor.successExample?.url && (
+                          <VideoEmbed
+                            url={factor.successExample.url}
+                            caption={factor.successExample.caption}
+                            type="success"
+                          />
+                        )}
                       </div>
                     )}
                   </div>
