@@ -38,6 +38,9 @@ import {
   MapPin,
   Check,
   Loader2,
+  Download,
+  Upload,
+  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,12 +56,123 @@ import type {
   GameDayProtocol,
   WeeklyReview,
   CoachNote,
+  ShotType,
+} from '@/types/elite-player';
+import {
+  DEFAULT_SHOT_TYPES,
+  DEFAULT_POST_MOVES,
+  DEFAULT_OFF_BALL_PRINCIPLES,
+  DEFAULT_DEFENSE_PRINCIPLES,
+  DEFAULT_REBOUNDING_PRINCIPLES,
+  DEFAULT_HANDLE_PRINCIPLES,
+  DEFAULT_FINISHING_PRINCIPLES,
+  DEFAULT_SCORING_SETTINGS,
+  DEFAULT_PREGAME_SPOTS,
 } from '@/types/elite-player';
 
 // ============================================
 // CONSTANTS
 // ============================================
 const COACHES = ['Coach Jake', 'Tommy', 'BB Staff'];
+
+// Import templates for protocols
+const PROTOCOL_TEMPLATES = [
+  {
+    id: 'tommy-default',
+    name: "Tommy's Pre-Game Structure",
+    description: 'Standard 5-spot rotation with plus/minus scoring',
+    data: {
+      scoringSettings: DEFAULT_SCORING_SETTINGS,
+      spots: DEFAULT_PREGAME_SPOTS,
+      shotTypeVariety: DEFAULT_SHOT_TYPES,
+      postSection: { enabled: true, moves: DEFAULT_POST_MOVES },
+      offBallPrinciples: DEFAULT_OFF_BALL_PRINCIPLES,
+      defensePrinciples: DEFAULT_DEFENSE_PRINCIPLES,
+      reboundingPrinciples: DEFAULT_REBOUNDING_PRINCIPLES,
+      handlePrinciples: DEFAULT_HANDLE_PRINCIPLES,
+      finishingPrinciples: DEFAULT_FINISHING_PRINCIPLES,
+    },
+  },
+  {
+    id: 'game-day-drills',
+    name: 'BB Game Day Drills',
+    description: 'Catch variety, back-rim ladder, ball flight spectrum',
+    data: {
+      scoringSettings: { ...DEFAULT_SCORING_SETTINGS, targetScore: 3 },
+      spots: DEFAULT_PREGAME_SPOTS,
+      shotTypeVariety: [
+        { id: 'catch-high', name: 'Catch & Shoot (High Pass)', category: 'catch-shoot' as const, isActive: true },
+        { id: 'catch-mid', name: 'Catch & Shoot (Middle Pass)', category: 'catch-shoot' as const, isActive: true },
+        { id: 'catch-low', name: 'Catch & Shoot (Low Pass)', category: 'catch-shoot' as const, isActive: true },
+        { id: 'back-rim-ladder', name: 'Back-Rim Response Ladder', category: 'off-dribble' as const, isActive: true },
+        { id: 'ball-flight-flat', name: 'Flat Arc (25°)', category: 'catch-shoot' as const, isActive: true },
+        { id: 'ball-flight-normal', name: 'Normal Arc (45°)', category: 'catch-shoot' as const, isActive: true },
+        { id: 'ball-flight-high', name: 'High Arc (60°)', category: 'catch-shoot' as const, isActive: true },
+      ],
+      postSection: { enabled: false, moves: [] },
+      offBallPrinciples: ['Get the ball to the back rim', 'No mechanical thoughts', 'Same target, different flight'],
+      defensePrinciples: DEFAULT_DEFENSE_PRINCIPLES,
+      reboundingPrinciples: DEFAULT_REBOUNDING_PRINCIPLES,
+      handlePrinciples: DEFAULT_HANDLE_PRINCIPLES,
+      finishingPrinciples: ['Leave the gym feeling effortless'],
+    },
+  },
+  {
+    id: 'session-a',
+    name: 'Session A: Deep Distance + Back Rim',
+    description: 'Calibration backbone - deep distance line work',
+    data: {
+      scoringSettings: { ...DEFAULT_SCORING_SETTINGS, targetScore: 5 },
+      spots: [
+        { id: 'deep-line', name: 'Deep Distance Line', position: 'top' as const, shotTypes: [], reps: 10 },
+        { id: 'step-in-1', name: 'Step In (1 step)', position: 'top' as const, shotTypes: [], reps: 10 },
+        { id: 'step-in-2', name: 'Step In (2 steps)', position: 'top' as const, shotTypes: [], reps: 10 },
+        { id: 'seven-spot', name: '7-Spot Series', position: 'wing-left' as const, shotTypes: [], reps: 7 },
+        { id: 'test-out', name: '14-Spot Test Out', position: 'corner-left' as const, shotTypes: [], reps: 14 },
+      ],
+      shotTypeVariety: [
+        { id: 'pull-up-1', name: '1-Dribble Pull-up', category: 'pull-up' as const, isActive: true },
+        { id: 'step-back', name: 'Step-back', category: 'off-dribble' as const, isActive: true },
+        { id: 'bounce-pull-up', name: 'Bounce Pull-up (Hang Dribble)', category: 'pull-up' as const, isActive: true },
+        { id: 'high-pass', name: 'Off High Pass', category: 'catch-shoot' as const, isActive: true },
+        { id: 'mid-pass', name: 'Off Middle Pass', category: 'catch-shoot' as const, isActive: true },
+        { id: 'low-pass', name: 'Off Low Pass', category: 'catch-shoot' as const, isActive: true },
+      ],
+      postSection: { enabled: false, moves: [] },
+      offBallPrinciples: ['Back rim = good miss', 'Short misses are the enemy', 'Control the ball to the target'],
+      defensePrinciples: DEFAULT_DEFENSE_PRINCIPLES,
+      reboundingPrinciples: DEFAULT_REBOUNDING_PRINCIPLES,
+      handlePrinciples: ['Solve the distance first', 'No mechanical thoughts'],
+      finishingPrinciples: ['Build calibration backbone'],
+    },
+  },
+  {
+    id: 'session-c',
+    name: 'Session C: Difficult Shooting + Fades',
+    description: 'Stress-proof shooting - fade adaptability',
+    data: {
+      scoringSettings: { ...DEFAULT_SCORING_SETTINGS, targetScore: 5 },
+      spots: [
+        { id: 'fade-spot-1', name: '7-Spot Fades', position: 'corner-left' as const, shotTypes: [], reps: 7 },
+        { id: 'deep-fade', name: 'Deep Distance Fade', position: 'top' as const, shotTypes: [], reps: 8 },
+        { id: 'fade-test-l', name: '14-Spot Fade Left', position: 'wing-left' as const, shotTypes: [], reps: 14 },
+        { id: 'fade-test-r', name: '14-Spot Fade Right', position: 'wing-right' as const, shotTypes: [], reps: 14 },
+      ],
+      shotTypeVariety: [
+        { id: 'fade-right', name: 'Fade Right', category: 'off-dribble' as const, isActive: true },
+        { id: 'fade-left', name: 'Fade Left', category: 'off-dribble' as const, isActive: true },
+        { id: 'fade-backward', name: 'Fade Backward / Drift', category: 'off-dribble' as const, isActive: true },
+        { id: 'off-dribble-fade', name: 'Off-Dribble Fade', category: 'off-dribble' as const, isActive: true },
+      ],
+      postSection: { enabled: true, moves: ['Fade left shoulder (aggressive)', 'Fade right shoulder (aggressive)', 'Stepback from block'] },
+      offBallPrinciples: ['Games demand awkward shots', 'Train difficulty directly'],
+      defensePrinciples: DEFAULT_DEFENSE_PRINCIPLES,
+      reboundingPrinciples: DEFAULT_REBOUNDING_PRINCIPLES,
+      handlePrinciples: DEFAULT_HANDLE_PRINCIPLES,
+      finishingPrinciples: ['Become stress-proof'],
+    },
+  },
+];
 
 const CATEGORY_COLORS: Record<string, string> = {
   shooting: 'text-gold-500 bg-gold-500/10 border-gold-500/30',
@@ -297,6 +411,7 @@ export default function ElitePlayerDashboardPage() {
   const [newShotType, setNewShotType] = useState('');
   const [newPostMove, setNewPostMove] = useState('');
   const [newPrinciple, setNewPrinciple] = useState({ category: 'offBall', text: '' });
+  const [showImportModal, setShowImportModal] = useState(false);
 
   // Fetch dashboard
   useEffect(() => {
@@ -626,6 +741,41 @@ export default function ElitePlayerDashboardPage() {
     });
   }
 
+  function importProtocolTemplate(templateId: string) {
+    const template = PROTOCOL_TEMPLATES.find(t => t.id === templateId);
+    if (!template || !editingProtocol) return;
+
+    setEditingProtocol({
+      ...editingProtocol,
+      scoringSettings: template.data.scoringSettings,
+      spots: template.data.spots,
+      shotTypeVariety: template.data.shotTypeVariety,
+      postSection: template.data.postSection,
+      offBallPrinciples: template.data.offBallPrinciples,
+      defensePrinciples: template.data.defensePrinciples,
+      reboundingPrinciples: template.data.reboundingPrinciples,
+      handlePrinciples: template.data.handlePrinciples,
+      finishingPrinciples: template.data.finishingPrinciples,
+    });
+    setShowImportModal(false);
+  }
+
+  function resetProtocolToDefaults() {
+    if (!editingProtocol) return;
+    setEditingProtocol({
+      ...editingProtocol,
+      scoringSettings: DEFAULT_SCORING_SETTINGS,
+      spots: DEFAULT_PREGAME_SPOTS,
+      shotTypeVariety: DEFAULT_SHOT_TYPES,
+      postSection: { enabled: true, moves: DEFAULT_POST_MOVES },
+      offBallPrinciples: DEFAULT_OFF_BALL_PRINCIPLES,
+      defensePrinciples: DEFAULT_DEFENSE_PRINCIPLES,
+      reboundingPrinciples: DEFAULT_REBOUNDING_PRINCIPLES,
+      handlePrinciples: DEFAULT_HANDLE_PRINCIPLES,
+      finishingPrinciples: DEFAULT_FINISHING_PRINCIPLES,
+    });
+  }
+
   // Cue handlers
   function addCue() {
     if (!newCueText.trim()) return;
@@ -919,6 +1069,57 @@ export default function ElitePlayerDashboardPage() {
             <div className="px-4 pb-4 space-y-6">
               {editingSection === 'protocol' && editingProtocol ? (
                 <>
+                  {/* Import Templates Bar */}
+                  <div className="flex items-center justify-between p-3 bg-gold-500/10 border border-gold-500/20 rounded-xl">
+                    <div className="flex items-center gap-2">
+                      <Download className="w-4 h-4 text-gold-500" />
+                      <span className="text-sm text-gold-500 font-medium">Import Template</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setShowImportModal(!showImportModal)}
+                        className="px-3 py-1.5 bg-gold-500 hover:bg-gold-600 text-black text-sm font-medium rounded-lg transition-colors"
+                      >
+                        Browse Templates
+                      </button>
+                      <button
+                        onClick={resetProtocolToDefaults}
+                        className="px-3 py-1.5 bg-[#2A2A2A] hover:bg-[#3A3A3A] text-white text-sm rounded-lg transition-colors flex items-center gap-1"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        Reset to Defaults
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Import Modal */}
+                  {showImportModal && (
+                    <div className="p-4 bg-[#0D0D0D] rounded-xl border-2 border-gold-500/30 space-y-3">
+                      <h4 className="text-sm font-semibold text-gold-500 flex items-center gap-2">
+                        <Upload className="w-4 h-4" />
+                        Select a Template to Import
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {PROTOCOL_TEMPLATES.map((template) => (
+                          <button
+                            key={template.id}
+                            onClick={() => importProtocolTemplate(template.id)}
+                            className="p-4 bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl text-left hover:border-gold-500/50 transition-colors"
+                          >
+                            <p className="font-medium text-white">{template.name}</p>
+                            <p className="text-xs text-gray-400 mt-1">{template.description}</p>
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setShowImportModal(false)}
+                        className="text-sm text-gray-400 hover:text-white"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+
                   {/* Editable Scoring */}
                   <div className="p-4 bg-[#0D0D0D] rounded-xl">
                     <div className="flex items-center justify-between mb-3">
