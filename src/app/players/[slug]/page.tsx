@@ -445,13 +445,18 @@ export default function ElitePlayerDashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, ...payload }),
       });
-      if (res.ok) {
+      const data = await res.json();
+      if (res.ok && data.success) {
         await fetchDashboard();
         setEditingSection(null);
         return true;
+      } else {
+        console.error('Save failed:', data);
+        alert(`Save failed: ${data.error || 'Unknown error'}`);
       }
     } catch (err) {
       console.error('Save error:', err);
+      alert(`Save error: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSaving(false);
     }

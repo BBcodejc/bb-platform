@@ -241,29 +241,40 @@ export async function PATCH(
         const weekEnd = new Date();
         const weekStart = new Date(weekEnd.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-        // Delete existing review for this week
-        await supabase
+        // Delete existing review for this week (ignore errors if none exists)
+        const { error: deleteError } = await supabase
           .from('elite_weekly_reviews')
           .delete()
           .eq('player_id', playerId)
           .gte('week_end', weekStart.toISOString().split('T')[0]);
 
+        if (deleteError) {
+          console.log('Delete warning (may be ok):', deleteError);
+        }
+
+        const insertData = {
+          player_id: playerId,
+          week_start: weekStart.toISOString().split('T')[0],
+          week_end: weekEnd.toISOString().split('T')[0],
+          summary: data.summary || '',
+          what_changed: data.whatChanged || [],
+          priorities: data.priorities || [],
+          shooting_trend: data.shootingTrend || 'stable',
+          created_by: data.createdBy || 'Admin',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+
+        console.log('Inserting weekly review:', insertData);
+
         const { error } = await supabase
           .from('elite_weekly_reviews')
-          .insert({
-            player_id: playerId,
-            week_start: weekStart.toISOString().split('T')[0],
-            week_end: weekEnd.toISOString().split('T')[0],
-            summary: data.summary,
-            what_changed: data.whatChanged || [],
-            priorities: data.priorities || [],
-            shooting_trend: data.shootingTrend || 'stable',
-            created_by: data.createdBy || 'Admin',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          });
+          .insert(insertData);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Weekly review insert error:', error);
+          throw error;
+        }
         return NextResponse.json({ success: true });
       }
 
