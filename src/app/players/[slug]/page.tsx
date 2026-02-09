@@ -412,6 +412,8 @@ export default function ElitePlayerDashboardPage() {
   const [newPostMove, setNewPostMove] = useState('');
   const [newPrinciple, setNewPrinciple] = useState({ category: 'offBall', text: '' });
   const [showImportModal, setShowImportModal] = useState(false);
+  const [editingHeadshot, setEditingHeadshot] = useState(false);
+  const [headshotUrl, setHeadshotUrl] = useState('');
 
   // Fetch dashboard
   useEffect(() => {
@@ -776,6 +778,12 @@ export default function ElitePlayerDashboardPage() {
     });
   }
 
+  async function saveHeadshot() {
+    if (!headshotUrl.trim()) return;
+    await saveAction('update_player', { headshotUrl });
+    setEditingHeadshot(false);
+  }
+
   // Cue handlers
   function addCue() {
     if (!newCueText.trim()) return;
@@ -895,8 +903,30 @@ export default function ElitePlayerDashboardPage() {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold-500/20 to-gold-600/10 border-2 border-gold-500/30 flex items-center justify-center">
-                <User className="w-7 h-7 text-gold-500" />
+              {/* Player Avatar / Headshot */}
+              <div className="relative group">
+                {player.headshotUrl ? (
+                  <img
+                    src={player.headshotUrl}
+                    alt={`${player.firstName} ${player.lastName}`}
+                    className="w-14 h-14 rounded-full object-cover border-2 border-gold-500/30"
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold-500/20 to-gold-600/10 border-2 border-gold-500/30 flex items-center justify-center">
+                    <User className="w-7 h-7 text-gold-500" />
+                  </div>
+                )}
+                {isAdmin && (
+                  <button
+                    onClick={() => {
+                      setHeadshotUrl(player.headshotUrl || '');
+                      setEditingHeadshot(true);
+                    }}
+                    className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Edit3 className="w-5 h-5 text-white" />
+                  </button>
+                )}
               </div>
               <div>
                 <h1 className="text-xl font-bold text-white">
@@ -913,6 +943,54 @@ export default function ElitePlayerDashboardPage() {
           </div>
         </div>
       </header>
+
+      {/* Headshot Edit Modal */}
+      {editingHeadshot && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4">
+          <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-6 max-w-md w-full space-y-4">
+            <h3 className="text-lg font-semibold text-white">Update Player Photo</h3>
+            <div>
+              <label className="text-sm text-gray-400 mb-2 block">Image URL</label>
+              <Input
+                value={headshotUrl}
+                onChange={(e) => setHeadshotUrl(e.target.value)}
+                placeholder="https://example.com/photo.jpg"
+                className="bg-[#0D0D0D] border-[#2A2A2A]"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Paste a direct image URL (NBA headshots, team photos, etc.)
+              </p>
+            </div>
+            {headshotUrl && (
+              <div className="flex justify-center">
+                <img
+                  src={headshotUrl}
+                  alt="Preview"
+                  className="w-24 h-24 rounded-full object-cover border-2 border-gold-500/30"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="ghost"
+                onClick={() => setEditingHeadshot(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={saveHeadshot}
+                className="bg-gold-500 hover:bg-gold-600 text-black"
+                disabled={saving}
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Photo'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-4">
         {/* TODAY'S FOCUS */}
