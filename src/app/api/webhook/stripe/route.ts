@@ -69,22 +69,61 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        const prospectId = session.metadata?.prospect_id;
+        // Support both programmatic checkout (metadata) and Payment Links (client_reference_id)
+        let prospectId = session.metadata?.prospect_id || session.client_reference_id;
         const productType = session.metadata?.product_type;
 
+        // If no prospect ID from metadata or client_reference_id, look up by email
         if (!prospectId) {
-          console.error('No prospect_id in session metadata');
+          const customerEmail = session.customer_email || session.customer_details?.email;
+          if (customerEmail) {
+            const { data: prospectByEmail } = await supabase
+              .from('prospects')
+              .select('id')
+              .eq('email', customerEmail)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .single();
+
+            if (prospectByEmail) {
+              prospectId = prospectByEmail.id;
+              console.log(`Found prospect by email ${customerEmail}: ${prospectId}`);
+            }
+          }
+        }
+
+        if (!prospectId) {
+          console.error('No prospect found via metadata, client_reference_id, or email lookup');
           break;
         }
 
-        // Update payment record
+        // Update payment record (if exists from programmatic checkout)
         await supabase
           .from('payments')
           .update({
-            status: 'completed',
+            status: 'succeeded',
             stripe_payment_intent_id: session.payment_intent as string,
           })
           .eq('stripe_checkout_session_id', session.id);
+
+        // Also insert a payment record for Payment Link purchases (no prior record exists)
+        const { data: existingPayment } = await supabase
+          .from('payments')
+          .select('id')
+          .eq('stripe_checkout_session_id', session.id)
+          .single();
+
+        if (!existingPayment) {
+          await supabase.from('payments').insert({
+            prospect_id: prospectId,
+            stripe_checkout_session_id: session.id,
+            stripe_payment_intent_id: session.payment_intent as string,
+            amount: session.amount_total || 25000,
+            currency: session.currency || 'usd',
+            status: 'succeeded',
+            product_type: productType || 'shooting_eval',
+          });
+        }
 
         // Update prospect status
         await supabase
