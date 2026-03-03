@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 import { sendGmailEmail } from '@/lib/gmail';
 import { getEmail1Template, EMAIL_SEQUENCE_CONFIG } from '@/lib/email-templates';
 import type { ApplicationType } from '@/lib/email-templates';
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createServerSupabaseClient();
+    const supabase = createServiceRoleClient();
 
     // Determine role and email based on type
     let role: string;

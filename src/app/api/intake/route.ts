@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 import type { IntakeFormData } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
     const body: IntakeFormData = await request.json();
-    const supabase = createServerSupabaseClient();
+    const supabase = createServiceRoleClient();
 
     // Determine if this is a high-ticket prospect
     const isHighTicket =

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 import { getStripe } from '@/lib/stripe';
 
 const PRODUCTS = {
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 
     // Log the order attempt (table might not exist yet, that's ok)
     try {
-      const supabase = createServerSupabaseClient();
+      const supabase = createServiceRoleClient();
       await supabase.from('gear_orders').insert({
         stripe_checkout_session_id: session.id,
         product_type: product,

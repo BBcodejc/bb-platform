@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 import { BBDecisionEngine, createDecisionContext } from '@/lib/bb-engine/decision-engine';
 
 export const dynamic = 'force-dynamic';
@@ -10,7 +10,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = createServiceRoleClient();
     const { id: playerId } = params;
     const body = await request.json();
     const { dailyContext: inputContext } = body;

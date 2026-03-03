@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 import { createCheckoutSession } from '@/lib/stripe';
 import type { IntakeFormData } from '@/types';
 
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createServerSupabaseClient();
+    const supabase = createServiceRoleClient();
 
     // Determine if this is a high-ticket prospect (safely handle undefined values)
     const isHighTicket =

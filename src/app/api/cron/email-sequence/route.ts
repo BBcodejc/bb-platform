@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 import { sendGmailEmail } from '@/lib/gmail';
 import {
   getEmail2Template,
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const supabase = createServerSupabaseClient();
+  const supabase = createServiceRoleClient();
   const now = new Date().toISOString();
   const results = { email2Sent: 0, email2Failed: 0, email3Sent: 0, email3Failed: 0 };
 

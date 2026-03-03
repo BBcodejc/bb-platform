@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +9,7 @@ export async function PATCH(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = createServiceRoleClient();
     const { slug } = params;
     const body = await request.json();
     const { action, data, coach } = body;

@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 
 export interface EliteTokenUser {
   id: string;
@@ -20,7 +20,7 @@ export async function verifyEliteToken(): Promise<EliteTokenUser | null> {
   if (!token) return null;
 
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = createServiceRoleClient();
     const { data: player, error } = await supabase
       .from('elite_players')
       .select('id, slug, first_name, last_name, is_active')

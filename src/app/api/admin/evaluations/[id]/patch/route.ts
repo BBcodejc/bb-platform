@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createRouteHandlerClient } from '@/lib/supabase';
 import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +15,7 @@ export async function PATCH(
     const { id: evaluationId } = await params;
     const body = await request.json();
 
-    const supabase = createServerSupabaseClient();
+    const supabase = createRouteHandlerClient(request);
 
     // Update the evaluation with the provided data
     const { data, error } = await supabase

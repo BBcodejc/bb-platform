@@ -1,9 +1,11 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import { type NextRequest } from 'next/server';
 
 // Lazy-loaded Supabase client instances
 let _supabase: SupabaseClient | null = null;
 
-// Client-side Supabase client
+// Client-side Supabase client (browser only)
 export function getSupabase(): SupabaseClient {
   if (!_supabase) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -25,8 +27,45 @@ export const supabase = {
   }
 };
 
-// Server-side Supabase client (with service role for admin operations)
-export function createServerSupabaseClient(): SupabaseClient {
+/**
+ * AUTHENTICATED route handler client — uses ANON_KEY + user session cookies.
+ * This client RESPECTS Row Level Security (RLS).
+ * Use this in ALL protected API routes after requireAdmin() passes.
+ */
+export function createRouteHandlerClient(request: NextRequest) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Missing Supabase environment variables');
+  }
+
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      get(name: string) {
+        return request.cookies.get(name)?.value;
+      },
+      set() {},
+      remove() {},
+    },
+    global: {
+      fetch: (url, options = {}) => {
+        return fetch(url, { ...options, cache: 'no-store' });
+      },
+    },
+  });
+}
+
+/**
+ * SERVICE ROLE client — bypasses RLS entirely.
+ * ⚠️  ONLY use for:
+ *   - Webhook handlers (no user session available)
+ *   - Cron jobs
+ *   - Elite player token auth (players don't use Supabase auth)
+ *   - Operations that MUST bypass RLS
+ * NEVER use for routes where a user session exists — use createRouteHandlerClient instead.
+ */
+export function createServiceRoleClient(): SupabaseClient {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -45,6 +84,15 @@ export function createServerSupabaseClient(): SupabaseClient {
       },
     },
   });
+}
+
+/**
+ * @deprecated Use createRouteHandlerClient(request) for protected routes,
+ * or createServiceRoleClient() for webhooks/cron. This alias exists only
+ * for backwards compatibility during migration.
+ */
+export function createServerSupabaseClient(): SupabaseClient {
+  return createServiceRoleClient();
 }
 
 // Database types

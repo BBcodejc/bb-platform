@@ -1,6 +1,6 @@
 'use server';
 
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 import { evaluationReviewSchema, prospectUpdateSchema } from '@/lib/validations/schemas';
 import { revalidatePath } from 'next/cache';
 
@@ -11,7 +11,7 @@ import { revalidatePath } from 'next/cache';
 export async function updateProspect(prospectId: string, data: unknown) {
   try {
     const validatedData = prospectUpdateSchema.parse(data);
-    const supabase = createServerSupabaseClient();
+    const supabase = await createClient();
 
     const { error } = await supabase
       .from('prospects')
@@ -38,7 +38,7 @@ export async function updateProspect(prospectId: string, data: unknown) {
 
 export async function deleteProspect(prospectId: string) {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = await createClient();
 
     const { error } = await supabase
       .from('prospects')
@@ -58,7 +58,7 @@ export async function deleteProspect(prospectId: string) {
 
 export async function updateProspectStatus(prospectId: string, status: string) {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = await createClient();
 
     const { error } = await supabase
       .from('prospects')
@@ -90,7 +90,7 @@ export async function submitEvaluationReview(
 ) {
   try {
     const validatedData = evaluationReviewSchema.parse(data);
-    const supabase = createServerSupabaseClient();
+    const supabase = await createClient();
 
     // Create or update evaluation record
     const { data: existingEval } = await supabase
@@ -160,7 +160,7 @@ export async function submitEvaluationReview(
 
 export async function markEvaluationDelivered(prospectId: string, evaluationId: string) {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = await createClient();
 
     // Update evaluation
     const { error: evalError } = await supabase
@@ -194,7 +194,7 @@ export async function markEvaluationDelivered(prospectId: string, evaluationId: 
 
 export async function rejectEvaluation(prospectId: string, shootingEvaluationId: string, reason: string) {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = await createClient();
 
     // Update shooting evaluation status
     const { error } = await supabase
@@ -228,7 +228,7 @@ export async function createMentorship(
   paymentId: string
 ) {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = await createClient();
 
     const startDate = new Date();
     const endDate = new Date();
@@ -265,7 +265,7 @@ export async function createMentorship(
 
 export async function updateMentorshipStatus(mentorshipId: string, status: string) {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = await createClient();
 
     const { error } = await supabase
       .from('mentorships')
@@ -289,7 +289,7 @@ export async function updateMentorshipStatus(mentorshipId: string, status: strin
 
 export async function promoteToAdmin(email: string) {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = await createClient();
 
     // This calls the database function
     const { error } = await supabase.rpc('promote_to_admin', {
@@ -312,7 +312,7 @@ export async function promoteToAdmin(email: string) {
 
 export async function bulkUpdateStatus(prospectIds: string[], status: string) {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = await createClient();
 
     const { error } = await supabase
       .from('prospects')
@@ -333,7 +333,7 @@ export async function bulkUpdateStatus(prospectIds: string[], status: string) {
 
 export async function exportProspects(filters?: { status?: string; highTicket?: boolean }) {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = await createClient();
 
     let query = supabase.from('prospects').select('*');
 

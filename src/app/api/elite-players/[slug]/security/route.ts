@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 import { sendGmailEmail } from '@/lib/gmail';
 import { requireAdmin } from '@/lib/auth';
 
@@ -14,7 +14,7 @@ export async function GET(
   if (authError) return authError;
 
   const { slug } = await params;
-  const supabase = createServerSupabaseClient();
+  const supabase = createServiceRoleClient();
 
   // Get player
   const { data: player, error: playerError } = await supabase
@@ -68,7 +68,7 @@ export async function POST(
   const body = await request.json();
   const { action } = body;
 
-  const supabase = createServerSupabaseClient();
+  const supabase = createServiceRoleClient();
 
   // Get player
   const { data: player, error: playerError } = await supabase

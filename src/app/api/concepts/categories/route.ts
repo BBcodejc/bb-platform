@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createRouteHandlerClient, createServiceRoleClient } from '@/lib/supabase';
 import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = createServiceRoleClient();
 
     const { data: categories, error } = await supabase
       .from('concept_categories')
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     const { error: authError } = await requireAdmin(request);
     if (authError) return authError;
 
-    const supabase = createServerSupabaseClient();
+    const supabase = createRouteHandlerClient(request);
     const body = await request.json();
 
     const { data, error } = await supabase

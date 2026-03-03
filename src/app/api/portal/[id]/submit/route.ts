@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 
 const NOTIFICATION_EMAIL = 'bbcodejc@gmail.com';
 const FROM_EMAIL = 'Jake from BB <jake@trainwjc.com>';
@@ -49,7 +49,7 @@ export async function POST(
   try {
     const { id: prospectId } = await params;
     const body = await request.json();
-    const supabase = createServerSupabaseClient();
+    const supabase = createServiceRoleClient();
 
     // Transform the evaluation data for database storage
     const evaluationData = {

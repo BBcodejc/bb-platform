@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Calendly Webhook] Booking received: ${inviteeName} <${inviteeEmail}>`);
 
-    const supabase = createServerSupabaseClient();
+    const supabase = createServiceRoleClient();
 
     // 1. Find the prospect by email and update pipeline_status
     const { data: prospect, error: prospectError } = await supabase

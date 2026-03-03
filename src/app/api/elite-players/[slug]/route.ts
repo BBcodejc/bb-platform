@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { requireAdmin } from '@/lib/auth';
+import { requireAdminOrPlayer } from '@/lib/auth';
 import type {
   ElitePlayerDashboard,
   ElitePlayer,
@@ -61,10 +61,9 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { error: authError } = await requireAdmin(request);
-    if (authError) return authError;
-
     const { slug } = await params;
+    const { user, isAdmin, error: authError } = await requireAdminOrPlayer(request, slug);
+    if (authError) return authError;
     const supabase = getSupabaseClient();
 
     // Fetch player by slug

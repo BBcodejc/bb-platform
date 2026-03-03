@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 
-// Admin emails that are allowed to access admin routes
+// Admin emails — the ONLY accounts with admin access
 const ADMIN_EMAILS = [
   'bbcodejc@gmail.com',
-  // Add more admin emails here if needed
 ];
 
 /**
@@ -79,4 +78,47 @@ export async function requireAdmin(request: NextRequest): Promise<{
   }
 
   return { user, error: null };
+}
+
+/**
+ * Verify the request is from an admin OR a valid elite player for this slug.
+ * Elite players authenticate via a `bb-elite-token` httpOnly cookie.
+ * Returns 401 if neither admin nor valid player.
+ */
+export async function requireAdminOrPlayer(
+  request: NextRequest,
+  slug: string
+): Promise<{
+  user: any | null;
+  isAdmin: boolean;
+  error: NextResponse | null;
+}> {
+  // First try admin auth (Supabase session)
+  const { user } = await requireAuth(request);
+
+  if (user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+    return { user, isAdmin: true, error: null };
+  }
+
+  // Then try elite player token auth (bb-elite-token cookie)
+  const eliteToken = request.cookies.get('bb-elite-token')?.value;
+
+  if (eliteToken) {
+    // Return the token — caller verifies it against the DB for this specific slug
+    return {
+      user: { eliteToken, requestedSlug: slug },
+      isAdmin: false,
+      error: null,
+    };
+  }
+
+  // Neither admin nor player
+  return {
+    user: null,
+    isAdmin: false,
+    error: NextResponse.json(
+      { error: 'Unauthorized — admin or player access required' },
+      { status: 401 }
+    ),
+  };
 }

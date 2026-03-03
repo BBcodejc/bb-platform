@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { id: prospectId } = await params;
-    const supabase = createServerSupabaseClient();
+    const supabase = createServiceRoleClient();
 
     // Get shooting evaluation with plan data
     const { data: evaluation, error: evalError } = await supabase
@@ -67,7 +67,7 @@ export async function PATCH(
   try {
     const { id: prospectId } = await params;
     const body = await request.json();
-    const supabase = createServerSupabaseClient();
+    const supabase = createServiceRoleClient();
 
     // Update player logs
     const { error } = await supabase

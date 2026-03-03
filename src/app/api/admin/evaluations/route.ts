@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createRouteHandlerClient } from '@/lib/supabase';
 import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const { error: authError } = await requireAdmin(request);
     if (authError) return authError;
 
-    const supabase = createServerSupabaseClient();
+    const supabase = createRouteHandlerClient(request);
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
 

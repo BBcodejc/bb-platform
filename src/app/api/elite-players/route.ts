@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const { error: authError } = await requireAdmin(request);
     if (authError) return authError;
 
-    const supabase = createServerSupabaseClient();
+    const supabase = createServiceRoleClient();
 
     const { data: players, error } = await supabase
       .from('elite_players')
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const { error: authError } = await requireAdmin(request);
     if (authError) return authError;
 
-    const supabase = createServerSupabaseClient();
+    const supabase = createServiceRoleClient();
     const body = await request.json();
 
     const {
