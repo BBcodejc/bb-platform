@@ -64,12 +64,6 @@ export function BBHeader({ variant = 'default', showNav = true, transparent = tr
                   Masterclass
                 </Link>
                 <Link
-                  href="/library"
-                  className="text-sm text-site-muted hover:text-white transition-colors"
-                >
-                  Library
-                </Link>
-                <Link
                   href="/gear"
                   className="text-sm text-site-muted hover:text-white transition-colors"
                 >
@@ -139,13 +133,6 @@ export function BBHeader({ variant = 'default', showNav = true, transparent = tr
                 className="text-site-muted hover:text-white py-3 border-b border-site-border/50 transition-colors"
               >
                 Masterclass
-              </Link>
-              <Link
-                href="/library"
-                onClick={() => setMobileOpen(false)}
-                className="text-site-muted hover:text-white py-3 border-b border-site-border/50 transition-colors"
-              >
-                Library
               </Link>
               <Link
                 href="/gear"

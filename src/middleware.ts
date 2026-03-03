@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
     '/senaptec',
     '/elite/login',
     '/elite',
-    '/library',
+    // '/library', — REMOVED: library is admin-only
     '/system',
     '/masterclass',
     '/contact',
@@ -42,8 +42,8 @@ export async function middleware(request: NextRequest) {
     '/api/portal',         // Player portal (has own auth)
     '/api/player',         // Player-facing (has own auth)
     '/api/elite/auth',     // Elite auth endpoints
-    '/api/concepts/search',     // Public concept search
-    '/api/concepts/categories', // Public category list
+    // '/api/concepts/search',     — REMOVED: library is admin-only
+    // '/api/concepts/categories', — REMOVED: library is admin-only
     '/api/leads',          // Lead capture form
   ];
 
@@ -57,18 +57,12 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  // Allow public concepts GET (but not POST/PATCH/DELETE — those are checked in route handlers)
-  const isPublicConceptsGet =
-    pathname.startsWith('/api/concepts') &&
-    request.method === 'GET' &&
-    !pathname.includes('/videos');
-
-  if (isPublicRoute || isPublicApi || isPublicConceptsGet) {
+  if (isPublicRoute || isPublicApi) {
     return response;
   }
 
   // For /admin routes AND /api/admin routes, verify authentication at middleware level
-  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin') || pathname.startsWith('/api/elite-players') || pathname.startsWith('/api/coaching') || pathname.startsWith('/api/upload')) {
+  if (pathname.startsWith('/admin') || pathname.startsWith('/library') || pathname.startsWith('/api/admin') || pathname.startsWith('/api/elite-players') || pathname.startsWith('/api/coaching') || pathname.startsWith('/api/upload') || pathname.startsWith('/api/concepts')) {
     try {
       const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
