@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { sendGmailEmail } from '@/lib/gmail';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,6 +10,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const { error: authError } = await requireAdmin(request);
+  if (authError) return authError;
+
   const { slug } = await params;
   const supabase = createServerSupabaseClient();
 
@@ -57,6 +61,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const { error: authError } = await requireAdmin(request);
+  if (authError) return authError;
+
   const { slug } = await params;
   const body = await request.json();
   const { action } = body;

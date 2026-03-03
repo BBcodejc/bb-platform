@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,6 +35,9 @@ export async function PATCH(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { error: authError } = await requireAdmin(request);
+    if (authError) return authError;
+
     const { slug } = await params;
     const body = await request.json();
     const { action, ...data } = body;
@@ -452,6 +456,9 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { error: authError } = await requireAdmin(request);
+    if (authError) return authError;
+
     const { slug } = await params;
     const body = await request.json();
 

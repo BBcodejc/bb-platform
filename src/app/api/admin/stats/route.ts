@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/auth';
 import Stripe from 'stripe';
 
 // Force dynamic rendering
@@ -7,8 +8,11 @@ export const dynamic = 'force-dynamic';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { error: authError } = await requireAdmin(request);
+    if (authError) return authError;
+
     const supabase = createServerSupabaseClient();
 
     // Get total prospects count

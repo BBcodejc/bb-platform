@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +9,9 @@ export async function GET(
   { params }: { params: Promise<{ clientSlug: string }> }
 ) {
   try {
+    const { error: authError } = await requireAdmin(request);
+    if (authError) return authError;
+
     const { clientSlug } = await params;
     const supabase = createServerSupabaseClient();
 

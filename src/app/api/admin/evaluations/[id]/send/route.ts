@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/auth';
 import { structuredPlanToDetailedHtml } from '@/lib/seven-day-plan';
 
 const FROM_EMAIL = 'Jake from BB <jake@trainwjc.com>';
@@ -99,6 +100,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { error: authError } = await requireAdmin(request);
+    if (authError) return authError;
+
     const { id: prospectId } = await params;
     const body = await request.json();
     const supabase = createServerSupabaseClient();

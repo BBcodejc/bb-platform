@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,6 +10,9 @@ export async function GET(
   { params }: { params: { slug: string; sessionId: string } }
 ) {
   try {
+    const { error: authError } = await requireAdmin(request);
+    if (authError) return authError;
+
     const supabase = createServerSupabaseClient();
     const { slug, sessionId } = params;
     const url = new URL(request.url);
@@ -77,6 +81,9 @@ export async function PATCH(
   { params }: { params: { slug: string; sessionId: string } }
 ) {
   try {
+    const { error: authError } = await requireAdmin(request);
+    if (authError) return authError;
+
     const supabase = createServerSupabaseClient();
     const { slug, sessionId } = params;
     const body = await request.json();

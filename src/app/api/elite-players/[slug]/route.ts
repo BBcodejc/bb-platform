@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAdmin } from '@/lib/auth';
 import type {
   ElitePlayerDashboard,
   ElitePlayer,
@@ -60,6 +61,9 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { error: authError } = await requireAdmin(request);
+    if (authError) return authError;
+
     const { slug } = await params;
     const supabase = getSupabaseClient();
 
@@ -226,7 +230,6 @@ function transformPlayer(data: any): ElitePlayer {
     bbLevel: data.bb_level,
     bbLevelName: data.bb_level_name,
     seasonStatus: data.season_status,
-    accessToken: data.access_token,
     isActive: data.is_active,
     createdAt: data.created_at,
     updatedAt: data.updated_at,

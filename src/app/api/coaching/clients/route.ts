@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,8 +11,11 @@ function slugify(firstName: string, lastName: string): string {
     .replace(/^-|-$/g, '');
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { error: authError } = await requireAdmin(request);
+    if (authError) return authError;
+
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('coaching_clients')
@@ -32,6 +36,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const { error: authError } = await requireAdmin(request);
+    if (authError) return authError;
+
     const supabase = createServerSupabaseClient();
     const body = await request.json();
 
