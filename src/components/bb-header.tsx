@@ -58,12 +58,6 @@ export function BBHeader({ variant = 'default', showNav = true, transparent = tr
             {showNav && variant === 'default' && (
               <nav className="hidden md:flex items-center gap-6">
                 <Link
-                  href="/system"
-                  className="text-sm text-site-muted hover:text-white transition-colors"
-                >
-                  The System
-                </Link>
-                <Link
                   href="/masterclass"
                   className="text-sm text-site-muted hover:text-white transition-colors"
                 >
@@ -138,13 +132,6 @@ export function BBHeader({ variant = 'default', showNav = true, transparent = tr
                 className="text-white font-medium py-3 border-b border-site-border/50"
               >
                 Home
-              </Link>
-              <Link
-                href="/system"
-                onClick={() => setMobileOpen(false)}
-                className="text-site-muted hover:text-white py-3 border-b border-site-border/50 transition-colors"
-              >
-                The System
               </Link>
               <Link
                 href="/masterclass"
