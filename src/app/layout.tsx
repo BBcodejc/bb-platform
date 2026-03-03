@@ -1,10 +1,22 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Barlow_Condensed, DM_Sans } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
+const barlow = Barlow_Condensed({
+  subsets: ['latin'],
+  weight: ['700', '800'],
+  variable: '--font-barlow',
+  display: 'swap',
+});
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+});
 
 // Google Analytics Measurement ID - you'll need to create this in Google Analytics
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
@@ -59,7 +71,7 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className={`${inter.className} bg-bb-black text-white antialiased`}>
+      <body className={`${inter.className} ${barlow.variable} ${dmSans.variable} bg-bb-black text-white antialiased`}>
         {children}
         <Analytics />
         <SpeedInsights />

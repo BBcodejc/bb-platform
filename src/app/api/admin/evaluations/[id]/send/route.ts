@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { structuredPlanToDetailedHtml } from '@/lib/seven-day-plan';
 
 const FROM_EMAIL = 'Jake from BB <jake@trainwjc.com>';
 const REPLY_TO_EMAIL = 'bbcodejc@gmail.com';
@@ -179,9 +180,11 @@ export async function POST(
       'Player';
     const firstName = playerName.split(' ')[0];
 
-    // Build 7-day plan HTML
+    // Build 7-day plan HTML — prefer full detailed version from structured plan
     const sevenDayPlan = body.sevenDayPlan as SevenDayPlan | undefined;
-    const sevenDayPlanHtml = sevenDayPlan ? `
+    const sevenDayPlanHtml = body.structuredSevenDayPlan
+      ? structuredPlanToDetailedHtml(body.structuredSevenDayPlan)
+      : sevenDayPlan ? `
       <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
         ${(['day1', 'day2', 'day3', 'day4', 'day5', 'day6', 'day7'] as const).map((day, i) => {
           const plan = sevenDayPlan[day];
@@ -302,10 +305,10 @@ export async function POST(
       </div>
       ` : ''}
 
-      ${sevenDayPlan ? `
+      ${sevenDayPlanHtml ? `
       <div class="section">
         <h2 class="section-title">Your 7-Day Plan</h2>
-        <p>Follow this plan for the next week, then retest to see your progress:</p>
+        <p>Follow this plan for the next week, then retest to see your progress. Each day below shows exactly what to do — every drill, every rep, every timing.</p>
         ${sevenDayPlanHtml}
       </div>
       ` : ''}
@@ -319,12 +322,12 @@ export async function POST(
       </div>
       ` : ''}
 
-      ${body.structuredSevenDayPlan?.playerPlanLogEnabled ? `
+      ${body.structuredSevenDayPlan ? `
       <div class="section" style="text-align: center; margin-top: 30px;">
         <a href="https://bb-platform-virid.vercel.app/portal/${prospectId}/plan" class="cta-button" style="display: inline-block; background: #d4af37; color: #1a1a1a !important; padding: 15px 35px; text-decoration: none; font-weight: 600; border-radius: 6px;">
           View & Track Your 7-Day Plan →
         </a>
-        <p style="margin-top: 10px; font-size: 13px; color: #666;">Log your workouts, track progress, and see detailed instructions</p>
+        <p style="margin-top: 10px; font-size: 13px; color: #666;">View your full plan with interactive tracking and detailed workout instructions</p>
       </div>
       ` : ''}
 

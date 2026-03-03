@@ -43,12 +43,12 @@ const sessions = [
   {
     id: 'off-day',
     name: 'Off Day',
-    duration: '10-18 min',
+    duration: '35-50 min',
     icon: <Sun className="w-6 h-6" />,
-    description: 'Maintain + sharpen without fatigue. Keep your calibration sharp.',
+    description: 'Deep distance work, off-dribble calibration, and precision control.',
     color: 'green',
     href: '/start-here/off-day',
-    best: 'Recovery days or when you want light maintenance work',
+    best: 'Off days when you want to push range and sharpen your command',
   },
 ];
 

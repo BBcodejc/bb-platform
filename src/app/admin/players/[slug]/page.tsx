@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useState, useEffect, Suspense, useRef } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -21,6 +21,20 @@ import {
   Settings,
   Calendar,
   TrendingUp,
+  ClipboardList,
+  Shield,
+  Copy,
+  RefreshCw,
+  Mail,
+  Power,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Mic,
+  Square,
+  Upload,
+  Play,
+  Pause,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,13 +46,26 @@ import type { ElitePlayerDashboard, PregameCue, LimitingFactor } from '@/types/e
 const COACHES = ['Coach Jake', 'Tommy', 'BB Staff'];
 
 export default function AdminPlayerEditorPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-bb-black flex items-center justify-center text-gray-400">Loading...</div>}>
+      <AdminPlayerEditorContent />
+    </Suspense>
+  );
+}
+
+function AdminPlayerEditorContent() {
   const params = useParams();
   const slug = params.slug as string;
+  const searchParams = useSearchParams();
+
+  const validTabs = ['focus', 'cues', 'factors', 'videos', 'stats', 'notes', 'weekly', 'sessions', 'player', 'security'] as const;
+  type TabType = typeof validTabs[number];
+  const initialTab = validTabs.includes(searchParams.get('tab') as TabType) ? (searchParams.get('tab') as TabType) : 'focus';
 
   const [dashboard, setDashboard] = useState<ElitePlayerDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'focus' | 'cues' | 'factors' | 'videos' | 'stats' | 'notes' | 'weekly' | 'player'>('focus');
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [selectedCoach, setSelectedCoach] = useState('Coach Jake');
 
   // Form states
@@ -59,6 +86,31 @@ export default function AdminPlayerEditorPage() {
   const [newFactor, setNewFactor] = useState({ name: '', description: '', cue: '', severity: 'medium', notes: '' });
   const [newVideo, setNewVideo] = useState({ title: '', url: '', bbCue: '', tags: '' });
   const [newNote, setNewNote] = useState('');
+
+  // Security state
+  const [securityData, setSecurityData] = useState<{
+    email: string | null;
+    lastActiveAt: string | null;
+    accessToken: string | null;
+    isActive: boolean;
+    hasActiveSession: boolean;
+    loginHistory: Array<{ id: string; loginAt: string; ipAddress: string; userAgent: string }>;
+  } | null>(null);
+  const [securityLoading, setSecurityLoading] = useState(false);
+  const [playerEmail, setPlayerEmail] = useState('');
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
+  const [sendingInvite, setSendingInvite] = useState(false);
+  const [regeneratingToken, setRegeneratingToken] = useState(false);
+
+  // Voice note state
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [voiceNoteTitle, setVoiceNoteTitle] = useState('');
+  const [uploadingVoiceNote, setUploadingVoiceNote] = useState(false);
+  const [recordedAudio, setRecordedAudio] = useState<Blob | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Weekly Review
   const [weeklyReview, setWeeklyReview] = useState({
@@ -149,6 +201,263 @@ export default function AdminPlayerEditorPage() {
       setSaving(false);
     }
     return false;
+  }
+
+  // Security handlers
+  async function fetchSecurityData() {
+    setSecurityLoading(true);
+    try {
+      const res = await fetch(`/api/elite-players/${slug}/security`);
+      if (res.ok) {
+        const data = await res.json();
+        setSecurityData(data);
+        setPlayerEmail(data.email || '');
+      }
+    } catch (err) {
+      console.error('Security fetch error:', err);
+    } finally {
+      setSecurityLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === 'security') {
+      fetchSecurityData();
+    }
+  }, [activeTab]);
+
+  async function handleCopyToClipboard(text: string, label: string) {
+    await navigator.clipboard.writeText(text);
+    setCopyFeedback(label);
+    setTimeout(() => setCopyFeedback(null), 2000);
+  }
+
+  async function handleRegenerateToken() {
+    if (!confirm('This will invalidate the current token. The player will need the new token to log in. Continue?')) return;
+    setRegeneratingToken(true);
+    try {
+      await fetch(`/api/elite-players/${slug}/security`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'regenerate_token' }),
+      });
+      await fetchSecurityData();
+      await fetchDashboard();
+    } finally {
+      setRegeneratingToken(false);
+    }
+  }
+
+  async function handleSendInvite() {
+    if (!playerEmail) {
+      alert('Please enter a player email first');
+      return;
+    }
+    setSendingInvite(true);
+    try {
+      const res = await fetch(`/api/elite-players/${slug}/security`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'send_invite', email: playerEmail }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Invite email sent!');
+        await fetchSecurityData();
+      } else {
+        alert('Failed to send: ' + (data.error || 'Unknown error'));
+      }
+    } finally {
+      setSendingInvite(false);
+    }
+  }
+
+  async function handleSaveEmail() {
+    await fetch(`/api/elite-players/${slug}/security`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'update_email', email: playerEmail }),
+    });
+    await fetchSecurityData();
+  }
+
+  async function handleToggleAccess() {
+    const action = securityData?.isActive ? 'revoke_access' : 'restore_access';
+    const msg = securityData?.isActive
+      ? 'This will deactivate the player and invalidate their session. Continue?'
+      : 'This will reactivate the player. Continue?';
+    if (!confirm(msg)) return;
+    await fetch(`/api/elite-players/${slug}/security`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action }),
+    });
+    await fetchSecurityData();
+    await fetchDashboard();
+  }
+
+  function formatUserAgent(ua: string): string {
+    if (!ua || ua === 'unknown') return 'Unknown';
+    if (ua.includes('Chrome')) return 'Chrome';
+    if (ua.includes('Safari')) return 'Safari';
+    if (ua.includes('Firefox')) return 'Firefox';
+    if (ua.includes('Edge')) return 'Edge';
+    return ua.substring(0, 40) + '...';
+  }
+
+  // Voice note handlers
+  function formatVoiceDuration(seconds: number): string {
+    const mm = Math.floor(seconds / 60);
+    const ss = seconds % 60;
+    return `${mm}:${ss.toString().padStart(2, '0')}`;
+  }
+
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Try codecs in order of preference
+      let mimeType = 'audio/webm;codecs=opus';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'audio/webm';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'audio/mp4';
+        }
+      }
+      const recorder = new MediaRecorder(stream, { mimeType });
+      audioChunksRef.current = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: mimeType });
+        setRecordedAudio(blob);
+      };
+
+      recorder.start(1000);
+      mediaRecorderRef.current = recorder;
+      setIsRecording(true);
+      setRecordingDuration(0);
+      setRecordedAudio(null);
+
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingDuration(prev => prev + 1);
+      }, 1000);
+    } catch (err) {
+      console.error('Microphone access denied:', err);
+      alert('Microphone access is required to record voice notes. Please allow microphone access in your browser settings.');
+    }
+  }
+
+  function stopRecording() {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
+    }
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
+    setIsRecording(false);
+  }
+
+  async function handleUploadVoiceNote(audioBlob: Blob, title: string) {
+    if (!title.trim()) {
+      alert('Please enter a title for the voice note');
+      return;
+    }
+    setUploadingVoiceNote(true);
+    try {
+      const ext = audioBlob.type.includes('mp4') ? 'm4a' : audioBlob.type.includes('mpeg') ? 'mp3' : 'webm';
+      const file = new File([audioBlob], `voice-note.${ext}`, { type: audioBlob.type });
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('slug', slug);
+      formData.append('title', title);
+
+      const uploadRes = await fetch('/api/upload/voice-note', { method: 'POST', body: formData });
+      if (!uploadRes.ok) {
+        const err = await uploadRes.json();
+        throw new Error(err.error || 'Upload failed');
+      }
+      const { url } = await uploadRes.json();
+
+      // Save to DB via admin API
+      await saveAction('add_voice_note', {
+        title,
+        url,
+        duration: recordingDuration || 0,
+        transcript: '',
+        createdBy: selectedCoach,
+      });
+
+      // Reset state
+      setVoiceNoteTitle('');
+      setRecordedAudio(null);
+      setRecordingDuration(0);
+    } catch (err) {
+      console.error('Voice note upload error:', err);
+      alert('Failed to upload voice note');
+    } finally {
+      setUploadingVoiceNote(false);
+    }
+  }
+
+  async function handleVoiceFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const title = voiceNoteTitle || file.name.replace(/\.[^/.]+$/, '');
+
+    // Read duration from file
+    const audio = new Audio();
+    audio.src = URL.createObjectURL(file);
+    audio.onloadedmetadata = () => {
+      setRecordingDuration(Math.round(audio.duration));
+      URL.revokeObjectURL(audio.src);
+    };
+
+    setUploadingVoiceNote(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('slug', slug);
+      formData.append('title', title);
+
+      const uploadRes = await fetch('/api/upload/voice-note', { method: 'POST', body: formData });
+      if (!uploadRes.ok) {
+        const err = await uploadRes.json();
+        throw new Error(err.error || 'Upload failed');
+      }
+      const { url } = await uploadRes.json();
+
+      await saveAction('add_voice_note', {
+        title,
+        url,
+        duration: Math.round(audio.duration || 0),
+        transcript: '',
+        createdBy: selectedCoach,
+      });
+
+      setVoiceNoteTitle('');
+      setRecordedAudio(null);
+      setRecordingDuration(0);
+    } catch (err) {
+      console.error('Voice file upload error:', err);
+      alert('Failed to upload voice note');
+    } finally {
+      setUploadingVoiceNote(false);
+    }
+
+    // Reset file input
+    e.target.value = '';
+  }
+
+  async function handleDeleteVoiceNote(id: string) {
+    if (!confirm('Delete this voice note?')) return;
+    await saveAction('delete_voice_note', { id });
   }
 
   // Focus handlers
@@ -412,7 +721,9 @@ export default function AdminPlayerEditorPage() {
               { id: 'videos', label: 'Videos', icon: Video },
               { id: 'stats', label: 'Game Stats', icon: BarChart3 },
               { id: 'notes', label: 'Coach Notes', icon: FileText },
+              { id: 'sessions', label: 'Sessions', icon: Calendar },
               { id: 'player', label: 'Player Info', icon: Settings },
+              { id: 'security', label: 'Security', icon: Shield },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -1020,7 +1331,196 @@ export default function AdminPlayerEditorPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* VOICE NOTES */}
+            <Card className="bg-bb-card border-bb-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mic className="w-5 h-5 text-green-400" />
+                  Voice Notes ({dashboard.voiceNotes?.length || 0})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Title Input */}
+                <Input
+                  value={voiceNoteTitle}
+                  onChange={(e) => setVoiceNoteTitle(e.target.value)}
+                  placeholder="Voice note title..."
+                  className="bg-bb-dark/50"
+                />
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  {!isRecording ? (
+                    <Button
+                      onClick={startRecording}
+                      variant="outline"
+                      size="sm"
+                      className="border-bb-border text-gray-300 hover:text-white hover:border-green-500"
+                      disabled={uploadingVoiceNote}
+                    >
+                      <Mic className="w-4 h-4 mr-2 text-green-400" />
+                      Record
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={stopRecording}
+                      size="sm"
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      <span className="w-2 h-2 bg-red-300 rounded-full animate-pulse mr-2" />
+                      <Square className="w-3.5 h-3.5 mr-2" />
+                      Stop ({formatVoiceDuration(recordingDuration)})
+                    </Button>
+                  )}
+
+                  <input
+                    id="voice-note-file-input"
+                    type="file"
+                    accept="audio/*"
+                    className="hidden"
+                    onChange={handleVoiceFileUpload}
+                    disabled={uploadingVoiceNote || isRecording}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-bb-border text-gray-300 hover:text-white cursor-pointer"
+                    disabled={uploadingVoiceNote || isRecording}
+                    onClick={() => document.getElementById('voice-note-file-input')?.click()}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload File
+                  </Button>
+                </div>
+
+                {/* Recorded Audio Preview */}
+                {recordedAudio && !isRecording && (
+                  <div className="p-4 rounded-lg bg-bb-dark/50 border border-bb-border space-y-3">
+                    <audio
+                      src={URL.createObjectURL(recordedAudio)}
+                      controls
+                      className="w-full h-10"
+                    />
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">
+                        {formatVoiceDuration(recordingDuration)} recorded
+                      </span>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => { setRecordedAudio(null); setRecordingDuration(0); }}
+                          className="border-bb-border text-gray-400"
+                        >
+                          Discard
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleUploadVoiceNote(recordedAudio, voiceNoteTitle || 'Voice Note')}
+                          disabled={uploadingVoiceNote}
+                          className="bg-gold-500 hover:bg-gold-600 text-black"
+                        >
+                          <Save className="w-4 h-4 mr-1" />
+                          {uploadingVoiceNote ? 'Saving...' : 'Save'}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {uploadingVoiceNote && !recordedAudio && (
+                  <p className="text-gold-500 text-sm animate-pulse">Uploading voice note...</p>
+                )}
+
+                {/* Existing Voice Notes List */}
+                {(dashboard.voiceNotes && dashboard.voiceNotes.length > 0) && (
+                  <div className="space-y-2 pt-4 border-t border-bb-border">
+                    {dashboard.voiceNotes.map((note) => (
+                      <div key={note.id} className="flex items-center gap-3 p-3 rounded-lg bg-bb-dark/50 border border-bb-border">
+                        <audio src={note.url} controls className="flex-1 h-8" style={{ minWidth: 0 }} />
+                        <div className="min-w-0 flex-shrink-0">
+                          <p className="text-sm text-white truncate max-w-[140px]">{note.title}</p>
+                          <p className="text-xs text-gray-500">
+                            {note.createdBy}
+                            {note.duration ? ` · ${formatVoiceDuration(note.duration)}` : ''}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteVoiceNote(note.id)}
+                          className="text-red-400 hover:text-red-300 p-1 flex-shrink-0"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {(!dashboard.voiceNotes || dashboard.voiceNotes.length === 0) && (
+                  <p className="text-gray-500 text-sm text-center py-2">No voice notes yet</p>
+                )}
+              </CardContent>
+            </Card>
           </div>
+        )}
+
+        {/* SESSIONS */}
+        {activeTab === 'sessions' && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Training Sessions</CardTitle>
+                <Link href={`/admin/players/${slug}/sessions`}>
+                  <Button size="sm" className="bg-gold-500 hover:bg-gold-600 text-black">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Open Calendar View
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-400 text-sm mb-4">
+                View and manage all training sessions, pre-game routines, and evaluations in the full calendar view.
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <Link
+                  href={`/admin/players/${slug}/sessions`}
+                  className="p-4 rounded-xl bg-bb-dark/50 border border-bb-border hover:border-gold-500/30 transition-colors text-center"
+                >
+                  <Calendar className="w-6 h-6 text-gold-500 mx-auto mb-2" />
+                  <p className="text-sm font-medium text-white">Calendar</p>
+                  <p className="text-xs text-gray-500">Monthly view</p>
+                </Link>
+                <Link
+                  href={`/elite/${slug}/pregame`}
+                  target="_blank"
+                  className="p-4 rounded-xl bg-bb-dark/50 border border-bb-border hover:border-gold-500/30 transition-colors text-center"
+                >
+                  <Target className="w-6 h-6 text-gold-500 mx-auto mb-2" />
+                  <p className="text-sm font-medium text-white">Pre-Game</p>
+                  <p className="text-xs text-gray-500">Today's routine</p>
+                </Link>
+                <Link
+                  href={`/admin/players/${slug}/postgame`}
+                  className="p-4 rounded-xl bg-bb-dark/50 border border-bb-border hover:border-amber-500/30 transition-colors text-center"
+                >
+                  <ClipboardList className="w-6 h-6 text-amber-400 mx-auto mb-2" />
+                  <p className="text-sm font-medium text-white">Post-Game</p>
+                  <p className="text-xs text-gray-500">Shot analysis</p>
+                </Link>
+                <Link
+                  href={`/elite/${slug}`}
+                  target="_blank"
+                  className="p-4 rounded-xl bg-bb-dark/50 border border-bb-border hover:border-gold-500/30 transition-colors text-center"
+                >
+                  <ExternalLink className="w-6 h-6 text-gold-500 mx-auto mb-2" />
+                  <p className="text-sm font-medium text-white">Profile</p>
+                  <p className="text-xs text-gray-500">Player view</p>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* PLAYER INFO */}
@@ -1093,6 +1593,258 @@ export default function AdminPlayerEditorPage() {
               </Button>
             </CardContent>
           </Card>
+        )}
+
+        {/* ==================== SECURITY TAB ==================== */}
+        {activeTab === 'security' && (
+          <div className="space-y-6">
+            {securityLoading ? (
+              <div className="text-center py-12 text-gray-400">Loading security data...</div>
+            ) : securityData ? (
+              <>
+                {/* Credentials Card */}
+                <Card className="bg-bb-card border-bb-border">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Shield className="w-5 h-5 text-gold-500" />
+                      Credentials
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Access Token */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">Access Token</label>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 px-3 py-2 bg-bb-dark/50 border border-bb-border rounded-lg text-gold-500 font-mono text-sm">
+                          {securityData.accessToken || 'No token set'}
+                        </code>
+                        {securityData.accessToken && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCopyToClipboard(securityData.accessToken!, 'token')}
+                            className="border-bb-border text-gray-300 hover:text-white"
+                          >
+                            {copyFeedback === 'token' ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Player Email */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">Player Email</label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="email"
+                          value={playerEmail}
+                          onChange={(e) => setPlayerEmail(e.target.value)}
+                          placeholder="player@email.com"
+                          className="bg-bb-dark/50 flex-1"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleSaveEmail}
+                          className="border-bb-border text-gray-300 hover:text-white"
+                        >
+                          <Save className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Direct Login URL */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">Direct Login URL</label>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 px-3 py-2 bg-bb-dark/50 border border-bb-border rounded-lg text-gray-300 font-mono text-xs overflow-hidden text-ellipsis whitespace-nowrap">
+                          {`https://bb-platform-virid.vercel.app/elite/${slug}?token=${securityData.accessToken || ''}`}
+                        </code>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCopyToClipboard(
+                            `https://bb-platform-virid.vercel.app/elite/${slug}?token=${securityData.accessToken || ''}`,
+                            'url'
+                          )}
+                          className="border-bb-border text-gray-300 hover:text-white"
+                        >
+                          {copyFeedback === 'url' ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Actions Card */}
+                <Card className="bg-bb-card border-bb-border">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-gold-500" />
+                      Actions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex flex-wrap gap-3">
+                      <Button
+                        onClick={handleRegenerateToken}
+                        disabled={regeneratingToken}
+                        variant="outline"
+                        className="border-bb-border text-gray-300 hover:text-white hover:border-gold-500"
+                      >
+                        <RefreshCw className={cn("w-4 h-4 mr-2", regeneratingToken && "animate-spin")} />
+                        {regeneratingToken ? 'Regenerating...' : 'Regenerate Token'}
+                      </Button>
+                      <Button
+                        onClick={handleSendInvite}
+                        disabled={sendingInvite || !playerEmail}
+                        variant="outline"
+                        className="border-bb-border text-gray-300 hover:text-white hover:border-gold-500"
+                      >
+                        <Mail className={cn("w-4 h-4 mr-2", sendingInvite && "animate-pulse")} />
+                        {sendingInvite ? 'Sending...' : 'Send Invite Email'}
+                      </Button>
+                    </div>
+                    {!playerEmail && (
+                      <p className="text-xs text-gray-500">Add a player email above to enable invite sending.</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Status Card */}
+                <Card className="bg-bb-card border-bb-border">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-gold-500" />
+                      Status
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      {/* Account Status */}
+                      <div className="bg-bb-dark/50 rounded-lg p-4 border border-bb-border">
+                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Account</div>
+                        <div className="flex items-center gap-2">
+                          {securityData.isActive ? (
+                            <>
+                              <CheckCircle2 className="w-4 h-4 text-green-500" />
+                              <span className="text-green-400 font-medium">Active</span>
+                            </>
+                          ) : (
+                            <>
+                              <XCircle className="w-4 h-4 text-red-500" />
+                              <span className="text-red-400 font-medium">Inactive</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Last Active */}
+                      <div className="bg-bb-dark/50 rounded-lg p-4 border border-bb-border">
+                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Last Active</div>
+                        <div className="flex items-center gap-2 text-gray-300">
+                          <Clock className="w-4 h-4 text-gray-500" />
+                          <span className="text-sm">
+                            {securityData.lastActiveAt
+                              ? new Date(securityData.lastActiveAt).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                  hour: 'numeric',
+                                  minute: '2-digit',
+                                })
+                              : 'Never'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Session */}
+                      <div className="bg-bb-dark/50 rounded-lg p-4 border border-bb-border">
+                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Session</div>
+                        <div className="flex items-center gap-2">
+                          {securityData.hasActiveSession ? (
+                            <>
+                              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                              <span className="text-green-400 text-sm">Active Session</span>
+                            </>
+                          ) : (
+                            <>
+                              <div className="w-2 h-2 rounded-full bg-gray-600" />
+                              <span className="text-gray-500 text-sm">No Active Session</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={handleToggleAccess}
+                      variant="outline"
+                      className={cn(
+                        "border-bb-border",
+                        securityData.isActive
+                          ? "text-red-400 hover:text-red-300 hover:border-red-500"
+                          : "text-green-400 hover:text-green-300 hover:border-green-500"
+                      )}
+                    >
+                      <Power className="w-4 h-4 mr-2" />
+                      {securityData.isActive ? 'Revoke Access' : 'Restore Access'}
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Login History */}
+                <Card className="bg-bb-card border-bb-border">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-gold-500" />
+                      Login History
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {securityData.loginHistory.length === 0 ? (
+                      <p className="text-gray-500 text-sm text-center py-4">No login history yet.</p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-bb-border text-gray-400 text-left">
+                              <th className="pb-2 pr-4">Date</th>
+                              <th className="pb-2 pr-4">IP Address</th>
+                              <th className="pb-2">Browser</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {securityData.loginHistory.map((entry) => (
+                              <tr key={entry.id} className="border-b border-bb-border/50">
+                                <td className="py-2 pr-4 text-gray-300">
+                                  {new Date(entry.loginAt).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                    hour: 'numeric',
+                                    minute: '2-digit',
+                                  })}
+                                </td>
+                                <td className="py-2 pr-4 text-gray-400 font-mono text-xs">
+                                  {entry.ipAddress || 'Unknown'}
+                                </td>
+                                <td className="py-2 text-gray-400">
+                                  {formatUserAgent(entry.userAgent)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              <div className="text-center py-12 text-gray-400">Failed to load security data.</div>
+            )}
+          </div>
         )}
       </main>
     </div>

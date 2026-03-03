@@ -73,15 +73,23 @@ export default function ElitePlayersAdminPage() {
             <div className="flex items-center gap-3">
               <Users className="w-8 h-8 text-gold-500" />
               <div>
-                <h1 className="text-2xl font-bold text-white">Elite Players</h1>
-                <p className="text-gray-400">Manage NBA, Pro & Elite College Players</p>
+                <h1 className="text-2xl font-bold text-white">BB Players</h1>
+                <p className="text-gray-400">Manage NBA, Pro & College Players</p>
               </div>
             </div>
-            <Link href="/admin">
-              <Button variant="ghost" className="text-gray-400 hover:text-white">
-                Back to Admin
-              </Button>
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link href="/admin/elite-players/new">
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Player
+                </Button>
+              </Link>
+              <Link href="/admin">
+                <Button variant="ghost" className="text-gray-400 hover:text-white">
+                  Back to Admin
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -95,19 +103,16 @@ export default function ElitePlayersAdminPage() {
           <Card>
             <CardContent className="py-12 text-center">
               <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">No Elite Players Yet</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">No BB Players Yet</h3>
               <p className="text-gray-400 mb-6">
-                Run the database migration to add Tobias Harris as the first player.
+                Add your first player to get started with BB profiles.
               </p>
-              <div className="p-4 rounded-lg bg-bb-dark border border-bb-border text-left max-w-xl mx-auto">
-                <p className="text-sm text-gray-400 mb-2">Run this SQL migration:</p>
-                <code className="text-sm text-gold-400 block">
-                  supabase db push
-                </code>
-                <p className="text-sm text-gray-500 mt-2">
-                  or apply the migration file: supabase/migrations/elite_players_schema.sql
-                </p>
-              </div>
+              <Link href="/admin/elite-players/new">
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add First Player
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         ) : (
@@ -162,13 +167,19 @@ export default function ElitePlayersAdminPage() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2">
-                      <Link href={`/players/${player.slug}?admin=true`}>
+                      <Link href={`/admin/players/${player.slug}`}>
                         <Button size="sm" variant="ghost" className="text-gray-400 hover:text-white">
                           <Edit3 className="w-4 h-4 mr-1" />
                           Edit
                         </Button>
                       </Link>
-                      <Link href={`/players/${player.slug}`} target="_blank">
+                      <Link href={`/admin/players/${player.slug}/sessions`}>
+                        <Button size="sm" variant="ghost" className="text-gray-400 hover:text-white">
+                          <Calendar className="w-4 h-4 mr-1" />
+                          Sessions
+                        </Button>
+                      </Link>
+                      <Link href={`/elite/${player.slug}`} target="_blank">
                         <Button size="sm" variant="ghost" className="text-gray-400 hover:text-white">
                           <ExternalLink className="w-4 h-4 mr-1" />
                           View

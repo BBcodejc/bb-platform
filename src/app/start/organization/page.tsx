@@ -2,358 +2,249 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Loader2, Building2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
+import { BBHeader } from '@/components/bb-header';
+import { BBFooter } from '@/components/bb-footer';
+import { useScrollReveal } from '@/lib/hooks';
+import { Loader2 } from 'lucide-react';
 
-const ORG_TYPES = [
-  { value: 'nba', label: 'NBA Team' },
-  { value: 'college', label: 'College Program' },
-  { value: 'high_school', label: 'High School' },
-  { value: 'aau', label: 'AAU / Club' },
-  { value: 'academy', label: 'Training Academy' },
-  { value: 'other', label: 'Other' },
-];
+const ORG_LEVELS = ['Pro', 'College', 'High School', 'Academy', 'AAU', 'Other'];
+const HOW_HEARD = ['Instagram', 'Referral', 'Google', 'Masterclass', 'Other'];
 
-const PLAYER_COUNT = [
-  { value: '1-10', label: '1-10 players' },
-  { value: '11-25', label: '11-25 players' },
-  { value: '26-50', label: '26-50 players' },
-  { value: '50+', label: '50+ players' },
-];
-
-const SUPPORT_NEEDS = [
-  { value: 'player_development', label: 'Player development system' },
-  { value: 'coach_training', label: 'Coach training & certification' },
-  { value: 'assessment_tools', label: 'Assessment tools' },
-  { value: 'full_integration', label: 'Full BB integration' },
-  { value: 'consulting', label: 'Consulting / Strategy' },
-];
+const inputClass =
+  'w-full bg-site-primary border border-site-border rounded-lg px-4 py-3 text-white placeholder:text-site-dim focus:border-site-gold/50 focus:outline-none focus:ring-1 focus:ring-site-gold/30 transition-colors';
+const labelClass = 'block text-sm text-site-muted mb-1.5 font-medium';
 
 export default function OrganizationInquiryPage() {
   const router = useRouter();
+  const { ref: heroRef, isVisible: heroVisible } = useScrollReveal();
+
+  const [orgName, setOrgName] = useState('');
+  const [contactName, setContactName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [role, setRole] = useState('');
+  const [level, setLevel] = useState('');
+  const [rosterSize, setRosterSize] = useState('');
+  const [goals, setGoals] = useState('');
+  const [howHeard, setHowHeard] = useState('');
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [formData, setFormData] = useState({
-    contactName: '',
-    email: '',
-    phone: '',
-    orgName: '',
-    orgType: '',
-    playerCount: '',
-    currentChallenge: '',
-    idealOutcome: '',
-    supportNeeded: '',
-    timeline: '',
-    additionalInfo: '',
-  });
-
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: '' }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.contactName.trim()) newErrors.contactName = 'Required';
-    if (!formData.email.trim()) {
-      newErrors.email = 'Required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email';
-    }
-    if (!formData.orgName.trim()) newErrors.orgName = 'Required';
-    if (!formData.orgType) newErrors.orgType = 'Required';
-    if (!formData.currentChallenge.trim()) newErrors.currentChallenge = 'Required';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) return;
-
+    setError('');
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/applications', {
+      const res = await fetch('/api/applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'organization_inquiry',
-          ...formData,
+          firstName: contactName.split(' ')[0],
+          lastName: contactName.split(' ').slice(1).join(' '),
+          email,
+          phone,
+          orgName,
+          orgType: level,
+          playerCount: rosterSize,
+          currentChallenge: goals,
+          howHeard,
+          role,
         }),
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        router.push(`/start/thank-you?type=organization&name=${encodeURIComponent(formData.contactName.split(' ')[0])}`);
+      if (res.ok) {
+        router.push(
+          `/start/thank-you?type=organization&name=${encodeURIComponent(contactName.split(' ')[0])}`
+        );
       } else {
-        throw new Error(data.error || 'Failed to submit inquiry');
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || 'Submission failed. Please try again.');
       }
-    } catch (error) {
-      console.error('Inquiry error:', error);
-      setErrors({ form: 'Something went wrong. Please try again.' });
+    } catch (err: any) {
+      setError(err?.message || 'Something went wrong. Please try again.');
       setIsSubmitting(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-bb-black">
-      {/* Header */}
-      <header className="border-b border-bb-border bg-bb-dark/50 backdrop-blur-lg sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-gold-500 font-bold tracking-wider text-sm">
-            BASKETBALL BIOMECHANICS
-          </Link>
-          <Link href="/start" className="text-gray-400 hover:text-white text-sm transition-colors flex items-center gap-1">
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Link>
-        </div>
-      </header>
+    <main className="min-h-screen bg-site-primary font-dm-sans">
+      <BBHeader transparent={false} />
 
-      <div className="max-w-xl mx-auto px-4 py-12">
+      <div className="pt-24 pb-20 px-4">
         {/* Hero */}
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 rounded-full bg-gold-500/20 flex items-center justify-center mx-auto mb-4">
-            <Building2 className="w-8 h-8 text-gold-500" />
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
-            Team & Organization Inquiry
+        <div
+          ref={heroRef}
+          className={`max-w-xl mx-auto text-center mb-10 transition-all duration-700 ${
+            heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}
+        >
+          <h1 className="text-3xl md:text-4xl font-barlow font-extrabold text-white mb-3">
+            Bring BB To Your Program
           </h1>
-          <p className="text-gray-400">
-            Integrate the BB methodology into your program at scale.
+          <p className="text-site-muted">
+            For colleges, pro teams, academies, and serious high school programs.
           </p>
         </div>
 
-        {/* Form */}
-        <Card variant="glass">
-          <CardContent className="p-6 md:p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Contact Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Your Name *
-                </label>
-                <Input
-                  type="text"
-                  value={formData.contactName}
-                  onChange={(e) => handleChange('contactName', e.target.value)}
-                  placeholder="John Smith"
-                  className={errors.contactName ? 'border-red-500' : ''}
-                />
-              </div>
+        {/* Form Card */}
+        <form
+          onSubmit={handleSubmit}
+          className="max-w-xl mx-auto bg-site-card border border-site-border rounded-xl p-6 sm:p-8 space-y-5"
+        >
+          {/* Organization Name */}
+          <div>
+            <label className={labelClass}>Organization Name *</label>
+            <input
+              type="text"
+              required
+              value={orgName}
+              onChange={(e) => setOrgName(e.target.value)}
+              placeholder="Team or program name"
+              className={inputClass}
+            />
+          </div>
 
-              {/* Email & Phone */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Email *
-                  </label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleChange('email', e.target.value)}
-                    placeholder="you@org.com"
-                    className={errors.email ? 'border-red-500' : ''}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Phone
-                  </label>
-                  <Input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleChange('phone', e.target.value)}
-                    placeholder="(555) 123-4567"
-                  />
-                </div>
-              </div>
+          {/* Contact Name */}
+          <div>
+            <label className={labelClass}>Contact Name *</label>
+            <input
+              type="text"
+              required
+              value={contactName}
+              onChange={(e) => setContactName(e.target.value)}
+              placeholder="Your full name"
+              className={inputClass}
+            />
+          </div>
 
-              {/* Organization Name & Type */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Organization Name *
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.orgName}
-                    onChange={(e) => handleChange('orgName', e.target.value)}
-                    placeholder="Team / School name"
-                    className={errors.orgName ? 'border-red-500' : ''}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Organization Type *
-                  </label>
-                  <select
-                    value={formData.orgType}
-                    onChange={(e) => handleChange('orgType', e.target.value)}
-                    className={`w-full px-3 py-2 bg-bb-card border rounded-lg text-white focus:ring-2 focus:ring-gold-500 ${
-                      errors.orgType ? 'border-red-500' : 'border-bb-border'
-                    }`}
-                  >
-                    <option value="">Select type...</option>
-                    {ORG_TYPES.map((type) => (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+          {/* Email */}
+          <div>
+            <label className={labelClass}>Email *</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@organization.com"
+              className={inputClass}
+            />
+          </div>
 
-              {/* Player Count */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  How many players are in your program?
-                </label>
-                <select
-                  value={formData.playerCount}
-                  onChange={(e) => handleChange('playerCount', e.target.value)}
-                  className="w-full px-3 py-2 bg-bb-card border border-bb-border rounded-lg text-white focus:ring-2 focus:ring-gold-500"
-                >
-                  <option value="">Select range...</option>
-                  {PLAYER_COUNT.map((count) => (
-                    <option key={count.value} value={count.value}>
-                      {count.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Phone */}
+          <div>
+            <label className={labelClass}>Phone *</label>
+            <input
+              type="tel"
+              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="(555) 123-4567"
+              className={inputClass}
+            />
+          </div>
 
-              {/* Current Challenge */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  What&apos;s your biggest challenge with player development? *
-                </label>
-                <Textarea
-                  value={formData.currentChallenge}
-                  onChange={(e) => handleChange('currentChallenge', e.target.value)}
-                  placeholder="e.g., Inconsistent shooting across the roster, lack of standardized development system..."
-                  rows={3}
-                  className={errors.currentChallenge ? 'border-red-500' : ''}
-                />
-              </div>
+          {/* Role/Title */}
+          <div>
+            <label className={labelClass}>Role / Title</label>
+            <input
+              type="text"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              placeholder="e.g. Head Coach, Director of Player Development"
+              className={inputClass}
+            />
+          </div>
 
-              {/* Ideal Outcome */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  What would success look like for your program?
-                </label>
-                <Textarea
-                  value={formData.idealOutcome}
-                  onChange={(e) => handleChange('idealOutcome', e.target.value)}
-                  placeholder="e.g., Every player has a clear development path, coaches share a common language..."
-                  rows={3}
-                />
-              </div>
+          {/* Organization Level */}
+          <div>
+            <label className={labelClass}>Organization Level *</label>
+            <select
+              required
+              value={level}
+              onChange={(e) => setLevel(e.target.value)}
+              className={`${inputClass} ${!level ? 'text-site-dim' : ''}`}
+            >
+              <option value="">Select level...</option>
+              {ORG_LEVELS.map((l) => (
+                <option key={l} value={l}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              {/* Support Needed */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  What type of support are you looking for?
-                </label>
-                <select
-                  value={formData.supportNeeded}
-                  onChange={(e) => handleChange('supportNeeded', e.target.value)}
-                  className="w-full px-3 py-2 bg-bb-card border border-bb-border rounded-lg text-white focus:ring-2 focus:ring-gold-500"
-                >
-                  <option value="">Select support type...</option>
-                  {SUPPORT_NEEDS.map((need) => (
-                    <option key={need.value} value={need.value}>
-                      {need.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Roster Size */}
+          <div>
+            <label className={labelClass}>Roster Size</label>
+            <input
+              type="number"
+              value={rosterSize}
+              onChange={(e) => setRosterSize(e.target.value)}
+              placeholder="Number of players"
+              className={inputClass}
+            />
+          </div>
 
-              {/* Timeline */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  What&apos;s your timeline?
-                </label>
-                <Input
-                  type="text"
-                  value={formData.timeline}
-                  onChange={(e) => handleChange('timeline', e.target.value)}
-                  placeholder="e.g., Before next season, ASAP, exploratory..."
-                />
-              </div>
+          {/* Goals */}
+          <div>
+            <label className={labelClass}>What are you looking to address? *</label>
+            <textarea
+              required
+              value={goals}
+              onChange={(e) => setGoals(e.target.value)}
+              placeholder="Describe what your program needs..."
+              rows={4}
+              className={`${inputClass} resize-none`}
+            />
+          </div>
 
-              {/* Additional Info */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Anything else we should know?
-                </label>
-                <Textarea
-                  value={formData.additionalInfo}
-                  onChange={(e) => handleChange('additionalInfo', e.target.value)}
-                  placeholder="Any other context that would help us understand your needs..."
-                  rows={3}
-                />
-              </div>
+          {/* How Heard */}
+          <div>
+            <label className={labelClass}>How did you hear about BB? *</label>
+            <select
+              required
+              value={howHeard}
+              onChange={(e) => setHowHeard(e.target.value)}
+              className={`${inputClass} ${!howHeard ? 'text-site-dim' : ''}`}
+            >
+              <option value="">Select...</option>
+              {HOW_HEARD.map((h) => (
+                <option key={h} value={h}>
+                  {h}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              {/* Error message */}
-              {errors.form && (
-                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                  <p className="text-red-400 text-sm">{errors.form}</p>
-                </div>
-              )}
+          {/* Error */}
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
 
-              {/* Info box */}
-              <div className="p-4 bg-bb-card border border-bb-border rounded-lg">
-                <p className="text-sm text-gray-400">
-                  <span className="text-white font-medium">This is an inquiry, not a commitment.</span>{' '}
-                  We&apos;ll review your needs and reach out to discuss how BB can support your program.
-                </p>
-              </div>
-
-              {/* Submit button */}
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    Submit Inquiry
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </>
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Individual eval link */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500">
-            Looking for individual player development?{' '}
-            <Link href="/start/shooting" className="text-gold-500 hover:underline">
-              Get a BB Shooting Evaluation ($250)
-            </Link>
-          </p>
-        </div>
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-site-gold hover:bg-site-gold-hover text-site-primary font-barlow font-bold uppercase tracking-wider py-3.5 rounded-lg transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              'Submit Inquiry'
+            )}
+          </button>
+        </form>
       </div>
+
+      <BBFooter />
     </main>
   );
 }

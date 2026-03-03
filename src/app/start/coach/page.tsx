@@ -3,11 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Loader2, GraduationCap } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
+import { Loader2, GraduationCap } from 'lucide-react';
+import { BBHeader } from '@/components/bb-header';
+import { BBFooter } from '@/components/bb-footer';
+import { useScrollReveal } from '@/lib/hooks';
 
 const COACHING_ROLES = [
   { value: 'trainer', label: 'Skills Trainer' },
@@ -32,341 +31,318 @@ const INVESTMENT_INTEREST = [
   { value: 'no', label: 'No' },
 ];
 
+const inputClass =
+  'w-full bg-site-primary border border-site-border rounded-lg px-4 py-3 text-white placeholder:text-site-dim focus:border-site-gold/50 focus:outline-none focus:ring-1 focus:ring-site-gold/30 transition-colors';
+const labelClass = 'block text-sm text-site-muted mb-1.5 font-medium';
+
 export default function CoachCertificationPage() {
   const router = useRouter();
+  const { ref: heroRef, isVisible: heroVisible } = useScrollReveal();
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [location, setLocation] = useState('');
+  const [coachingRole, setCoachingRole] = useState('');
+  const [yearsCoaching, setYearsCoaching] = useState('');
+  const [playerLevelWorkWith, setPlayerLevelWorkWith] = useState('');
+  const [whyInterested, setWhyInterested] = useState('');
+  const [currentTrainingStyle, setCurrentTrainingStyle] = useState('');
+  const [investmentInterest, setInvestmentInterest] = useState('');
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    location: '',
-    coachingRole: '',
-    yearsCoaching: '',
-    playerLevelWorkWith: '',
-    whyInterested: '',
-    currentTrainingStyle: '',
-    investmentInterest: '',
-  });
-
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: '' }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.firstName.trim()) newErrors.firstName = 'Required';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Required';
-    if (!formData.email.trim()) {
-      newErrors.email = 'Required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email';
-    }
-    if (!formData.phone.trim()) newErrors.phone = 'Required';
-    if (!formData.coachingRole) newErrors.coachingRole = 'Required';
-    if (!formData.whyInterested.trim()) newErrors.whyInterested = 'Required';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) return;
-
+    setError('');
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/applications', {
+      const res = await fetch('/api/applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'coach_cert_application',
-          ...formData,
+          firstName,
+          lastName,
+          email,
+          phone,
+          location,
+          coachingRole,
+          yearsCoaching,
+          playerLevelWorkWith,
+          whyInterested,
+          currentTrainingStyle,
+          investmentInterest,
         }),
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        router.push(`/start/thank-you?type=coach&name=${encodeURIComponent(formData.firstName)}`);
+      if (res.ok) {
+        router.push(
+          `/start/thank-you?type=coach&name=${encodeURIComponent(firstName)}`
+        );
       } else {
-        throw new Error(data.error || 'Failed to submit application');
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || 'Submission failed. Please try again.');
       }
-    } catch (error) {
-      console.error('Application error:', error);
-      setErrors({ form: 'Something went wrong. Please try again.' });
+    } catch (err: any) {
+      setError(err?.message || 'Something went wrong. Please try again.');
       setIsSubmitting(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-bb-black">
-      {/* Header */}
-      <header className="border-b border-bb-border bg-bb-dark/50 backdrop-blur-lg sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-gold-500 font-bold tracking-wider text-sm">
-            BASKETBALL BIOMECHANICS
-          </Link>
-          <Link href="/start" className="text-gray-400 hover:text-white text-sm transition-colors flex items-center gap-1">
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Link>
-        </div>
-      </header>
+    <main className="min-h-screen bg-site-primary font-dm-sans">
+      <BBHeader transparent={false} />
 
-      <div className="max-w-xl mx-auto px-4 py-12">
+      <div className="pt-24 pb-20 px-4">
         {/* Hero */}
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 rounded-full bg-gold-500/20 flex items-center justify-center mx-auto mb-4">
-            <GraduationCap className="w-8 h-8 text-gold-500" />
+        <div
+          ref={heroRef}
+          className={`max-w-xl mx-auto text-center mb-10 transition-all duration-700 ${
+            heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}
+        >
+          <div className="w-16 h-16 rounded-full bg-site-gold/20 flex items-center justify-center mx-auto mb-5">
+            <GraduationCap className="w-8 h-8 text-site-gold" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+          <h1 className="text-3xl md:text-4xl font-barlow font-extrabold text-white mb-3">
             BB Coach Certification
           </h1>
-          <p className="text-gray-400">
+          <p className="text-site-muted">
             Learn the BB lens and get certified to use it with your players.
           </p>
         </div>
 
-        {/* Form */}
-        <Card variant="glass">
-          <CardContent className="p-6 md:p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Name fields */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    First Name *
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) => handleChange('firstName', e.target.value)}
-                    placeholder="John"
-                    className={errors.firstName ? 'border-red-500' : ''}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Last Name *
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) => handleChange('lastName', e.target.value)}
-                    placeholder="Doe"
-                    className={errors.lastName ? 'border-red-500' : ''}
-                  />
-                </div>
-              </div>
+        {/* Form Card */}
+        <form
+          onSubmit={handleSubmit}
+          className="max-w-xl mx-auto bg-site-card border border-site-border rounded-xl p-6 sm:p-8 space-y-5"
+        >
+          {/* Name fields */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>First Name *</label>
+              <input
+                type="text"
+                required
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="John"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Last Name *</label>
+              <input
+                type="text"
+                required
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Doe"
+                className={inputClass}
+              />
+            </div>
+          </div>
 
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Email *
-                </label>
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  placeholder="you@example.com"
-                  className={errors.email ? 'border-red-500' : ''}
-                />
-              </div>
+          {/* Email */}
+          <div>
+            <label className={labelClass}>Email *</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@email.com"
+              className={inputClass}
+            />
+          </div>
 
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Phone *
-                </label>
-                <Input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                  placeholder="(555) 123-4567"
-                  className={errors.phone ? 'border-red-500' : ''}
-                />
-              </div>
+          {/* Phone */}
+          <div>
+            <label className={labelClass}>Phone *</label>
+            <input
+              type="tel"
+              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="(555) 123-4567"
+              className={inputClass}
+            />
+          </div>
 
-              {/* Location */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  City / Country
-                </label>
-                <Input
-                  type="text"
-                  value={formData.location}
-                  onChange={(e) => handleChange('location', e.target.value)}
-                  placeholder="Los Angeles, CA"
-                />
-              </div>
+          {/* Location */}
+          <div>
+            <label className={labelClass}>City / Country</label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Los Angeles, CA"
+              className={inputClass}
+            />
+          </div>
 
-              {/* Coaching role & years */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Coaching Role *
-                  </label>
-                  <select
-                    value={formData.coachingRole}
-                    onChange={(e) => handleChange('coachingRole', e.target.value)}
-                    className={`w-full px-3 py-2 bg-bb-card border rounded-lg text-white focus:ring-2 focus:ring-gold-500 ${
-                      errors.coachingRole ? 'border-red-500' : 'border-bb-border'
-                    }`}
-                  >
-                    <option value="">Select role...</option>
-                    {COACHING_ROLES.map((role) => (
-                      <option key={role.value} value={role.value}>
-                        {role.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Years Coaching
-                  </label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="50"
-                    value={formData.yearsCoaching}
-                    onChange={(e) => handleChange('yearsCoaching', e.target.value)}
-                    placeholder="5"
-                  />
-                </div>
-              </div>
-
-              {/* Who they work with */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Who do you mainly work with?
-                </label>
-                <select
-                  value={formData.playerLevelWorkWith}
-                  onChange={(e) => handleChange('playerLevelWorkWith', e.target.value)}
-                  className="w-full px-3 py-2 bg-bb-card border border-bb-border rounded-lg text-white focus:ring-2 focus:ring-gold-500"
-                >
-                  <option value="">Select level...</option>
-                  {PLAYER_LEVELS_WORK_WITH.map((level) => (
-                    <option key={level.value} value={level.value}>
-                      {level.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Why interested */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Why are you interested in the Basketball Biomechanics lens? *
-                </label>
-                <Textarea
-                  value={formData.whyInterested}
-                  onChange={(e) => handleChange('whyInterested', e.target.value)}
-                  placeholder="What drew you to BB? What are you hoping to learn or change about how you train players?"
-                  rows={4}
-                  className={errors.whyInterested ? 'border-red-500' : ''}
-                />
-              </div>
-
-              {/* Current training style */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  How do you currently train players? (describe a typical session)
-                </label>
-                <Textarea
-                  value={formData.currentTrainingStyle}
-                  onChange={(e) => handleChange('currentTrainingStyle', e.target.value)}
-                  placeholder="e.g., warm-up, form shooting, game shots, 1v1, etc."
-                  rows={3}
-                />
-              </div>
-
-              {/* Investment interest */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Are you open to investing in a mentorship / certification if there&apos;s a good fit?
-                </label>
-                <div className="flex gap-3">
-                  {INVESTMENT_INTEREST.map((option) => (
-                    <label
-                      key={option.value}
-                      className={`flex-1 text-center p-3 rounded-lg border cursor-pointer transition-colors ${
-                        formData.investmentInterest === option.value
-                          ? 'border-gold-500 bg-gold-500/10'
-                          : 'border-bb-border hover:border-gray-600'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="investmentInterest"
-                        value={option.value}
-                        checked={formData.investmentInterest === option.value}
-                        onChange={(e) => handleChange('investmentInterest', e.target.value)}
-                        className="sr-only"
-                      />
-                      <span className="text-white">{option.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Error message */}
-              {errors.form && (
-                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                  <p className="text-red-400 text-sm">{errors.form}</p>
-                </div>
-              )}
-
-              {/* Info box */}
-              <div className="p-4 bg-bb-card border border-bb-border rounded-lg">
-                <p className="text-sm text-gray-400">
-                  <span className="text-white font-medium">This is an application, not a purchase.</span>{' '}
-                  We&apos;ll review your profile and reach out to discuss next steps for BB Certification.
-                </p>
-              </div>
-
-              {/* Submit button */}
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full"
-                disabled={isSubmitting}
+          {/* Coaching role & years */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Coaching Role *</label>
+              <select
+                required
+                value={coachingRole}
+                onChange={(e) => setCoachingRole(e.target.value)}
+                className={`${inputClass} ${!coachingRole ? 'text-site-dim' : ''}`}
               >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    Submit Application
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </>
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+                <option value="">Select role...</option>
+                {COACHING_ROLES.map((role) => (
+                  <option key={role.value} value={role.value}>
+                    {role.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>Years Coaching</label>
+              <input
+                type="number"
+                min="0"
+                max="50"
+                value={yearsCoaching}
+                onChange={(e) => setYearsCoaching(e.target.value)}
+                placeholder="5"
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          {/* Who they work with */}
+          <div>
+            <label className={labelClass}>Who do you mainly work with?</label>
+            <select
+              value={playerLevelWorkWith}
+              onChange={(e) => setPlayerLevelWorkWith(e.target.value)}
+              className={`${inputClass} ${!playerLevelWorkWith ? 'text-site-dim' : ''}`}
+            >
+              <option value="">Select level...</option>
+              {PLAYER_LEVELS_WORK_WITH.map((level) => (
+                <option key={level.value} value={level.value}>
+                  {level.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Why interested */}
+          <div>
+            <label className={labelClass}>
+              Why are you interested in the Basketball Biomechanics lens? *
+            </label>
+            <textarea
+              required
+              value={whyInterested}
+              onChange={(e) => setWhyInterested(e.target.value)}
+              placeholder="What drew you to BB? What are you hoping to learn or change about how you train players?"
+              rows={4}
+              className={`${inputClass} resize-none`}
+            />
+          </div>
+
+          {/* Current training style */}
+          <div>
+            <label className={labelClass}>
+              How do you currently train players? (describe a typical session)
+            </label>
+            <textarea
+              value={currentTrainingStyle}
+              onChange={(e) => setCurrentTrainingStyle(e.target.value)}
+              placeholder="e.g., warm-up, form shooting, game shots, 1v1, etc."
+              rows={3}
+              className={`${inputClass} resize-none`}
+            />
+          </div>
+
+          {/* Investment interest */}
+          <div>
+            <label className={labelClass}>
+              Are you open to investing in a mentorship / certification if
+              there&apos;s a good fit?
+            </label>
+            <div className="flex gap-3">
+              {INVESTMENT_INTEREST.map((option) => (
+                <label
+                  key={option.value}
+                  className={`flex-1 text-center p-3.5 rounded-lg border cursor-pointer transition-all ${
+                    investmentInterest === option.value
+                      ? 'border-site-gold bg-site-gold/10'
+                      : 'border-site-border hover:border-site-border/80 bg-site-primary'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="investmentInterest"
+                    value={option.value}
+                    checked={investmentInterest === option.value}
+                    onChange={(e) => setInvestmentInterest(e.target.value)}
+                    className="sr-only"
+                  />
+                  <span className="text-white text-sm">{option.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Info box */}
+          <div className="p-4 bg-site-secondary border border-site-border rounded-lg">
+            <p className="text-sm text-site-muted">
+              <span className="text-white font-medium">
+                This is an application, not a purchase.
+              </span>{' '}
+              We&apos;ll review your profile and reach out to discuss next steps
+              for BB Certification.
+            </p>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-site-gold hover:bg-site-gold-hover text-site-primary font-barlow font-bold uppercase tracking-wider py-3.5 rounded-lg transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              'Submit Application'
+            )}
+          </button>
+        </form>
 
         {/* Shooting eval link */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500">
+        <div className="max-w-xl mx-auto mt-10 text-center">
+          <p className="text-sm text-site-dim">
             Need to test the methodology on yourself first?{' '}
-            <Link href="/start/shooting" className="text-gold-500 hover:underline">
+            <Link
+              href="/start/shooting"
+              className="text-site-gold hover:text-site-gold-hover transition-colors"
+            >
               Get the BB Shooting Evaluation ($250)
             </Link>
           </p>
         </div>
       </div>
+
+      <BBFooter />
     </main>
   );
 }

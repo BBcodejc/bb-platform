@@ -17,6 +17,8 @@ import type {
 } from '@/types/elite-player';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -26,10 +28,29 @@ function getSupabaseClient() {
     throw new Error('Supabase configuration missing');
   }
 
+  // Create a completely fresh client each time with cache-busting
   return createClient(supabaseUrl, supabaseKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
+    },
+    db: {
+      schema: 'public',
+    },
+    global: {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'x-cache-bust': Date.now().toString(),
+      },
+      fetch: (url, options) => {
+        // Force no caching on fetch
+        return fetch(url, {
+          ...options,
+          cache: 'no-store',
+          next: { revalidate: 0 },
+        });
+      },
     },
   });
 }

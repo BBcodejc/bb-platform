@@ -3,11 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Loader2, Zap } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
+import { Loader2, Zap } from 'lucide-react';
+import { BBHeader } from '@/components/bb-header';
+import { BBFooter } from '@/components/bb-footer';
+import { useScrollReveal } from '@/lib/hooks';
 
 const PLAYER_LEVELS = [
   { value: 'youth', label: 'Youth (Under 14)' },
@@ -23,348 +22,326 @@ const COMMITMENT_LEVELS = [
   { value: 'all_in', label: 'All in' },
 ];
 
+const inputClass =
+  'w-full bg-site-primary border border-site-border rounded-lg px-4 py-3 text-white placeholder:text-site-dim focus:border-site-gold/50 focus:outline-none focus:ring-1 focus:ring-site-gold/30 transition-colors';
+const labelClass = 'block text-sm text-site-muted mb-1.5 font-medium';
+
 export default function FullAssessmentPage() {
   const router = useRouter();
+  const { ref: heroRef, isVisible: heroVisible } = useScrollReveal();
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [playerAge, setPlayerAge] = useState('');
+  const [playerLevel, setPlayerLevel] = useState('');
+  const [position, setPosition] = useState('');
+  const [currentSituation, setCurrentSituation] = useState('');
+  const [biggestProblems, setBiggestProblems] = useState('');
+  const [whatTried, setWhatTried] = useState('');
+  const [commitmentLevel, setCommitmentLevel] = useState('');
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    playerLevel: '',
-    playerAge: '',
-    position: '',
-    currentSituation: '',
-    biggestProblems: '',
-    whatTried: '',
-    commitmentLevel: '',
-  });
-
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: '' }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.firstName.trim()) newErrors.firstName = 'Required';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Required';
-    if (!formData.email.trim()) {
-      newErrors.email = 'Required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email';
-    }
-    if (!formData.phone.trim()) newErrors.phone = 'Required';
-    if (!formData.playerLevel) newErrors.playerLevel = 'Required';
-    if (!formData.biggestProblems.trim()) newErrors.biggestProblems = 'Required';
-    if (!formData.commitmentLevel) newErrors.commitmentLevel = 'Required';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) return;
-
+    setError('');
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/applications', {
+      const res = await fetch('/api/applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'full_assessment_application',
-          ...formData,
+          firstName,
+          lastName,
+          email,
+          phone,
+          playerAge: parseInt(playerAge) || undefined,
+          playerLevel,
+          position,
+          currentSituation,
+          biggestProblems,
+          whatTried,
+          commitmentLevel,
         }),
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        router.push(`/start/thank-you?type=full-assessment&name=${encodeURIComponent(formData.firstName)}`);
+      if (res.ok) {
+        router.push(
+          `/start/thank-you?type=full-assessment&name=${encodeURIComponent(firstName)}`
+        );
       } else {
-        throw new Error(data.error || 'Failed to submit application');
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || 'Submission failed. Please try again.');
       }
-    } catch (error) {
-      console.error('Application error:', error);
-      setErrors({ form: 'Something went wrong. Please try again.' });
+    } catch (err: any) {
+      setError(err?.message || 'Something went wrong. Please try again.');
       setIsSubmitting(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-bb-black">
-      {/* Header */}
-      <header className="border-b border-bb-border bg-bb-dark/50 backdrop-blur-lg sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-gold-500 font-bold tracking-wider text-sm">
-            BASKETBALL BIOMECHANICS
-          </Link>
-          <Link href="/start" className="text-gray-400 hover:text-white text-sm transition-colors flex items-center gap-1">
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Link>
-        </div>
-      </header>
+    <main className="min-h-screen bg-site-primary font-dm-sans">
+      <BBHeader transparent={false} />
 
-      <div className="max-w-xl mx-auto px-4 py-12">
+      <div className="pt-24 pb-20 px-4">
         {/* Hero */}
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 rounded-full bg-gold-500/20 flex items-center justify-center mx-auto mb-4">
-            <Zap className="w-8 h-8 text-gold-500" />
+        <div
+          ref={heroRef}
+          className={`max-w-xl mx-auto text-center mb-10 transition-all duration-700 ${
+            heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}
+        >
+          <div className="w-16 h-16 rounded-full bg-site-gold/20 flex items-center justify-center mx-auto mb-5">
+            <Zap className="w-8 h-8 text-site-gold" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+          <h1 className="text-3xl md:text-4xl font-barlow font-extrabold text-white mb-3">
             BB Full Assessment Application
           </h1>
-          <p className="text-gray-400">
-            Apply for the 3-month BB Mentorship. This covers movement, deception, and shooting transformation.
+          <p className="text-site-muted">
+            Apply for the 3-month BB Mentorship. This covers movement, deception,
+            and shooting transformation — every dimension of your game.
           </p>
         </div>
 
-        {/* Form */}
-        <Card variant="glass">
-          <CardContent className="p-6 md:p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Name fields */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    First Name *
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) => handleChange('firstName', e.target.value)}
-                    placeholder="John"
-                    className={errors.firstName ? 'border-red-500' : ''}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Last Name *
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) => handleChange('lastName', e.target.value)}
-                    placeholder="Doe"
-                    className={errors.lastName ? 'border-red-500' : ''}
-                  />
-                </div>
-              </div>
+        {/* Form Card */}
+        <form
+          onSubmit={handleSubmit}
+          className="max-w-xl mx-auto bg-site-card border border-site-border rounded-xl p-6 sm:p-8 space-y-5"
+        >
+          {/* Name fields */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>First Name *</label>
+              <input
+                type="text"
+                required
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="John"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Last Name *</label>
+              <input
+                type="text"
+                required
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Doe"
+                className={inputClass}
+              />
+            </div>
+          </div>
 
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Email *
-                </label>
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  placeholder="you@example.com"
-                  className={errors.email ? 'border-red-500' : ''}
-                />
-              </div>
+          {/* Email */}
+          <div>
+            <label className={labelClass}>Email *</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@email.com"
+              className={inputClass}
+            />
+          </div>
 
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Phone *
-                </label>
-                <Input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                  placeholder="(555) 123-4567"
-                  className={errors.phone ? 'border-red-500' : ''}
-                />
-              </div>
+          {/* Phone */}
+          <div>
+            <label className={labelClass}>Phone *</label>
+            <input
+              type="tel"
+              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="(555) 123-4567"
+              className={inputClass}
+            />
+          </div>
 
-              {/* Age & Level */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Age
-                  </label>
-                  <Input
-                    type="number"
-                    min="8"
-                    max="50"
-                    value={formData.playerAge}
-                    onChange={(e) => handleChange('playerAge', e.target.value)}
-                    placeholder="16"
+          {/* Age & Level */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Age</label>
+              <input
+                type="number"
+                min="8"
+                max="50"
+                value={playerAge}
+                onChange={(e) => setPlayerAge(e.target.value)}
+                placeholder="16"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Level *</label>
+              <select
+                required
+                value={playerLevel}
+                onChange={(e) => setPlayerLevel(e.target.value)}
+                className={`${inputClass} ${!playerLevel ? 'text-site-dim' : ''}`}
+              >
+                <option value="">Select level...</option>
+                {PLAYER_LEVELS.map((level) => (
+                  <option key={level.value} value={level.value}>
+                    {level.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Position & Current Situation */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Primary Position</label>
+              <input
+                type="text"
+                value={position}
+                onChange={(e) => setPosition(e.target.value)}
+                placeholder="PG, SG, SF..."
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Current Situation</label>
+              <input
+                type="text"
+                value={currentSituation}
+                onChange={(e) => setCurrentSituation(e.target.value)}
+                placeholder="HS varsity, JUCO, Euro pro..."
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          {/* Biggest problems */}
+          <div>
+            <label className={labelClass}>
+              What are the 2–3 biggest problems holding your game back? *
+            </label>
+            <textarea
+              required
+              value={biggestProblems}
+              onChange={(e) => setBiggestProblems(e.target.value)}
+              placeholder="Be specific. e.g., 'I can't create separation off the dribble', 'I freeze under pressure', 'My shot is inconsistent from game to game'..."
+              rows={4}
+              className={`${inputClass} resize-none`}
+            />
+          </div>
+
+          {/* What they've tried */}
+          <div>
+            <label className={labelClass}>
+              What have you already tried to fix it?
+            </label>
+            <textarea
+              value={whatTried}
+              onChange={(e) => setWhatTried(e.target.value)}
+              placeholder="e.g., worked with trainers, watched YouTube, did shooting drills..."
+              rows={3}
+              className={`${inputClass} resize-none`}
+            />
+          </div>
+
+          {/* Commitment level */}
+          <div>
+            <label className={labelClass}>
+              How serious are you about investing in your development over the next
+              3–6 months? *
+            </label>
+            <div className="space-y-2">
+              {COMMITMENT_LEVELS.map((level) => (
+                <label
+                  key={level.value}
+                  className={`flex items-center gap-3 p-3.5 rounded-lg border cursor-pointer transition-all ${
+                    commitmentLevel === level.value
+                      ? 'border-site-gold bg-site-gold/10'
+                      : 'border-site-border hover:border-site-border/80 bg-site-primary'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="commitmentLevel"
+                    value={level.value}
+                    checked={commitmentLevel === level.value}
+                    onChange={(e) => setCommitmentLevel(e.target.value)}
+                    className="sr-only"
+                    required
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Level *
-                  </label>
-                  <select
-                    value={formData.playerLevel}
-                    onChange={(e) => handleChange('playerLevel', e.target.value)}
-                    className={`w-full px-3 py-2 bg-bb-card border rounded-lg text-white focus:ring-2 focus:ring-gold-500 ${
-                      errors.playerLevel ? 'border-red-500' : 'border-bb-border'
+                  <div
+                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                      commitmentLevel === level.value
+                        ? 'border-site-gold'
+                        : 'border-site-dim'
                     }`}
                   >
-                    <option value="">Select level...</option>
-                    {PLAYER_LEVELS.map((level) => (
-                      <option key={level.value} value={level.value}>
-                        {level.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Position & Situation */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Primary Position
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.position}
-                    onChange={(e) => handleChange('position', e.target.value)}
-                    placeholder="PG, SG, SF..."
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Current Situation
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.currentSituation}
-                    onChange={(e) => handleChange('currentSituation', e.target.value)}
-                    placeholder="HS varsity, JUCO, Euro pro..."
-                  />
-                </div>
-              </div>
-
-              {/* Biggest problems */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  What are the 2–3 biggest problems holding your game back? *
+                    {commitmentLevel === level.value && (
+                      <div className="w-2 h-2 rounded-full bg-site-gold" />
+                    )}
+                  </div>
+                  <span className="text-white text-sm">{level.label}</span>
                 </label>
-                <Textarea
-                  value={formData.biggestProblems}
-                  onChange={(e) => handleChange('biggestProblems', e.target.value)}
-                  placeholder="Be specific. e.g., 'I can't create separation off the dribble', 'I freeze under pressure', 'My shot is inconsistent from game to game'..."
-                  rows={4}
-                  className={errors.biggestProblems ? 'border-red-500' : ''}
-                />
-              </div>
+              ))}
+            </div>
+          </div>
 
-              {/* What they've tried */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  What have you already tried to fix it?
-                </label>
-                <Textarea
-                  value={formData.whatTried}
-                  onChange={(e) => handleChange('whatTried', e.target.value)}
-                  placeholder="e.g., worked with trainers, watched YouTube, did shooting drills..."
-                  rows={3}
-                />
-              </div>
+          {/* Info box */}
+          <div className="p-4 bg-site-secondary border border-site-border rounded-lg">
+            <p className="text-sm text-site-muted">
+              <span className="text-white font-medium">
+                This is an application, not a purchase.
+              </span>{' '}
+              We review every application and reach out within 24–48 hours to
+              discuss if the BB Mentorship is the right fit.
+            </p>
+          </div>
 
-              {/* Commitment level */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  How serious are you about investing in your development over the next 3–6 months? *
-                </label>
-                <div className="space-y-2">
-                  {COMMITMENT_LEVELS.map((level) => (
-                    <label
-                      key={level.value}
-                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                        formData.commitmentLevel === level.value
-                          ? 'border-gold-500 bg-gold-500/10'
-                          : 'border-bb-border hover:border-gray-600'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="commitmentLevel"
-                        value={level.value}
-                        checked={formData.commitmentLevel === level.value}
-                        onChange={(e) => handleChange('commitmentLevel', e.target.value)}
-                        className="sr-only"
-                      />
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                        formData.commitmentLevel === level.value
-                          ? 'border-gold-500'
-                          : 'border-gray-500'
-                      }`}>
-                        {formData.commitmentLevel === level.value && (
-                          <div className="w-2 h-2 rounded-full bg-gold-500" />
-                        )}
-                      </div>
-                      <span className="text-white">{level.label}</span>
-                    </label>
-                  ))}
-                </div>
-                {errors.commitmentLevel && (
-                  <p className="text-red-400 text-xs mt-1">{errors.commitmentLevel}</p>
-                )}
-              </div>
+          {/* Error */}
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
 
-              {/* Error message */}
-              {errors.form && (
-                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                  <p className="text-red-400 text-sm">{errors.form}</p>
-                </div>
-              )}
-
-              {/* Info box */}
-              <div className="p-4 bg-bb-card border border-bb-border rounded-lg">
-                <p className="text-sm text-gray-400">
-                  <span className="text-white font-medium">This is an application, not a purchase.</span>{' '}
-                  We review every application and reach out within 24–48 hours to discuss if the BB Mentorship is the right fit.
-                </p>
-              </div>
-
-              {/* Submit button */}
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    Submit Application
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </>
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-site-gold hover:bg-site-gold-hover text-site-primary font-barlow font-bold uppercase tracking-wider py-3.5 rounded-lg transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              'Submit Application'
+            )}
+          </button>
+        </form>
 
         {/* Shooting eval link */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500">
+        <div className="max-w-xl mx-auto mt-10 text-center">
+          <p className="text-sm text-site-dim">
             Just need your shot calibrated?{' '}
-            <Link href="/start/shooting" className="text-gold-500 hover:underline">
+            <Link
+              href="/start/shooting"
+              className="text-site-gold hover:text-site-gold-hover transition-colors"
+            >
               Get the BB Shooting Evaluation ($250)
             </Link>
           </p>
         </div>
       </div>
+
+      <BBFooter />
     </main>
   );
 }

@@ -55,10 +55,15 @@ export async function POST(request: NextRequest) {
       bbLevel = 1,
       seasonStatus = 'in-season',
       accessToken,
+      headshotUrl,
+      teamLogo,
     } = body;
 
     // Generate slug from name
-    const slug = `${firstName}-${lastName}`.toLowerCase().replace(/\s+/g, '-');
+    const slug = `${firstName}-${lastName}`.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/--+/g, '-');
+
+    // Auto-generate access token if not provided
+    const token = accessToken || `${firstName.toLowerCase().charAt(0)}${lastName.toLowerCase().replace(/\s+/g, '')}-bb-${new Date().getFullYear()}`;
 
     const { data: player, error } = await supabase
       .from('elite_players')
@@ -70,7 +75,9 @@ export async function POST(request: NextRequest) {
         team,
         bb_level: bbLevel,
         season_status: seasonStatus,
-        access_token: accessToken,
+        access_token: token,
+        headshot_url: headshotUrl || null,
+        team_logo: teamLogo || null,
         is_active: true,
       })
       .select()
@@ -94,6 +101,8 @@ export async function POST(request: NextRequest) {
         team: player.team,
         bbLevel: player.bb_level,
         seasonStatus: player.season_status,
+        accessToken: player.access_token,
+        headshotUrl: player.headshot_url,
         isActive: player.is_active,
       },
     });

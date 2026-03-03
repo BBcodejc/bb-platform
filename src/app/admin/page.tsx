@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import {
   Users,
   ClipboardCheck,
@@ -21,12 +22,15 @@ import {
   Calendar,
   BarChart3,
   Trophy,
+  LogOut,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn, timeAgo, formatLevel, formatPipelineStatus, getStatusColor, formatCurrency } from '@/lib/utils';
 import { getSupabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 
 interface Stats {
   totalProspects: number;
@@ -75,7 +79,10 @@ interface ActivityItem {
 }
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [user, setUser] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [stats, setStats] = useState<Stats>({
     totalProspects: 0,
     pendingReviews: 0,
@@ -90,6 +97,35 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
+
+  // Check authentication
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+          // Not logged in, redirect to login
+          router.push('/login');
+          return;
+        }
+
+        setUser(user);
+        setAuthLoading(false);
+      } catch (err) {
+        console.error('Auth check error:', err);
+        router.push('/login');
+      }
+    }
+    checkAuth();
+  }, [router]);
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -199,6 +235,18 @@ export default function AdminDashboard() {
     );
   });
 
+  // Show loading state while checking auth
+  if (authLoading) {
+    return (
+      <main className="min-h-screen bg-bb-black flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-gold-500 mx-auto mb-4" />
+          <p className="text-gray-400">Verifying authentication...</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-bb-black">
       {/* Header */}
@@ -244,6 +292,18 @@ export default function AdminDashboard() {
                 BB Players
               </Link>
               <Link
+                href="/admin/coaching-clients"
+                className="text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                Coaching
+              </Link>
+              <Link
+                href="/admin/concepts"
+                className="text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                Concepts
+              </Link>
+              <Link
                 href="/admin/analytics"
                 className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1"
               >
@@ -282,6 +342,21 @@ export default function AdminDashboard() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 w-64"
               />
+            </div>
+            {/* User info and logout */}
+            <div className="flex items-center gap-3 pl-4 border-l border-bb-border">
+              <span className="text-sm text-gray-400 hidden sm:block">
+                {user?.email}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="text-gray-400 hover:text-white"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
             </div>
           </div>
         </div>

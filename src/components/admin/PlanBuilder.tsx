@@ -44,7 +44,7 @@ export function PlanBuilder({ plan, onChange, bbLevel = 1 }: PlanBuilderProps) {
   const [knobs, setKnobs] = useState<PlanKnobs>(plan?.knobs || DEFAULT_KNOBS);
   const [schedule, setSchedule] = useState<DayScheduleItem[]>(plan?.schedule || DEFAULT_SCHEDULE);
   const [playerLogEnabled, setPlayerLogEnabled] = useState(plan?.playerPlanLogEnabled ?? true);
-  const [selectedPreset, setSelectedPreset] = useState(plan?.presetId || 'lvl1-2-standard-v1');
+  const [selectedPreset, setSelectedPreset] = useState(plan?.presetId || 'lvl1-2-enhanced-v1');
 
   // Update plan when knobs, schedule, or logging changes
   useEffect(() => {
@@ -79,7 +79,7 @@ export function PlanBuilder({ plan, onChange, bbLevel = 1 }: PlanBuilderProps) {
   const resetToDefaults = () => {
     setKnobs(DEFAULT_KNOBS);
     setSchedule(DEFAULT_SCHEDULE);
-    setSelectedPreset('lvl1-2-standard-v1');
+    setSelectedPreset('lvl1-2-enhanced-v1');
   };
 
   const currentPlan = generateStructuredPlan(knobs, schedule, playerLogEnabled);
@@ -269,9 +269,9 @@ export function PlanBuilder({ plan, onChange, bbLevel = 1 }: PlanBuilderProps) {
                     <Input
                       type="number"
                       min={5}
-                      max={20}
+                      max={30}
                       value={knobs.deepDistanceRepsPerBlock}
-                      onChange={(e) => handleKnobChange('deepDistanceRepsPerBlock', parseInt(e.target.value) || 10)}
+                      onChange={(e) => handleKnobChange('deepDistanceRepsPerBlock', parseInt(e.target.value) || 20)}
                     />
                   </div>
                   <div>
@@ -279,9 +279,9 @@ export function PlanBuilder({ plan, onChange, bbLevel = 1 }: PlanBuilderProps) {
                     <Input
                       type="number"
                       min={5}
-                      max={20}
+                      max={30}
                       value={knobs.deepDistanceStepInReps}
-                      onChange={(e) => handleKnobChange('deepDistanceStepInReps', parseInt(e.target.value) || 10)}
+                      onChange={(e) => handleKnobChange('deepDistanceStepInReps', parseInt(e.target.value) || 20)}
                     />
                   </div>
                 </div>
@@ -405,6 +405,20 @@ export function PlanBuilder({ plan, onChange, bbLevel = 1 }: PlanBuilderProps) {
                   label="Include 14-Spot Fade Test Out"
                 />
               </div>
+
+              {/* Global Protocol */}
+              <div className="space-y-4 pt-4 border-t border-bb-border">
+                <h5 className="text-xs font-semibold text-gold-500 uppercase tracking-wider flex items-center gap-2">
+                  Global Protocol (All Sessions)
+                </h5>
+
+                <Checkbox
+                  checked={knobs.backRimIntentionalMissEnabled}
+                  onChange={(v) => handleKnobChange('backRimIntentionalMissEnabled', v)}
+                  label="Include Back Rim Intentional Miss Protocol"
+                  description="7 spots around the arc — intentionally miss back rim, then make the very next shot. 2 full rounds. Adds 28 shots to every session."
+                />
+              </div>
             </div>
           )}
 
@@ -514,12 +528,12 @@ export function PlanBuilder({ plan, onChange, bbLevel = 1 }: PlanBuilderProps) {
               <p className="text-xs text-gray-500">Sessions</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold text-gold-500">35-50</p>
+              <p className="text-xl font-bold text-gold-500">50-60</p>
               <p className="text-xs text-gray-500">Min/Day</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold text-gold-500">~250</p>
-              <p className="text-xs text-gray-500">Total Shots</p>
+              <p className="text-xl font-bold text-gold-500">{currentPlan.sessions.A.totalVolume.replace('~', '').replace(' shots', '')}</p>
+              <p className="text-xs text-gray-500">A Shots</p>
             </div>
           </div>
         </CardContent>

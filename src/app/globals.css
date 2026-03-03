@@ -162,6 +162,14 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+/* Amber gradient text (Masterclass) */
+.text-gradient-amber {
+  background: linear-gradient(135deg, #FFB800 0%, #F5A623 50%, #D4891A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 /* Loading shimmer */
 .shimmer {
   background: linear-gradient(
@@ -172,4 +180,50 @@ input[type="number"] {
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+/* ─── Site Rebuild Utilities ─────────────────────────── */
+
+/* Site gold gradient text */
+.text-gradient-site-gold {
+  background: linear-gradient(135deg, #E8B82A 0%, #D4A017 50%, #A67C12 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Site gold glow effects */
+.glow-site-gold {
+  box-shadow: 0 0 20px rgba(212, 160, 23, 0.25),
+              0 0 40px rgba(212, 160, 23, 0.08);
+}
+
+.glow-site-gold-sm {
+  box-shadow: 0 0 10px rgba(212, 160, 23, 0.15);
+}
+
+/* Subtle grid background pattern */
+.bg-grid-subtle {
+  background-image:
+    linear-gradient(rgba(30, 37, 56, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 37, 56, 0.3) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Section padding utility */
+.section-padding {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+@media (min-width: 640px) {
+  .section-padding {
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+  }
+}
+@media (min-width: 1024px) {
+  .section-padding {
+    padding-top: 9rem;
+    padding-bottom: 9rem;
+  }
 }

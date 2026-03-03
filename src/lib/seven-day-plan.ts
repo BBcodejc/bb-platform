@@ -3,8 +3,8 @@
 
 export interface PlanKnobs {
   // Session A - Deep Distance + Back Rim
-  deepDistanceRepsPerBlock: number; // Default 10
-  deepDistanceStepInReps: number; // Default 10
+  deepDistanceRepsPerBlock: number; // Default 20
+  deepDistanceStepInReps: number; // Default 20
   offDribblePullUps: number; // Default 5
   offDribbleStepBacks: number; // Default 5
   offDribbleBouncePullUps: number; // Default 5
@@ -27,6 +27,9 @@ export interface PlanKnobs {
   deepFadeBackRimHitsCloser: number; // Default 3
   deepFadeMakesClosest: number; // Default 2
   fadeTestOutEnabled: boolean; // Default true
+
+  // Global protocols
+  backRimIntentionalMissEnabled: boolean; // Default true — 7 spots, miss back rim then make
 
   // Player logging
   playerLogEnabled: boolean;
@@ -88,9 +91,9 @@ export interface DayLog {
 }
 
 export const DEFAULT_KNOBS: PlanKnobs = {
-  // Session A
-  deepDistanceRepsPerBlock: 10,
-  deepDistanceStepInReps: 10,
+  // Session A — doubled deep distance reps
+  deepDistanceRepsPerBlock: 20,
+  deepDistanceStepInReps: 20,
   offDribblePullUps: 5,
   offDribbleStepBacks: 5,
   offDribbleBouncePullUps: 5,
@@ -114,6 +117,9 @@ export const DEFAULT_KNOBS: PlanKnobs = {
   deepFadeMakesClosest: 2,
   fadeTestOutEnabled: true,
 
+  // Global protocols
+  backRimIntentionalMissEnabled: true,
+
   playerLogEnabled: true,
 };
 
@@ -127,16 +133,35 @@ export const DEFAULT_SCHEDULE: DayScheduleItem[] = [
   { day: 7, session: 'C' },
 ];
 
+// Back Rim Intentional Miss Protocol — shared across all sessions
+// 7 spots × 2 shots (miss + make) × 2 rounds = 28 shots
+function getBackRimIntentionalMissPart(): WorkoutPart {
+  return {
+    title: 'Back Rim Intentional Miss Protocol',
+    time: '8–12 min',
+    steps: [
+      { instruction: 'Go to 7 spots around the arc.' },
+      { instruction: 'At each spot: Intentionally miss back rim, then make the very next shot.' },
+      { instruction: 'Round 1: Go through all 7 spots', reps: 14, notes: '2 shots × 7 spots' },
+      { instruction: 'Round 2: Go through all 7 spots again', reps: 14, notes: '2 shots × 7 spots' },
+      { instruction: 'Total: 2 rounds × 7 spots × 2 shots = 28 shots.' },
+    ],
+    totalShots: 28,
+  };
+}
+
 export function generateSessionA(knobs: PlanKnobs): SessionDefinition {
   const deepDistanceTotal = knobs.deepDistanceRepsPerBlock + (knobs.deepDistanceStepInReps * 2);
   const offDribbleTotal = (knobs.offDribblePullUps + knobs.offDribbleStepBacks + knobs.offDribbleBouncePullUps) * 2;
   const energyTransferTotal = knobs.energyTransferSpots * 3 * knobs.energyTransferRepsPerPassType;
+  const backRimProtocolTotal = knobs.backRimIntentionalMissEnabled ? 28 : 0;
   const testOutTotal = knobs.fourteenSpotTestOutEnabled ? 14 : 0;
-  const totalShots = deepDistanceTotal + offDribbleTotal + energyTransferTotal + testOutTotal;
+  const totalShots = deepDistanceTotal + offDribbleTotal + energyTransferTotal + backRimProtocolTotal + testOutTotal;
 
+  let partNum = 1;
   const parts: WorkoutPart[] = [
     {
-      title: 'Part 1 — Deep Distance Line Calibration',
+      title: `Part ${partNum++} — Deep Distance Line Calibration`,
       time: '15 min',
       steps: [
         { instruction: 'Find your Deep Distance Line: The farthest spot where you barely reach the rim without forcing.' },
@@ -149,7 +174,7 @@ export function generateSessionA(knobs: PlanKnobs): SessionDefinition {
       totalShots: deepDistanceTotal,
     },
     {
-      title: 'Part 2 — Off-Dribble Distance Transfer',
+      title: `Part ${partNum++} — Off-Dribble Distance Transfer`,
       time: '10–12 min',
       steps: [
         { instruction: 'Go back to your deepest line.' },
@@ -163,7 +188,7 @@ export function generateSessionA(knobs: PlanKnobs): SessionDefinition {
       totalShots: offDribbleTotal,
     },
     {
-      title: 'Part 3 — Seven-Spot Energy Transfer Series',
+      title: `Part ${partNum++} — Seven-Spot Energy Transfer Series`,
       time: '10 min',
       steps: [
         { instruction: `Go to ${knobs.energyTransferSpots} spots around the arc.` },
@@ -177,9 +202,15 @@ export function generateSessionA(knobs: PlanKnobs): SessionDefinition {
     },
   ];
 
+  if (knobs.backRimIntentionalMissEnabled) {
+    const protocol = getBackRimIntentionalMissPart();
+    protocol.title = `Part ${partNum++} — ${protocol.title}`;
+    parts.push(protocol);
+  }
+
   if (knobs.fourteenSpotTestOutEnabled) {
     parts.push({
-      title: 'Part 4 — 14-Spot Back Rim Test Out',
+      title: `Part ${partNum++} — 14-Spot Back Rim Test Out`,
       time: '8–10 min',
       steps: [
         { instruction: 'Full 14-spot test.' },
@@ -195,7 +226,7 @@ export function generateSessionA(knobs: PlanKnobs): SessionDefinition {
     name: 'Deep Distance + Back Rim Command',
     fullName: 'SESSION A — Deep Distance + Back Rim Command',
     days: 'Day 1, Day 3, Day 6',
-    totalTime: '45–50 min',
+    totalTime: '55–60 min',
     focusRule: 'Back rim only. No shorts. No mechanics. Just solve the distance.',
     parts,
     totalVolume: `~${totalShots} shots`,
@@ -207,13 +238,14 @@ export function generateSessionB(knobs: PlanKnobs): SessionDefinition {
   const flatTotal = knobs.ballFlightSpotsPerAngle * knobs.ballFlightRepsPerSpot;
   const highTotal = knobs.ballFlightSpotsPerAngle * knobs.ballFlightRepsPerSpot;
   const midTotal = knobs.ballFlightSpotsPerAngle * knobs.ballFlightRepsPerSpot;
-  const testSeriesTotal = knobs.ballFlightTestSeriesEnabled ? 42 : 0; // 14 x 3 angles
+  const backRimProtocolTotal = knobs.backRimIntentionalMissEnabled ? 28 : 0;
   const finishTotal = knobs.cleanFinishSpots;
-  const totalShots = flatTotal + highTotal + midTotal + finishTotal + (knobs.ballFlightTestSeriesEnabled ? 28 : 0); // only count 2 test series
+  const totalShots = flatTotal + highTotal + midTotal + backRimProtocolTotal + finishTotal + (knobs.ballFlightTestSeriesEnabled ? 28 : 0);
 
+  let partNum = 1;
   const parts: WorkoutPart[] = [
     {
-      title: 'Part 1 — Flat Flight Calibration (25°)',
+      title: `Part ${partNum++} — Flat Flight Calibration (25°)`,
       time: '10 min',
       steps: [
         { instruction: `Pick ${knobs.ballFlightSpotsPerAngle} spots (corner + top is ideal)` },
@@ -224,7 +256,7 @@ export function generateSessionB(knobs: PlanKnobs): SessionDefinition {
       totalShots: flatTotal,
     },
     {
-      title: 'Part 2 — High Flight Calibration (60°–90°)',
+      title: `Part ${partNum++} — High Flight Calibration (60°–90°)`,
       time: '10 min',
       steps: [
         { instruction: `Pick ${knobs.ballFlightSpotsPerAngle} new spots` },
@@ -235,7 +267,7 @@ export function generateSessionB(knobs: PlanKnobs): SessionDefinition {
       totalShots: highTotal,
     },
     {
-      title: 'Part 3 — Mid Flight Calibration (45°)',
+      title: `Part ${partNum++} — Mid Flight Calibration (45°)`,
       time: '8 min',
       steps: [
         { instruction: `Pick ${knobs.ballFlightSpotsPerAngle} more spots` },
@@ -248,7 +280,7 @@ export function generateSessionB(knobs: PlanKnobs): SessionDefinition {
 
   if (knobs.ballFlightTestSeriesEnabled) {
     parts.push({
-      title: 'Part 4 — Ball Flight Test Series (Optional)',
+      title: `Part ${partNum++} — Ball Flight Test Series (Optional)`,
       time: '10 min',
       steps: [
         { instruction: 'If you want to test:' },
@@ -259,6 +291,12 @@ export function generateSessionB(knobs: PlanKnobs): SessionDefinition {
       ],
       totalShots: 28,
     });
+  }
+
+  if (knobs.backRimIntentionalMissEnabled) {
+    const protocol = getBackRimIntentionalMissPart();
+    protocol.title = `Part ${partNum++} — ${protocol.title}`;
+    parts.push(protocol);
   }
 
   parts.push({
@@ -276,10 +314,10 @@ export function generateSessionB(knobs: PlanKnobs): SessionDefinition {
     name: 'Ball Flight Spectrum',
     fullName: 'SESSION B — Ball Flight Spectrum (25° / 45° / 60°)',
     days: 'Day 2, Day 5',
-    totalTime: '35–45 min',
+    totalTime: '50–55 min',
     focusRule: 'Your system must learn to score from multiple arcs, not one tempo.',
     parts,
-    totalVolume: '~70–90 shots',
+    totalVolume: `~${totalShots} shots`,
     volumeNote: 'This is how you build true spectrum control.',
   };
 }
@@ -291,12 +329,14 @@ export function generateSessionC(knobs: PlanKnobs): SessionDefinition {
   // Deep fade progression: 2+2 at start, 2+2 deeper, 3+3 closer, 2+2 closest = 22 shots
   const deepFadeTotal = (knobs.deepFadeBackRimHitsPhase1 * 4) + (knobs.deepFadeBackRimHitsCloser * 2) + (knobs.deepFadeMakesClosest * 2);
 
+  const backRimProtocolTotal = knobs.backRimIntentionalMissEnabled ? 28 : 0;
   const fadeTestOutTotal = knobs.fadeTestOutEnabled ? 28 : 0;
-  const totalShots = fadeExplorationTotal + deepFadeTotal + fadeTestOutTotal;
+  const totalShots = fadeExplorationTotal + deepFadeTotal + backRimProtocolTotal + fadeTestOutTotal;
 
+  let partNum = 1;
   const parts: WorkoutPart[] = [
     {
-      title: 'Part 1 — Seven-Spot Fade Exploration',
+      title: `Part ${partNum++} — Seven-Spot Fade Exploration`,
       time: '15 min',
       steps: [
         { instruction: `At each of the ${knobs.fadeExplorationSpots} spots:` },
@@ -308,7 +348,7 @@ export function generateSessionC(knobs: PlanKnobs): SessionDefinition {
       totalShots: fadeExplorationTotal,
     },
     {
-      title: 'Part 2 — Deep Distance Fade Progression',
+      title: `Part ${partNum++} — Deep Distance Fade Progression`,
       time: '15 min',
       steps: [
         { instruction: `Start ${knobs.deepFadeStartStepsBehind} steps behind the 3PT line` },
@@ -329,9 +369,15 @@ export function generateSessionC(knobs: PlanKnobs): SessionDefinition {
     },
   ];
 
+  if (knobs.backRimIntentionalMissEnabled) {
+    const protocol = getBackRimIntentionalMissPart();
+    protocol.title = `Part ${partNum++} — ${protocol.title}`;
+    parts.push(protocol);
+  }
+
   if (knobs.fadeTestOutEnabled) {
     parts.push({
-      title: 'Part 3 — 14-Spot Fade Test Out',
+      title: `Part ${partNum++} — 14-Spot Fade Test Out`,
       time: '10–12 min',
       steps: [
         { instruction: 'Round 1: 14 spots fading left' },
@@ -347,7 +393,7 @@ export function generateSessionC(knobs: PlanKnobs): SessionDefinition {
     name: 'Difficult Shooting + Fades',
     fullName: 'SESSION C — Difficult Shooting + Fade Adaptability',
     days: 'Day 4, Day 7',
-    totalTime: '45 min',
+    totalTime: '50–55 min',
     focusRule: 'Games demand awkward shots. We train that directly.',
     parts,
     totalVolume: `~${totalShots} shots`,
@@ -361,8 +407,8 @@ export function generateStructuredPlan(
   playerPlanLogEnabled: boolean = true
 ): StructuredSevenDayPlan {
   return {
-    presetId: 'lvl1-2-standard-v1',
-    presetName: 'Level 1–2 Standard Plan (3 Sessions)',
+    presetId: 'lvl1-2-enhanced-v1',
+    presetName: 'Level 1–2 Enhanced Plan',
     schedule,
     knobs,
     sessions: {
@@ -410,10 +456,22 @@ export function getSessionLetterForDay(plan: StructuredSevenDayPlan, day: number
 // Preset definitions
 export const PLAN_PRESETS = [
   {
-    id: 'lvl1-2-standard-v1',
-    name: 'Level 1–2 Standard Plan',
-    description: 'Full 7-day plan: ~95 shots (A), ~80 shots (B), ~80 shots (C)',
+    id: 'lvl1-2-enhanced-v1',
+    name: 'Level 1–2 Enhanced Plan',
+    description: 'Double deep distance + Back Rim Intentional Miss Protocol (2 rounds) every session (~153/123/95 shots)',
     knobs: DEFAULT_KNOBS,
+    schedule: DEFAULT_SCHEDULE,
+  },
+  {
+    id: 'lvl1-2-standard-v1',
+    name: 'Level 1–2 Standard Plan (Original)',
+    description: 'Original volume plan: ~95 shots (A), ~80 shots (B), ~80 shots (C)',
+    knobs: {
+      ...DEFAULT_KNOBS,
+      deepDistanceRepsPerBlock: 10,
+      deepDistanceStepInReps: 10,
+      backRimIntentionalMissEnabled: false,
+    },
     schedule: DEFAULT_SCHEDULE,
   },
   {
@@ -430,6 +488,7 @@ export const PLAN_PRESETS = [
       ballFlightRepsPerSpot: 6,
       ballFlightTestSeriesEnabled: false,
       fadeTestOutEnabled: false,
+      backRimIntentionalMissEnabled: false,
     },
     schedule: DEFAULT_SCHEDULE,
   },
@@ -439,8 +498,8 @@ export const PLAN_PRESETS = [
     description: 'Higher volume for advanced Level 1–2 players',
     knobs: {
       ...DEFAULT_KNOBS,
-      deepDistanceRepsPerBlock: 15,
-      deepDistanceStepInReps: 15,
+      deepDistanceRepsPerBlock: 25,
+      deepDistanceStepInReps: 25,
       offDribblePullUps: 7,
       offDribbleStepBacks: 7,
       offDribbleBouncePullUps: 7,
@@ -451,3 +510,78 @@ export const PLAN_PRESETS = [
     schedule: DEFAULT_SCHEDULE,
   },
 ];
+
+// Convert structured plan to detailed HTML for email
+export function structuredPlanToDetailedHtml(plan: StructuredSevenDayPlan): string {
+  let html = '';
+
+  plan.schedule.forEach(({ day, session }) => {
+    const sessionDef = plan.sessions[session];
+    if (!sessionDef) return;
+
+    // Day header
+    html += `
+      <div style="margin-bottom: 30px; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+        <div style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); padding: 16px 20px;">
+          <div style="color: #d4af37; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; margin-bottom: 4px;">Day ${day}</div>
+          <div style="color: #ffffff; font-size: 18px; font-weight: 700;">${sessionDef.fullName}</div>
+          <div style="color: #999; font-size: 13px; margin-top: 6px;">${sessionDef.totalTime} &nbsp;|&nbsp; ${sessionDef.totalVolume}</div>
+        </div>
+
+        <div style="background: #fffbf0; padding: 10px 20px; border-bottom: 1px solid #f0e6cc;">
+          <div style="color: #d4af37; font-size: 13px; font-weight: 500; font-style: italic;">Focus: "${sessionDef.focusRule}"</div>
+        </div>
+    `;
+
+    // Each workout part
+    sessionDef.parts.forEach((part) => {
+      html += `
+        <div style="padding: 16px 20px; border-bottom: 1px solid #f0f0f0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="font-weight: 600; color: #1a1a1a; font-size: 14px;">${part.title}</div>
+            <div style="color: #999; font-size: 12px; white-space: nowrap; margin-left: 12px;">${part.time}</div>
+          </div>
+          <div style="padding-left: 12px; border-left: 3px solid #f0e6cc;">
+      `;
+
+      part.steps.forEach((step) => {
+        if (step.notes && !step.reps) {
+          // Notes-only line (like "Block 1", "Phase 1")
+          html += `<div style="color: #d4af37; font-size: 12px; font-weight: 600; margin: 8px 0 4px 0;">${step.notes}</div>`;
+        }
+        html += `<div style="color: #444; font-size: 13px; margin: 4px 0; line-height: 1.5;">`;
+        html += step.instruction;
+        if (step.reps) {
+          html += ` <span style="color: #d4af37; font-weight: 600;">→ ${step.reps} reps</span>`;
+          if (step.notes) {
+            html += ` <span style="color: #999; font-size: 12px;">${step.notes}</span>`;
+          }
+        }
+        html += `</div>`;
+      });
+
+      if (part.totalShots) {
+        html += `<div style="color: #2d8a4e; font-size: 12px; font-weight: 500; margin-top: 8px;">✓ Total: ${part.totalShots} shots</div>`;
+      }
+
+      html += `
+          </div>
+        </div>
+      `;
+    });
+
+    // Session summary
+    html += `
+        <div style="padding: 12px 20px; background: #faf8f3;">
+          <div style="font-size: 13px; color: #666;">
+            <strong style="color: #1a1a1a;">${sessionDef.totalVolume}</strong>
+            <span style="margin: 0 6px;">—</span>
+            ${sessionDef.volumeNote}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  return html;
+}

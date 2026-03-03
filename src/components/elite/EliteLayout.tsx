@@ -17,14 +17,14 @@ interface EliteLayoutProps {
 export function EliteLayout({ children, user, isEditing, onLogout }: EliteLayoutProps) {
   return (
     <div className="min-h-screen bg-[#0A0A0A]">
-      {/* Elite Admin Bar - Only visible when authenticated */}
+      {/* BB Admin Bar - Only visible when authenticated */}
       {user && (
         <div className="bg-gradient-to-r from-[#1A1A1A] to-[#0D0D0D] border-b border-gold-500/20">
           <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Shield className="w-4 h-4 text-gold-500" />
               <span className="text-gold-500 text-sm font-medium tracking-wide uppercase">
-                Elite Profile • {isEditing ? 'Edit Mode' : 'View Mode'}
+                BB Profile • {isEditing ? 'Edit Mode' : 'View Mode'}
               </span>
             </div>
             <div className="flex items-center gap-4">
@@ -49,7 +49,7 @@ export function EliteLayout({ children, user, isEditing, onLogout }: EliteLayout
       {/* Main Content */}
       <main>{children}</main>
 
-      {/* Elite Footer */}
+      {/* BB Footer */}
       <footer className="border-t border-[#1A1A1A] py-8 mt-16">
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -62,7 +62,7 @@ export function EliteLayout({ children, user, isEditing, onLogout }: EliteLayout
             />
             <span className="text-gray-500 text-sm">Basketball Biomechanics</span>
           </div>
-          <span className="text-gray-600 text-xs">Elite Player System</span>
+          <span className="text-gray-600 text-xs">BB Player System</span>
         </div>
       </footer>
     </div>

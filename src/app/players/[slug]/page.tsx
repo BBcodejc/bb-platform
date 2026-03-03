@@ -73,7 +73,7 @@ import {
 // ============================================
 // CONSTANTS
 // ============================================
-const COACHES = ['Coach Jake', 'Tommy', 'BB Staff'];
+const COACHES = ['Coach Jake', 'Coach Tommy'];
 
 // Import templates for protocols
 const PROTOCOL_TEMPLATES = [
@@ -364,6 +364,7 @@ function getGoogleDriveId(url: string): string | null {
 function VideoEmbed({ url, caption, type }: { url: string; caption?: string; type: 'success' | 'failure' }) {
   const youtubeId = getYouTubeId(url);
   const driveId = getGoogleDriveId(url);
+  const isDataUrl = url?.startsWith('data:');
 
   const borderColor = type === 'success' ? 'border-green-500/30' : 'border-red-500/30';
   const bgColor = type === 'success' ? 'bg-green-500/5' : 'bg-red-500/5';
@@ -395,7 +396,7 @@ function VideoEmbed({ url, caption, type }: { url: string; caption?: string; typ
             allow="autoplay"
             allowFullScreen
           />
-        ) : url ? (
+        ) : (url || isDataUrl) ? (
           <video
             className="absolute inset-0 w-full h-full object-contain bg-black"
             src={url}
@@ -434,25 +435,71 @@ function VideoExampleInput({
   const bgColor = type === 'success' ? 'bg-green-500/5' : 'bg-red-500/5';
   const labelColor = type === 'success' ? 'text-green-400' : 'text-red-400';
 
+  const youtubeId = value?.url ? getYouTubeId(value.url) : null;
+  const driveId = value?.url ? getGoogleDriveId(value.url) : null;
+  const isValidVideo = youtubeId || driveId || value?.url?.startsWith('data:');
+
   return (
     <div className={cn('p-3 rounded-lg border', borderColor, bgColor)}>
       <label className={cn('text-xs font-medium mb-2 block', labelColor)}>{label}</label>
+
+      {/* File Upload */}
+      <div className="mb-2">
+        <input
+          type="file"
+          accept="video/*"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                onChange({ url: reader.result as string, caption: value?.caption });
+              };
+              reader.readAsDataURL(file);
+            }
+          }}
+          className="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-[#2A2A2A] file:text-gray-300 file:text-xs hover:file:bg-[#3A3A3A] file:cursor-pointer cursor-pointer"
+        />
+      </div>
+
+      {/* URL Input */}
       <Input
-        value={value?.url || ''}
+        value={value?.url?.startsWith('data:') ? '(Video uploaded)' : (value?.url || '')}
         onChange={(e) => onChange({ url: e.target.value, caption: value?.caption })}
-        placeholder="YouTube or Google Drive URL..."
-        className="bg-[#0D0D0D] border-[#2A2A2A] mb-2"
+        placeholder="Or paste YouTube/Google Drive URL..."
+        className="bg-[#0D0D0D] border-[#2A2A2A] mb-2 text-xs"
+        disabled={value?.url?.startsWith('data:')}
       />
+
+      {/* Caption */}
       <Input
         value={value?.caption || ''}
         onChange={(e) => onChange({ url: value?.url || '', caption: e.target.value })}
         placeholder="Caption (what to notice)..."
-        className="bg-[#0D0D0D] border-[#2A2A2A] text-sm"
+        className="bg-[#0D0D0D] border-[#2A2A2A] text-xs"
       />
+
+      {/* Clear button */}
       {value?.url && (
+        <button
+          onClick={() => onChange(undefined)}
+          className="mt-2 text-xs text-red-400 hover:text-red-300"
+        >
+          ✕ Remove video
+        </button>
+      )}
+
+      {/* Preview */}
+      {value?.url && isValidVideo && (
         <div className="mt-2">
           <VideoEmbed url={value.url} caption={value.caption} type={type} />
         </div>
+      )}
+
+      {value?.url && !isValidVideo && (
+        <p className="mt-2 text-xs text-yellow-500">
+          ⚠️ Use YouTube, Google Drive, or upload a video file
+        </p>
       )}
     </div>
   );
@@ -466,13 +513,49 @@ export default function ElitePlayerDashboardPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const slug = params.slug as string;
-  const isAdmin = searchParams.get('admin') === 'true';
+  const adminParam = searchParams.get('admin') === 'true';
 
   const [dashboard, setDashboard] = useState<ElitePlayerDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [selectedCoach, setSelectedCoach] = useState('Coach Jake');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  // Check authentication status for admin access
+  useEffect(() => {
+    async function checkAuth() {
+      if (!adminParam) {
+        setIsAdmin(false);
+        return;
+      }
+
+      try {
+        const { createClient } = await import('@/lib/supabase/client');
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+          setUser(user);
+          const role = user.user_metadata?.role;
+          // Allow admin access if user is admin or coach
+          if (role === 'admin' || role === 'coach') {
+            setIsAdmin(true);
+          } else {
+            setIsAdmin(false);
+          }
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (err) {
+        console.error('Auth check error:', err);
+        setIsAdmin(false);
+      }
+    }
+
+    checkAuth();
+  }, [adminParam]);
 
   // Section open states
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -688,7 +771,17 @@ export default function ElitePlayerDashboardPage() {
   }
 
   async function saveFactors() {
-    // Save each factor
+    // First, find and delete factors that were removed
+    const originalFactors = dashboard?.limitingFactors || [];
+    const editingIds = editingFactors.map(f => f.id).filter(id => !id?.startsWith('new-'));
+    const deletedFactors = originalFactors.filter(f => !editingIds.includes(f.id));
+
+    // Delete removed factors
+    for (const factor of deletedFactors) {
+      await saveAction('delete_limiting_factor', { id: factor.id });
+    }
+
+    // Save each remaining factor
     for (const factor of editingFactors) {
       if (factor.id?.startsWith('new-')) {
         await saveAction('add_limiting_factor', {
@@ -1011,6 +1104,9 @@ export default function ElitePlayerDashboardPage() {
     );
   }
 
+  // Note: No login blocking - if adminParam is set but user isn't authenticated,
+  // they'll just see the dashboard without admin editing features (isAdmin = false)
+
   const { player, todaysFocus, pregameCues, dailyCues, limitingFactors, gameDayProtocol, weeklyReview, recentGames, stats, videoLibrary, coachNotes } = dashboard;
   const cues = pregameCues || dailyCues || [];
 
@@ -1091,18 +1187,47 @@ export default function ElitePlayerDashboardPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4">
           <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-6 max-w-md w-full space-y-4">
             <h3 className="text-lg font-semibold text-white">Update Player Photo</h3>
+
+            {/* File Upload Option */}
             <div>
-              <label className="text-sm text-gray-400 mb-2 block">Image URL</label>
+              <label className="text-sm text-gray-400 mb-2 block">Upload Photo</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    // Convert to base64 data URL for preview and storage
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      setHeadshotUrl(reader.result as string);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+                className="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gold-500 file:text-black file:font-medium hover:file:bg-gold-600 file:cursor-pointer cursor-pointer"
+              />
+            </div>
+
+            {/* URL Input Option */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-[#2A2A2A]"></div>
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-[#1A1A1A] px-2 text-gray-500">or paste URL</span>
+              </div>
+            </div>
+
+            <div>
               <Input
-                value={headshotUrl}
+                value={headshotUrl.startsWith('data:') ? '' : headshotUrl}
                 onChange={(e) => setHeadshotUrl(e.target.value)}
                 placeholder="https://example.com/photo.jpg"
                 className="bg-[#0D0D0D] border-[#2A2A2A]"
               />
-              <p className="text-xs text-gray-500 mt-2">
-                Paste a direct image URL (NBA headshots, team photos, etc.)
-              </p>
             </div>
+
             {headshotUrl && (
               <div className="flex justify-center">
                 <img
@@ -2230,8 +2355,24 @@ export default function ElitePlayerDashboardPage() {
               {/* Notes List */}
               {coachNotes && coachNotes.length > 0 ? (
                 coachNotes.map((note) => (
-                  <div key={note.id} className="p-4 bg-[#0D0D0D]/50 rounded-xl">
-                    <p className="text-gray-300">{note.text}</p>
+                  <div key={note.id} className="p-4 bg-[#0D0D0D]/50 rounded-xl group">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-gray-300 flex-1">{note.text}</p>
+                      {isAdmin && (
+                        <button
+                          onClick={async () => {
+                            if (confirm('Delete this note?')) {
+                              await saveAction('delete_coach_note', { id: note.id });
+                              await fetchDashboard();
+                            }
+                          }}
+                          className="p-1.5 hover:bg-red-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Delete note"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-400" />
+                        </button>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-500 mt-2">
                       {note.createdBy && <span className="text-gold-500">{note.createdBy}</span>}
                       {note.createdBy && ' · '}
@@ -2266,7 +2407,7 @@ export default function ElitePlayerDashboardPage() {
       <footer className="border-t border-[#1A1A1A] py-8 mt-8">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <p className="text-sm text-gray-600">
-            Basketball Blueprint · Elite Performance Consulting
+            Basketball Biomechanics · Performance Consulting
           </p>
         </div>
       </footer>

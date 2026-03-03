@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { sendGmailEmail } from '@/lib/gmail';
+import { getEmail1Template, EMAIL_SEQUENCE_CONFIG } from '@/lib/email-templates';
+import type { ApplicationType } from '@/lib/email-templates';
 
 const NOTIFICATION_EMAIL = 'bbcodejc@gmail.com';
 const FROM_EMAIL = 'Jake from BB <jake@trainwjc.com>';
@@ -248,6 +251,75 @@ export async function POST(request: NextRequest) {
     }
 
     await sendEmailNotification(emailContent.subject, emailContent.html);
+
+    // ─── EMAIL SEQUENCE: Send Email 1 + schedule follow-ups ─────
+    try {
+      // Duplicate prevention: only create sequence if none exists for this email
+      const { data: existingSequence } = await supabase
+        .from('email_sequences')
+        .select('id')
+        .eq('email', email)
+        .in('status', ['active', 'completed'])
+        .single();
+
+      if (!existingSequence) {
+        const now = new Date();
+        const email2At = new Date(now.getTime() + EMAIL_SEQUENCE_CONFIG.EMAIL_2_DELAY_HOURS * 60 * 60 * 1000);
+        const email3At = new Date(email2At.getTime() + EMAIL_SEQUENCE_CONFIG.EMAIL_3_DELAY_HOURS * 60 * 60 * 1000);
+
+        // Create sequence record (generates unsubscribe_token automatically via DB default)
+        const { data: sequence, error: seqError } = await supabase
+          .from('email_sequences')
+          .insert({
+            prospect_id: prospect.id,
+            email,
+            first_name: firstName,
+            application_type: type,
+            status: 'active',
+            email_2_scheduled_for: email2At.toISOString(),
+            email_3_scheduled_for: email3At.toISOString(),
+          })
+          .select()
+          .single();
+
+        if (seqError) {
+          console.error('[Email Sequence] Failed to create sequence:', seqError);
+        } else {
+          // Send Email 1 immediately
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://bb-platform-virid.vercel.app';
+          const unsubscribeUrl = `${baseUrl}/api/unsubscribe?token=${sequence.unsubscribe_token}`;
+
+          const email1 = getEmail1Template({
+            firstName,
+            applicationType: type as ApplicationType,
+            unsubscribeUrl,
+          });
+
+          const sendResult = await sendGmailEmail({
+            to: email,
+            subject: email1.subject,
+            text: email1.text,
+          });
+
+          // Update sequence with Email 1 result
+          await supabase
+            .from('email_sequences')
+            .update({
+              email_1_sent_at: sendResult.success ? new Date().toISOString() : null,
+              email_1_error: sendResult.error || null,
+            })
+            .eq('id', sequence.id);
+
+          console.log(`[Email Sequence] Email 1 ${sendResult.success ? 'sent' : 'failed'} to ${email}`);
+        }
+      } else {
+        console.log(`[Email Sequence] Skipped — active sequence already exists for ${email}`);
+      }
+    } catch (seqError) {
+      console.error('[Email Sequence] Error (non-blocking):', seqError);
+      // Never fail the main form submission due to email sequence issues
+    }
+    // ─── END EMAIL SEQUENCE ─────────────────────────────────────
 
     // Log activity
     try {

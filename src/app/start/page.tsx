@@ -2,134 +2,152 @@
 
 import Link from 'next/link';
 import { Target, Zap, GraduationCap, Users, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { BBHeader } from '@/components/bb-header';
+import { BBFooter } from '@/components/bb-footer';
+import { useScrollReveal } from '@/lib/hooks';
 
-const pathOptions = [
+const PATH_OPTIONS = [
   {
     id: 'shooting',
-    icon: <Target className="w-8 h-8" />,
+    icon: Target,
     title: 'Fix My Shooting',
-    subtitle: 'BB Shooting Evaluation',
-    description: 'I mainly want to calibrate my shot. Get your personalized shooting profile with test protocols.',
-    price: '$250',
+    subtitle: 'BB Shooting Evaluation — $250',
+    description:
+      'I mainly want to calibrate my shot. Get your personalized shooting profile with test protocols and a custom roadmap.',
+    badge: 'POPULAR',
     href: '/start/shooting',
     highlight: true,
   },
   {
     id: 'full-assessment',
-    icon: <Zap className="w-8 h-8" />,
+    icon: Zap,
     title: 'Transform My Entire Game',
-    subtitle: 'BB Full Assessment',
-    description: 'I want help with movement, deception, and shooting. Apply for 3-month BB Mentorship.',
-    price: 'Application',
+    subtitle: 'BB Full Assessment — Application',
+    description:
+      'I want help with shooting, movement, and deception. Apply for the 3-month BB Mentorship covering every dimension of your game.',
+    badge: null,
     href: '/start/full-assessment',
     highlight: false,
   },
   {
     id: 'coach',
-    icon: <GraduationCap className="w-8 h-8" />,
+    icon: GraduationCap,
     title: 'Coach / Trainer',
-    subtitle: 'BB Certification',
-    description: "I want to learn the BB lens and get certified to use it with my players.",
-    price: 'Application',
+    subtitle: 'BB Certification — Application',
+    description:
+      'I want to learn the BB lens and get certified to use it with my players.',
+    badge: null,
     href: '/start/coach',
     highlight: false,
   },
   {
     id: 'organization',
-    icon: <Users className="w-8 h-8" />,
+    icon: Users,
     title: 'Team / Organization',
-    subtitle: 'Program Integration',
-    description: "I'm inquiring for a program, academy, or team that wants BB installed.",
-    price: 'Inquiry',
+    subtitle: 'Program Integration — Inquiry',
+    description:
+      "I'm inquiring for a program, academy, or team that wants BB installed system-wide.",
+    badge: null,
     href: '/start/organization',
     highlight: false,
   },
 ];
 
 export default function StartPage() {
-  return (
-    <main className="min-h-screen bg-bb-black">
-      {/* Header */}
-      <header className="border-b border-bb-border bg-bb-dark/50 backdrop-blur-lg sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-gold-500 font-bold tracking-wider text-sm">
-            BASKETBALL BIOMECHANICS
-          </Link>
-          <Link href="/" className="text-gray-400 hover:text-white text-sm transition-colors">
-            Back to Home
-          </Link>
-        </div>
-      </header>
+  const { ref: heroRef, isVisible: heroVisible } = useScrollReveal();
 
-      <div className="max-w-3xl mx-auto px-4 py-12">
+  return (
+    <main className="min-h-screen bg-site-primary font-dm-sans">
+      <BBHeader transparent={false} />
+
+      <div className="pt-24 pb-20 px-4">
         {/* Hero */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            What best describes you?
+        <div
+          ref={heroRef}
+          className={`max-w-2xl mx-auto text-center mb-14 transition-all duration-700 ${
+            heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}
+        >
+          <h1 className="text-3xl md:text-5xl font-barlow font-extrabold text-white mb-4">
+            What Best Describes You?
           </h1>
-          <p className="text-gray-400 text-lg">
+          <p className="text-site-muted text-lg">
             Choose your path to get started with Basketball Biomechanics.
           </p>
         </div>
 
         {/* Options */}
-        <div className="space-y-4">
-          {pathOptions.map((option) => (
-            <Link key={option.id} href={option.href}>
-              <Card
-                className={`cursor-pointer transition-all hover:border-gold-500/50 ${
-                  option.highlight
-                    ? 'border-gold-500/30 bg-gradient-to-r from-gold-500/10 to-transparent'
-                    : ''
-                }`}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 ${
-                      option.highlight
-                        ? 'bg-gold-500 text-black'
-                        : 'bg-bb-card text-gold-500'
-                    }`}>
-                      {option.icon}
+        <div className="max-w-2xl mx-auto space-y-4">
+          {PATH_OPTIONS.map((option) => {
+            const Icon = option.icon;
+            return (
+              <Link key={option.id} href={option.href}>
+                <div
+                  className={`group relative border rounded-xl p-5 sm:p-6 transition-all duration-300 cursor-pointer hover:border-site-gold/40 ${
+                    option.highlight
+                      ? 'border-site-gold/30 bg-gradient-to-r from-site-gold/10 via-site-gold/5 to-transparent'
+                      : 'border-site-border bg-site-card hover:bg-site-card-hover'
+                  }`}
+                >
+                  <div className="flex items-start gap-4 sm:gap-5">
+                    {/* Icon */}
+                    <div
+                      className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center shrink-0 ${
+                        option.highlight
+                          ? 'bg-site-gold text-site-primary'
+                          : 'bg-site-secondary text-site-gold'
+                      }`}
+                    >
+                      <Icon className="w-6 h-6 sm:w-7 sm:h-7" />
                     </div>
+
+                    {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-white">
+                        <h3 className="text-lg font-bold text-white">
                           {option.title}
                         </h3>
-                        {option.highlight && (
-                          <span className="px-2 py-0.5 bg-gold-500 text-black text-xs font-bold rounded">
-                            POPULAR
+                        {option.badge && (
+                          <span className="px-2 py-0.5 bg-site-gold text-site-primary text-[10px] font-bold uppercase tracking-wider rounded">
+                            {option.badge}
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gold-500 mb-2">{option.subtitle}</p>
-                      <p className="text-sm text-gray-400">{option.description}</p>
+                      <p className="text-sm text-site-gold mb-1.5 font-medium">
+                        {option.subtitle}
+                      </p>
+                      <p className="text-sm text-site-muted leading-relaxed">
+                        {option.description}
+                      </p>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-lg font-bold text-white">{option.price}</span>
-                      <ArrowRight className="w-5 h-5 text-gray-500" />
+
+                    {/* Arrow */}
+                    <div className="shrink-0 pt-1">
+                      <ArrowRight className="w-5 h-5 text-site-dim group-hover:text-site-gold transition-colors" />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                </div>
+              </Link>
+            );
+          })}
         </div>
 
         {/* Help text */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500">
+        <div className="max-w-2xl mx-auto mt-10 text-center">
+          <p className="text-sm text-site-dim">
             Not sure which is right for you?{' '}
-            <Link href="/start/shooting" className="text-gold-500 hover:underline">
+            <Link
+              href="/start/shooting"
+              className="text-site-gold hover:text-site-gold-hover transition-colors"
+            >
               Start with the Shooting Evaluation
-            </Link>
-            {' '}— you can always upgrade later.
+            </Link>{' '}
+            — you can always upgrade later.
           </p>
         </div>
       </div>
+
+      <BBFooter />
     </main>
   );
 }

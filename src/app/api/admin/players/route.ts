@@ -38,14 +38,20 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Error fetching BB players:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch players' },
-        { status: 500 }
-      );
+    }
+
+    // Also fetch elite players (NBA/Pro players like Tobias Harris)
+    const { data: elitePlayers, error: eliteError } = await supabase
+      .from('elite_players')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (eliteError) {
+      console.error('Error fetching elite players:', eliteError);
     }
 
     // Process evaluations to add plan progress
-    const players = (evaluations || []).map((eval_data: any) => {
+    const regularPlayers = (evaluations || []).map((eval_data: any) => {
       const logs = eval_data.player_plan_logs || [];
       const completedDays = logs.filter((log: any) => log.completed).length;
       const totalDays = 7;
@@ -76,8 +82,40 @@ export async function GET(request: NextRequest) {
         fourteenSpotScore,
         deepDistanceLine: eval_data.deep_distance_steps_behind || 'N/A',
         hasPlan: !!eval_data.structured_seven_day_plan,
+        isElite: false,
       };
     });
+
+    // Process elite players
+    const elitePlayersList = (elitePlayers || []).map((player: any) => {
+      return {
+        id: player.id,
+        evaluationId: null,
+        name: player.name,
+        email: player.email || '',
+        phone: player.phone || '',
+        level: 'elite',
+        bbLevel: player.bb_level || 5,
+        deliveredAt: player.created_at,
+        planProgress: {
+          completedDays: 0,
+          totalDays: 7,
+          percentage: 0,
+          logs: [],
+        },
+        fourteenSpotScore: 'N/A',
+        deepDistanceLine: 'N/A',
+        hasPlan: false,
+        isElite: true,
+        slug: player.slug,
+        team: player.team,
+        position: player.position,
+        photo_url: player.photo_url,
+      };
+    });
+
+    // Combine both lists, elite players first
+    const players = [...elitePlayersList, ...regularPlayers];
 
     return NextResponse.json({ players });
   } catch (error) {

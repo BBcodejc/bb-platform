@@ -18,6 +18,7 @@ import {
   Phone,
   ArrowUpRight,
   Trophy,
+  Shield,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,7 +37,7 @@ interface PlanLog {
 
 interface BBPlayer {
   id: string;
-  evaluationId: string;
+  evaluationId: string | null;
   name: string;
   email: string;
   phone: string;
@@ -52,6 +53,11 @@ interface BBPlayer {
   fourteenSpotScore: string;
   deepDistanceLine: string;
   hasPlan: boolean;
+  isElite?: boolean;
+  slug?: string;
+  team?: string;
+  position?: string;
+  photo_url?: string;
 }
 
 export default function BBPlayersPage() {
@@ -319,17 +325,40 @@ export default function BBPlayersPage() {
                     {filteredPlayers.map((player) => (
                       <tr
                         key={player.id}
-                        className="hover:bg-bb-card/30 transition-colors"
+                        className={cn(
+                          "hover:bg-bb-card/30 transition-colors",
+                          player.isElite && "bg-gold-500/5"
+                        )}
                       >
                         <td className="p-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gold-500/20 flex items-center justify-center text-gold-500 font-semibold">
-                              {player.name?.[0] || '?'}
-                            </div>
+                            {player.isElite && player.photo_url ? (
+                              <Image
+                                src={player.photo_url}
+                                alt={player.name}
+                                width={40}
+                                height={40}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-gold-500/20 flex items-center justify-center text-gold-500 font-semibold">
+                                {player.name?.[0] || '?'}
+                              </div>
+                            )}
                             <div>
-                              <p className="font-medium text-white">{player.name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-white">{player.name}</p>
+                                {player.isElite && (
+                                  <span className="px-1.5 py-0.5 bg-gold-500/20 text-gold-500 text-[10px] font-bold rounded uppercase">
+                                    BB
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-xs text-gray-500">
-                                {player.level ? formatLevel(player.level) : 'N/A'}
+                                {player.isElite
+                                  ? `${player.position || ''} • ${player.team || ''}`
+                                  : (player.level ? formatLevel(player.level) : 'N/A')
+                                }
                               </p>
                             </div>
                           </div>
@@ -348,35 +377,39 @@ export default function BBPlayersPage() {
                           </span>
                         </td>
                         <td className="p-4">
-                          <div className="flex items-center gap-3">
-                            {/* Day dots */}
-                            <div className="flex gap-1">
-                              {Array.from({ length: 7 }, (_, i) => {
-                                const log = player.planProgress.logs.find(l => l.day === i + 1);
-                                const isCompleted = log?.completed;
-                                return (
-                                  <div
-                                    key={i}
-                                    className={cn(
-                                      'w-5 h-5 rounded-full flex items-center justify-center text-xs',
-                                      isCompleted
-                                        ? 'bg-green-500/30 text-green-400'
-                                        : 'bg-gray-700/50 text-gray-500'
-                                    )}
-                                  >
-                                    {isCompleted ? (
-                                      <CheckCircle2 className="w-3 h-3" />
-                                    ) : (
-                                      i + 1
-                                    )}
-                                  </div>
-                                );
-                              })}
+                          {player.isElite ? (
+                            <span className="text-sm text-gray-500 italic">BB Dashboard</span>
+                          ) : (
+                            <div className="flex items-center gap-3">
+                              {/* Day dots */}
+                              <div className="flex gap-1">
+                                {Array.from({ length: 7 }, (_, i) => {
+                                  const log = player.planProgress.logs.find(l => l.day === i + 1);
+                                  const isCompleted = log?.completed;
+                                  return (
+                                    <div
+                                      key={i}
+                                      className={cn(
+                                        'w-5 h-5 rounded-full flex items-center justify-center text-xs',
+                                        isCompleted
+                                          ? 'bg-green-500/30 text-green-400'
+                                          : 'bg-gray-700/50 text-gray-500'
+                                      )}
+                                    >
+                                      {isCompleted ? (
+                                        <CheckCircle2 className="w-3 h-3" />
+                                      ) : (
+                                        i + 1
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              <span className="text-sm text-gray-400">
+                                {player.planProgress.completedDays}/7
+                              </span>
                             </div>
-                            <span className="text-sm text-gray-400">
-                              {player.planProgress.completedDays}/7
-                            </span>
-                          </div>
+                          )}
                         </td>
                         <td className="p-4">
                           <div className="flex items-center gap-1.5 text-sm text-gray-400">
@@ -386,12 +419,35 @@ export default function BBPlayersPage() {
                         </td>
                         <td className="p-4">
                           <div className="flex items-center gap-2">
-                            <Link href={`/admin/evaluations/${player.id}`}>
-                              <Button variant="ghost" size="sm">
-                                View
-                                <ChevronRight className="w-4 h-4 ml-1" />
-                              </Button>
-                            </Link>
+                            {player.isElite ? (
+                              <>
+                                <Link href={`/players/${player.slug}?admin=true`}>
+                                  <Button variant="ghost" size="sm" className="text-gold-500 hover:text-gold-400">
+                                    <ArrowUpRight className="w-4 h-4 mr-1" />
+                                    Dashboard
+                                  </Button>
+                                </Link>
+                                <Link href={`/admin/players/${player.slug}/sessions`}>
+                                  <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                                    <Calendar className="w-4 h-4 mr-1" />
+                                    Calendar
+                                  </Button>
+                                </Link>
+                                <Link href={`/admin/players/${player.slug}?tab=security`}>
+                                  <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                                    <Shield className="w-4 h-4 mr-1" />
+                                    Security
+                                  </Button>
+                                </Link>
+                              </>
+                            ) : (
+                              <Link href={`/admin/evaluations/${player.id}`}>
+                                <Button variant="ghost" size="sm">
+                                  View
+                                  <ChevronRight className="w-4 h-4 ml-1" />
+                                </Button>
+                              </Link>
+                            )}
                             {player.email && (
                               <a
                                 href={`mailto:${player.email}`}

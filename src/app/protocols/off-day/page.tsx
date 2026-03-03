@@ -33,70 +33,111 @@ interface DrillStep {
 
 const drills: DrillStep[] = [
   {
-    id: 'light-catch',
-    name: 'Light Catch Work',
-    duration: '2-3 min',
-    description: 'Easy catches with minimal movement. Just feel the ball.',
+    id: 'deep-distance-ladder',
+    name: 'Deep Distance Ladder Progression',
+    duration: '~15 min',
+    description: 'Find your deep distance line and work the ladder from deepest range inward. Back rim control at every distance.',
     details: [
-      'Partner passes from 10-12 feet',
-      '10 catches: focus on hand position',
-      '10 catches: add small weight shifts',
-      'No shooting yet—just receiving',
+      'Start at your deepest comfortable 3-point range — where you can still reach back rim without compensating',
+      '10 reps from deepest spot: back rim or make only',
+      'Step in 1 step: 10 reps, same standard (back rim or make)',
+      'Step in 1 more step: 10 reps',
+      'Continue stepping in until you reach the regular 3-point line',
+      'At each distance, if you\'re missing front rim or short — hold that spot until you get 3 consecutive back rim or makes before moving in',
+      'Finish with 5 clean makes from the regular 3-point line',
     ],
-    cue: 'Soft hands. Quiet feet. No rush.',
+    cue: 'Control the distance. Don\'t let the distance control you.',
   },
   {
-    id: 'rhythm-makes',
-    name: 'Rhythm Makes',
-    duration: '4-5 min',
-    description: 'Low volume, high quality. Only shoot when you feel good.',
+    id: 'step-backs-bounds',
+    name: 'Step Backs & Bounds Off the Handle',
+    duration: '5-8 min',
+    description: 'Off-dribble work from deep distance range. Step-backs and bound pull-ups to build game-speed calibration.',
     details: [
-      'Pick 3-5 spots you like',
-      '2 makes per spot (not 2 shots—2 makes)',
-      'If a spot feels off, move on',
-      'Total: 6-10 makes',
+      'Start at your deep distance line (same range as Drill 1)',
+      'Step-back jumpers: 5 from the left wing, 5 from the right wing, 5 from the top',
+      'Bound pull-ups (1-2 dribble, bound into shot): 5 from each of the same 3 spots',
+      'Standard: back rim or make — if you\'re missing short, you\'re rushing',
+      'Total: ~30 shots off the dribble',
     ],
-    cue: 'Quality over quantity. Leave feeling good.',
+    cue: 'Same back rim target. The dribble doesn\'t change the standard.',
   },
   {
-    id: 'back-rim-check',
-    name: 'Back-Rim Check',
-    duration: '3-4 min',
-    description: 'Quick calibration check without the full ladder.',
+    id: 'test-out-1',
+    name: 'Test Out',
+    duration: '3-5 min',
+    description: '14-spot test around the arc. 1 shot per spot. Back rim or make is a pass.',
     details: [
-      'Pick one comfortable spot',
-      'Miss back rim once → make',
-      'Miss back rim twice → make',
-      'Done. That\'s it.',
+      'Start at the right corner',
+      'Move around the arc: 14 evenly spaced spots from corner to corner',
+      '1 shot per spot — no second chances',
+      'Score: back rim or make = pass, everything else = miss',
+      'Track your score out of 14',
+      'Goal: 10+ passes out of 14',
     ],
-    cue: 'Just checking the calibration—not rebuilding it.',
+    cue: 'This is a snapshot. No emotion — just data.',
   },
   {
-    id: 'flight-touch',
-    name: 'Flight Touch',
-    duration: '2-3 min',
-    description: 'Light practice of different arcs. No pressure.',
+    id: 'back-rim-miss-make',
+    name: 'Back Rim Miss → Intentional Make',
+    duration: '5-7 min',
+    description: 'From multiple spots: intentionally miss back rim once, then make the very next shot. Trains calibration and control.',
     details: [
-      'From one spot:',
-      'Flat arc: 1 make',
-      'Normal arc: 1 make',
-      'High arc: 1 make',
-      'If you miss, no stress—move on',
+      'Pick 5 spots around the arc',
+      'At each spot: intentionally hit back rim (miss) on shot 1',
+      'Immediately follow with an intentional make on shot 2',
+      'The miss must be a true back-rim miss — not a wild miss, not front rim',
+      'If your "intentional miss" goes in, repeat until you get a clean back-rim miss',
+      'If you can\'t make shot 2 after the miss, stay at that spot until you complete the sequence',
+      'Total: 5 spots × 2 shots = ~10-15 shots',
     ],
-    cue: 'Reminder that you control the ball. Nothing more.',
+    cue: 'You should be able to miss where you want AND make when you want.',
   },
   {
-    id: 'mini-test',
-    name: 'Mini Test (Optional)',
-    duration: '2-3 min',
-    description: 'If you have energy, run a quick 7-spot test.',
+    id: 'double-back-rim-miss-make',
+    name: '2 Back Rim Misses → Intentional Make',
+    duration: '5-8 min',
+    description: 'Harder version: intentionally miss back rim twice in a row, then make the next shot. Builds precision under constraint.',
     details: [
-      '7 spots around the arc',
-      '1 shot per spot',
-      'Goal: back rim or make',
-      'Track your score (out of 7)',
+      'Pick 5 spots around the arc (same or different spots as Drill 4)',
+      'At each spot: intentionally hit back rim on shot 1 AND shot 2',
+      'Shot 3: intentional make',
+      'Both misses must be clean back-rim — if either is front rim or air, restart the sequence at that spot',
+      'If the make doesn\'t go in on shot 3, restart the full 3-shot sequence at that spot',
+      'This is hard. Stay patient. The point is control, not speed.',
+      'Total: 5 spots × 3 shots = ~15-25 shots',
     ],
-    cue: 'Optional. Only if you want data today.',
+    cue: 'Two controlled misses then a make. That\'s elite calibration.',
+  },
+  {
+    id: 'test-out-step-backs',
+    name: 'Test Out: Step Backs Only',
+    duration: '3-5 min',
+    description: '14-spot test out but every shot is off a step-back move. Game-speed calibration check.',
+    details: [
+      'Same 14 spots around the arc as Drill 3',
+      'At each spot: 1-2 dribble setup into a step-back jumper',
+      '1 shot per spot — no second chances',
+      'Score: back rim or make = pass, everything else = miss',
+      'Track your score out of 14',
+      'Compare to your regular test out score from Drill 3',
+    ],
+    cue: 'If the gap between this and your regular test out is big, that\'s your next training target.',
+  },
+  {
+    id: 'test-out-final',
+    name: 'Test Out: Regular (Final)',
+    duration: '3-5 min',
+    description: 'Standard 14-spot test out to close the session. See where you are after the full workout.',
+    details: [
+      'Same 14 spots around the arc',
+      '1 shot per spot — catch and shoot, no dribble',
+      'Score: back rim or make = pass',
+      'Track your score out of 14',
+      'Compare to your Drill 3 score: did you improve, hold steady, or drop?',
+      'This final score is your session snapshot — log it',
+    ],
+    cue: 'Finish clean. This score tells you where you are today.',
   },
 ];
 
@@ -181,16 +222,16 @@ export default function OffDayPage() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">Off Day Protocol</h1>
-              <p className="text-gray-400">10-18 minutes • Maintenance Session</p>
+              <p className="text-gray-400">35-50 minutes • Deep Calibration Session</p>
             </div>
           </div>
           <p className="text-gray-300 text-lg">
-            <strong className="text-green-400">Goal:</strong> Maintain + sharpen without fatigue. Keep your calibration sharp.
+            <strong className="text-green-400">Goal:</strong> Deep distance work, off-dribble calibration, and precision control. Push your range and sharpen your command.
           </p>
 
           <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
             <p className="text-green-300 text-sm">
-              <strong>Remember:</strong> Off days are for touch, not rebuilding. If something feels off, note it and address it on Practice Day.
+              <strong>Remember:</strong> This is a full calibration session. Work through every drill with intent. Track your test-out scores — they tell you where your game is today.
             </p>
           </div>
         </div>
@@ -231,7 +272,7 @@ export default function OffDayPage() {
           {drills.map((drill, index) => {
             const isCompleted = completedDrills.has(drill.id);
             const isExpanded = expandedDrill === drill.id;
-            const isOptional = drill.id === 'mini-test';
+            const isOptional = false;
 
             return (
               <Card

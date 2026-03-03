@@ -72,7 +72,7 @@ const bbLevelOptions = [
   { value: '1', label: 'BB 1 - Foundation' },
   { value: '2', label: 'BB 2 - Developing' },
   { value: '3', label: 'BB 3 - Advanced' },
-  { value: '4', label: 'BB 4 - Elite' },
+  { value: '4', label: 'BB 4 - Master' },
 ];
 
 export default function PlayerProfilePage() {
@@ -218,7 +218,7 @@ export default function PlayerProfilePage() {
   };
 
   const getBBLevelText = (level: number) => {
-    if (level >= 4) return 'Elite Shooter';
+    if (level >= 4) return 'Master Shooter';
     if (level >= 3) return 'Advanced';
     if (level >= 2) return 'Developing';
     return 'Foundation';

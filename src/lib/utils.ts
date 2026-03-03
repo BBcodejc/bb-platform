@@ -88,6 +88,7 @@ export function formatPipelineStatus(status: string): string {
     profile_delivered: 'Profile Delivered',
     high_ticket_invited: 'High-Ticket Invited',
     enrolled_mentorship: 'Enrolled in Mentorship',
+    call_booked: 'Call Booked',
   };
   return statusMap[status] || capitalize(status.replace(/_/g, ' '));
 }
@@ -105,6 +106,7 @@ export function getStatusColor(status: string): string {
     profile_delivered: 'bg-emerald-500',
     high_ticket_invited: 'bg-gold-500',
     enrolled_mentorship: 'bg-gold-600',
+    call_booked: 'bg-cyan-500',
   };
   return colorMap[status] || 'bg-gray-500';
 }

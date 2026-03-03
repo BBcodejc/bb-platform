@@ -16,6 +16,15 @@ function getSupabaseClient() {
       autoRefreshToken: false,
       persistSession: false,
     },
+    db: {
+      schema: 'public',
+    },
+    global: {
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+      },
+    },
   });
 }
 
@@ -74,13 +83,21 @@ export async function PATCH(
         if (data.failureExample !== undefined) updateData.failure_example = data.failureExample;
         if (data.successExample !== undefined) updateData.success_example = data.successExample;
 
-        const { error } = await supabase
+        console.log('Updating limiting factor:', data.id, updateData);
+
+        const { data: result, error, count } = await supabase
           .from('elite_limiting_factors')
           .update(updateData)
-          .eq('id', data.id);
+          .eq('id', data.id)
+          .select();
+
+        console.log('Update result:', { result, error, count });
 
         if (error) throw error;
-        return NextResponse.json({ success: true });
+        if (!result || result.length === 0) {
+          return NextResponse.json({ error: 'No rows updated - ID not found', id: data.id }, { status: 404 });
+        }
+        return NextResponse.json({ success: true, updated: result });
       }
 
       case 'add_limiting_factor': {
@@ -99,6 +116,16 @@ export async function PATCH(
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           });
+
+        if (error) throw error;
+        return NextResponse.json({ success: true });
+      }
+
+      case 'delete_limiting_factor': {
+        const { error } = await supabase
+          .from('elite_limiting_factors')
+          .delete()
+          .eq('id', data.id);
 
         if (error) throw error;
         return NextResponse.json({ success: true });
@@ -224,6 +251,16 @@ export async function PATCH(
         return NextResponse.json({ success: true });
       }
 
+      case 'delete_coach_note': {
+        const { error } = await supabase
+          .from('elite_coach_notes')
+          .delete()
+          .eq('id', data.id);
+
+        if (error) throw error;
+        return NextResponse.json({ success: true });
+      }
+
       case 'add_voice_note': {
         const { error } = await supabase
           .from('elite_voice_notes')
@@ -236,6 +273,32 @@ export async function PATCH(
             created_by: data.createdBy || 'Admin',
             created_at: new Date().toISOString(),
           });
+
+        if (error) throw error;
+        return NextResponse.json({ success: true });
+      }
+
+      case 'delete_voice_note': {
+        // Get the voice note to find the storage URL
+        const { data: voiceNote } = await supabase
+          .from('elite_voice_notes')
+          .select('url')
+          .eq('id', data.id)
+          .single();
+
+        // Delete from storage if it's a Supabase URL
+        if (voiceNote?.url?.includes('/voice-notes/')) {
+          const storagePath = voiceNote.url.split('/voice-notes/').pop();
+          if (storagePath) {
+            await supabase.storage.from('voice-notes').remove([decodeURIComponent(storagePath)]);
+          }
+        }
+
+        // Delete DB record
+        const { error } = await supabase
+          .from('elite_voice_notes')
+          .delete()
+          .eq('id', data.id);
 
         if (error) throw error;
         return NextResponse.json({ success: true });
