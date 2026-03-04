@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -13,7 +13,7 @@ export async function DELETE(
     if (authError) return authError;
 
     const { id } = await params;
-    const supabase = createRouteHandlerClient(request);
+    const supabase = createServiceRoleClient();
 
     const { error } = await supabase
       .from('concept_videos')
@@ -41,7 +41,7 @@ export async function PATCH(
     if (authError) return authError;
 
     const { id } = await params;
-    const supabase = createRouteHandlerClient(request);
+    const supabase = createServiceRoleClient();
     const body = await request.json();
 
     const { data, error } = await supabase

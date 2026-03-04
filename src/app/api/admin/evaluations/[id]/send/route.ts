@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 import { requireAdmin } from '@/lib/auth';
 import { structuredPlanToDetailedHtml } from '@/lib/seven-day-plan';
 
@@ -105,7 +105,7 @@ export async function POST(
 
     const { id: prospectId } = await params;
     const body = await request.json();
-    const supabase = createRouteHandlerClient(request);
+    const supabase = createServiceRoleClient();
 
     // Get shooting evaluation data
     const { data: shootingEval, error: shootingError } = await supabase

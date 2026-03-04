@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 import { requireAdmin } from '@/lib/auth';
 import Stripe from 'stripe';
 
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const range = searchParams.get('range') || '7days';
 
-    const supabase = createRouteHandlerClient(request);
+    const supabase = createServiceRoleClient();
 
     // Calculate date ranges
     const now = new Date();

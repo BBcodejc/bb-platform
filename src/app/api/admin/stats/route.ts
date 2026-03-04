@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 import { requireAdmin } from '@/lib/auth';
 import Stripe from 'stripe';
 
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const { error: authError } = await requireAdmin(request);
     if (authError) return authError;
 
-    const supabase = createRouteHandlerClient(request);
+    const supabase = createServiceRoleClient();
 
     // Get total prospects count
     const { count: totalProspects } = await supabase

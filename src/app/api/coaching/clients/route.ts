@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase';
 import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const { error: authError } = await requireAdmin(request);
     if (authError) return authError;
 
-    const supabase = createRouteHandlerClient(request);
+    const supabase = createServiceRoleClient();
     const { data, error } = await supabase
       .from('coaching_clients')
       .select('*, week0_assessments(id, status, submitted_at)')
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const { error: authError } = await requireAdmin(request);
     if (authError) return authError;
 
-    const supabase = createRouteHandlerClient(request);
+    const supabase = createServiceRoleClient();
     const body = await request.json();
 
     const slug = body.slug || slugify(body.first_name, body.last_name);
