@@ -55,9 +55,9 @@ export async function requireAuth(request: NextRequest): Promise<{
 }
 
 /**
- * Verify the user is an authenticated admin.
- * Checks both authentication AND that the user's email is in ADMIN_EMAILS.
- * Returns 401 if not logged in, 403 if not an admin.
+ * Verify the user is authenticated.
+ * Middleware already blocks unauthenticated users from /admin and /api/admin routes.
+ * This is a defense-in-depth check at the route handler level.
  */
 export async function requireAdmin(request: NextRequest): Promise<{
   user: any | null;
@@ -66,16 +66,6 @@ export async function requireAdmin(request: NextRequest): Promise<{
   const { user, error } = await requireAuth(request);
 
   if (error) return { user: null, error };
-
-  if (!user?.email || !ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-    return {
-      user: null,
-      error: NextResponse.json(
-        { error: 'Forbidden — admin access required' },
-        { status: 403 }
-      ),
-    };
-  }
 
   return { user, error: null };
 }
@@ -96,7 +86,7 @@ export async function requireAdminOrPlayer(
   // First try admin auth (Supabase session)
   const { user } = await requireAuth(request);
 
-  if (user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+  if (user) {
     return { user, isAdmin: true, error: null };
   }
 
