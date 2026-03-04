@@ -25,22 +25,17 @@ function LoginForm() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Already logged in, redirect
-        if (redirectUrl) {
-          router.push(redirectUrl);
-        } else {
-          const role = user.user_metadata?.role;
-          if (role === 'admin' || role === 'coach') {
-            router.push('/admin');
-          } else {
-            const playerSlug = user.user_metadata?.player_slug;
-            router.push(playerSlug ? `/players/${playerSlug}` : '/');
-          }
-        }
+        const playerSlug = user.user_metadata?.player_slug;
+        const destination = redirectUrl
+          ? redirectUrl
+          : playerSlug
+            ? `/players/${playerSlug}`
+            : '/admin';
+        window.location.href = destination;
       }
     }
     checkSession();
-  }, [redirectUrl, router]);
+  }, [redirectUrl]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,36 +58,24 @@ function LoginForm() {
         console.log('User logged in:', data.user.email);
         console.log('User metadata:', data.user.user_metadata);
 
-        // If there's a redirect URL, use it
+        // Determine redirect destination
+        let destination = '/admin'; // default for admin
+
         if (redirectUrl) {
-          router.push(redirectUrl);
-          router.refresh();
-          return;
+          destination = redirectUrl;
+        } else {
+          const userRole = data.user.user_metadata?.role;
+          const playerSlug = data.user.user_metadata?.player_slug;
+
+          if (playerSlug) {
+            destination = `/players/${playerSlug}`;
+          }
+          // admin, coach, or no role → /admin (default)
         }
 
-        // Check role from user_metadata
-        const userRole = data.user.user_metadata?.role;
-        const playerSlug = data.user.user_metadata?.player_slug;
-
-        console.log('User role:', userRole);
-        console.log('Player slug:', playerSlug);
-
-        // Admin/Coach users go to admin dashboard
-        if (userRole === 'admin' || userRole === 'coach') {
-          console.log('Redirecting to /admin');
-          router.push('/admin');
-        }
-        // Players go to their dashboard
-        else if (playerSlug) {
-          console.log('Redirecting to player dashboard:', playerSlug);
-          router.push(`/players/${playerSlug}`);
-        }
-        // Default: if no role set, assume admin (for initial setup)
-        else {
-          console.log('No role set, defaulting to /admin');
-          router.push('/admin');
-        }
-        router.refresh();
+        // Full page reload so server-side auth (middleware + layout)
+        // can read the fresh session cookies
+        window.location.href = destination;
       }
     } catch (err) {
       setError('An unexpected error occurred');
