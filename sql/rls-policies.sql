@@ -145,15 +145,14 @@ WITH CHECK (auth.jwt() ->> 'email' = 'bbcodejc@gmail.com');
 -- Used in: /api/admin/stats (SELECT recent activity)
 -- Operations: SELECT
 
-ALTER TABLE activity_log ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Admin full access to activity_log" ON activity_log;
-CREATE POLICY "Admin full access to activity_log"
-ON activity_log
-FOR ALL
-TO authenticated
-USING (auth.jwt() ->> 'email' = 'bbcodejc@gmail.com')
-WITH CHECK (auth.jwt() ->> 'email' = 'bbcodejc@gmail.com');
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'activity_log' AND table_schema = 'public') THEN
+    ALTER TABLE activity_log ENABLE ROW LEVEL SECURITY;
+    DROP POLICY IF EXISTS "Admin full access to activity_log" ON activity_log;
+    CREATE POLICY "Admin full access to activity_log" ON activity_log FOR ALL TO authenticated
+      USING (auth.jwt() ->> 'email' = 'bbcodejc@gmail.com') WITH CHECK (auth.jwt() ->> 'email' = 'bbcodejc@gmail.com');
+  END IF;
+END $$;
 
 
 -- ============================================================================
