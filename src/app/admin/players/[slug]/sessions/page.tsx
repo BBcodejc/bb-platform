@@ -24,6 +24,12 @@ import {
   MessageSquare,
   EyeOff,
   Check,
+  LayoutGrid,
+  Search,
+  Zap,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,6 +73,50 @@ interface DailyNote {
   createdAt: string;
   updatedAt: string;
 }
+
+interface SessionTemplate {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  session_type: string;
+  category: string;
+  icon?: string;
+  color?: string;
+  display_order: number;
+  default_title: string;
+  default_description?: string;
+  default_duration_minutes?: number;
+  default_focus_areas: string[];
+  default_notes?: string;
+  default_coaching_notes?: string;
+  required_equipment: string[];
+  environment: string[];
+  is_active: boolean;
+}
+
+const TEMPLATE_CATEGORIES = [
+  { value: 'all', label: 'All Templates' },
+  { value: 'assessment', label: 'Assessments' },
+  { value: 'shooting', label: 'Shooting' },
+  { value: 'movement', label: 'Movement' },
+  { value: 'ball-handling', label: 'Ball Handling' },
+  { value: 'live-play', label: 'Live Play' },
+  { value: 'strength', label: 'Strength' },
+  { value: 'pregame', label: 'Pre-Game' },
+  { value: 'recovery', label: 'Recovery' },
+  { value: 'film', label: 'Film' },
+];
+
+const TEMPLATE_ICON_MAP: Record<string, any> = {
+  'ClipboardCheck': ClipboardCheck,
+  'Dumbbell': Dumbbell,
+  'Target': Target,
+  'Film': Film,
+  'Heart': Heart,
+  'Trophy': Trophy,
+  'ClipboardList': ClipboardList,
+};
 
 const SESSION_TYPES = [
   { value: 'pre-game', label: 'Pre-Game', icon: Target, color: 'bg-gold-500/20 text-gold-400 border-gold-500/30' },
@@ -129,9 +179,21 @@ export default function SessionCalendarPage() {
   const [dailyNoteVisible, setDailyNoteVisible] = useState(false);
   const [savingDailyNote, setSavingDailyNote] = useState(false);
 
+  // Template state
+  const [templates, setTemplates] = useState<SessionTemplate[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(true);
+  const [showTemplatePanel, setShowTemplatePanel] = useState(true);
+  const [templateSearch, setTemplateSearch] = useState('');
+  const [templateCategory, setTemplateCategory] = useState('all');
+  const [quickAdding, setQuickAdding] = useState<string | null>(null);
+
   useEffect(() => {
     fetchSessions();
   }, [slug, currentMonth, currentYear]);
+
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
 
   // Reset daily note editing when selected date changes
   useEffect(() => {
@@ -154,6 +216,94 @@ export default function SessionCalendarPage() {
       setLoading(false);
     }
   }
+
+  async function fetchTemplates() {
+    try {
+      setLoadingTemplates(true);
+      const res = await fetch('/api/admin/session-templates');
+      if (res.ok) {
+        const data = await res.json();
+        setTemplates(data.templates || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch templates:', err);
+    } finally {
+      setLoadingTemplates(false);
+    }
+  }
+
+  function applyTemplate(template: SessionTemplate) {
+    setNewSession({
+      date: selectedDate || new Date().toISOString().split('T')[0],
+      sessionType: template.session_type,
+      title: template.default_title,
+      description: template.default_description || '',
+      durationMinutes: template.default_duration_minutes ? String(template.default_duration_minutes) : '',
+      location: '',
+      opponent: '',
+      focusAreas: (template.default_focus_areas || []).join(', '),
+      notes: template.default_notes || '',
+      coachingNotes: template.default_coaching_notes || '',
+      coachingNotesVisible: false,
+      link: '',
+      createdBy: 'Coach Jake',
+    });
+    setShowAddModal(true);
+  }
+
+  async function handleQuickAddTemplate(template: SessionTemplate) {
+    if (!selectedDate) return;
+    setQuickAdding(template.id);
+    try {
+      const sessionData = {
+        date: selectedDate,
+        sessionType: template.session_type,
+        title: template.default_title,
+        description: template.default_description || '',
+        durationMinutes: template.default_duration_minutes || null,
+        location: '',
+        opponent: '',
+        focusAreas: template.default_focus_areas || [],
+        notes: template.default_notes || '',
+        coachingNotes: template.default_coaching_notes || '',
+        coachingNotesVisible: false,
+        link: '',
+        createdBy: 'Coach Jake',
+      };
+
+      const res = await fetch(`/api/elite-players/${slug}/sessions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sessionData),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.session?.id) {
+          await fetch(`/api/elite-players/${slug}/sessions/${data.session.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ link: `/elite/${slug}/session/${data.session.id}` }),
+          }).catch(() => {});
+        }
+        await fetchSessions();
+      }
+    } catch (err) {
+      console.error('Failed to quick-add template:', err);
+    } finally {
+      setQuickAdding(null);
+    }
+  }
+
+  // Filter templates
+  const filteredTemplates = templates.filter(t => {
+    const matchesCategory = templateCategory === 'all' || t.category === templateCategory;
+    const matchesSearch = !templateSearch ||
+      t.name.toLowerCase().includes(templateSearch.toLowerCase()) ||
+      t.description?.toLowerCase().includes(templateSearch.toLowerCase()) ||
+      t.default_focus_areas.some(f => f.toLowerCase().includes(templateSearch.toLowerCase()));
+    return matchesCategory && matchesSearch;
+  });
 
   async function handleAddSession() {
     if (!newSession.title.trim() || !newSession.date) return;
@@ -358,6 +508,20 @@ export default function SessionCalendarPage() {
                 </Button>
               </Link>
               <Button
+                onClick={() => setShowTemplatePanel(!showTemplatePanel)}
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  'border',
+                  showTemplatePanel
+                    ? 'text-gold-400 border-gold-500/30 bg-gold-500/10'
+                    : 'text-gray-400 border-[#2A2A2A]'
+                )}
+              >
+                <LayoutGrid className="w-4 h-4 mr-1" />
+                Templates
+              </Button>
+              <Button
                 onClick={() => setShowAddModal(true)}
                 className="bg-gold-500 hover:bg-gold-600 text-black"
                 size="sm"
@@ -477,6 +641,135 @@ export default function SessionCalendarPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Template Library Panel */}
+            {showTemplatePanel && (
+              <Card className="mt-4">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-gold-500" />
+                      <CardTitle className="text-base">Session Templates</CardTitle>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-gold-500/20 text-gold-400 border border-gold-500/30">
+                        {templates.length}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {selectedDate && (
+                        <span className="text-[10px] text-gray-500">
+                          Click to add to {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Search + Category Filter */}
+                  <div className="flex gap-2 mt-3">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+                      <input
+                        type="text"
+                        value={templateSearch}
+                        onChange={(e) => setTemplateSearch(e.target.value)}
+                        placeholder="Search templates..."
+                        className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-bb-dark/50 border border-bb-border text-white text-xs focus:outline-none focus:ring-1 focus:ring-gold-500/50"
+                      />
+                    </div>
+                    <select
+                      value={templateCategory}
+                      onChange={(e) => setTemplateCategory(e.target.value)}
+                      className="px-2 py-1.5 rounded-lg bg-bb-dark/50 border border-bb-border text-white text-xs"
+                    >
+                      {TEMPLATE_CATEGORIES.map(cat => (
+                        <option key={cat.value} value={cat.value}>{cat.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {loadingTemplates ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-5 h-5 text-gold-500 animate-spin" />
+                    </div>
+                  ) : filteredTemplates.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-6">No templates found</p>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {filteredTemplates.map(template => {
+                        const typeInfo = getSessionTypeInfo(template.session_type);
+                        const IconComponent = TEMPLATE_ICON_MAP[template.icon || ''] || Dumbbell;
+                        const isQuickAdding = quickAdding === template.id;
+
+                        return (
+                          <div
+                            key={template.id}
+                            className={cn(
+                              'group relative p-3 rounded-xl border transition-all cursor-pointer hover:scale-[1.02]',
+                              template.color || typeInfo.color,
+                              isQuickAdding && 'opacity-50 pointer-events-none'
+                            )}
+                          >
+                            <div className="flex items-start gap-2">
+                              <IconComponent className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-xs text-white leading-tight">{template.name}</p>
+                                {template.default_duration_minutes && (
+                                  <p className="text-[10px] text-gray-400 mt-0.5">{template.default_duration_minutes} min</p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Equipment badges */}
+                            {template.required_equipment.length > 0 && template.required_equipment[0] !== '' && (
+                              <div className="flex flex-wrap gap-0.5 mt-2">
+                                {template.required_equipment.slice(0, 3).map(eq => (
+                                  <span key={eq} className="text-[9px] px-1 py-0.5 bg-black/30 rounded text-gray-400">
+                                    {eq}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Action buttons on hover */}
+                            <div className="absolute inset-0 rounded-xl bg-black/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                              {selectedDate ? (
+                                <>
+                                  <button
+                                    onClick={() => handleQuickAddTemplate(template)}
+                                    className="px-2.5 py-1.5 rounded-lg bg-gold-500 text-black text-[10px] font-semibold hover:bg-gold-400 transition-colors flex items-center gap-1"
+                                  >
+                                    {isQuickAdding ? (
+                                      <Loader2 className="w-3 h-3 animate-spin" />
+                                    ) : (
+                                      <Zap className="w-3 h-3" />
+                                    )}
+                                    Quick Add
+                                  </button>
+                                  <button
+                                    onClick={() => applyTemplate(template)}
+                                    className="px-2.5 py-1.5 rounded-lg bg-white/10 text-white text-[10px] font-medium hover:bg-white/20 transition-colors"
+                                  >
+                                    Customize
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  onClick={() => applyTemplate(template)}
+                                  className="px-3 py-1.5 rounded-lg bg-gold-500 text-black text-[10px] font-semibold hover:bg-gold-400 transition-colors flex items-center gap-1"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                  Use Template
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Sidebar: Selected Day Details */}
@@ -825,6 +1118,56 @@ export default function SessionCalendarPage() {
             </div>
 
             <div className="p-5 space-y-5">
+              {/* Template Quick Pick */}
+              {templates.length > 0 && (
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-2">
+                    <BookOpen className="w-3.5 h-3.5 inline mr-1" />
+                    Start from template
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      onClick={() => setNewSession({
+                        date: newSession.date,
+                        sessionType: 'training',
+                        title: '',
+                        description: '',
+                        durationMinutes: '',
+                        location: '',
+                        opponent: '',
+                        focusAreas: '',
+                        notes: '',
+                        coachingNotes: '',
+                        coachingNotesVisible: false,
+                        link: '',
+                        createdBy: 'Coach Jake',
+                      })}
+                      className="px-2.5 py-1.5 rounded-lg border border-[#2A2A2A] text-[10px] font-medium text-gray-400 hover:text-white hover:border-gray-600 transition-colors"
+                    >
+                      Blank Session
+                    </button>
+                    {templates.slice(0, 12).map(template => {
+                      const typeInfo = getSessionTypeInfo(template.session_type);
+                      return (
+                        <button
+                          key={template.id}
+                          onClick={() => applyTemplate(template)}
+                          className={cn(
+                            'px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all hover:scale-105',
+                            newSession.title === template.default_title
+                              ? 'bg-gold-500/20 text-gold-400 border-gold-500/30 ring-1 ring-gold-500/50'
+                              : cn(typeInfo.color, 'hover:opacity-80')
+                          )}
+                          title={template.description}
+                        >
+                          {template.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Row 1: Date, Type, Opponent */}
               <div className="grid grid-cols-3 gap-4">
                 <div>
