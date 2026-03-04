@@ -93,6 +93,11 @@ interface SessionTemplate {
   required_equipment: string[];
   environment: string[];
   is_active: boolean;
+  session_code?: string;
+  constraint_level?: string;
+  phase?: string;
+  progression_notes?: string;
+  regression_notes?: string;
 }
 
 const TEMPLATE_CATEGORIES = [
@@ -101,6 +106,7 @@ const TEMPLATE_CATEGORIES = [
   { value: 'shooting', label: 'Shooting' },
   { value: 'movement', label: 'Movement' },
   { value: 'ball-handling', label: 'Ball Handling' },
+  { value: 'cognitive', label: 'Cognitive' },
   { value: 'live-play', label: 'Live Play' },
   { value: 'strength', label: 'Strength' },
   { value: 'pregame', label: 'Pre-Game' },
@@ -116,6 +122,7 @@ const TEMPLATE_ICON_MAP: Record<string, any> = {
   'Heart': Heart,
   'Trophy': Trophy,
   'ClipboardList': ClipboardList,
+  'Eye': Eye,
 };
 
 const SESSION_TYPES = [
@@ -713,9 +720,21 @@ export default function SessionCalendarPage() {
                               <IconComponent className="w-4 h-4 mt-0.5 flex-shrink-0" />
                               <div className="flex-1 min-w-0">
                                 <p className="font-medium text-xs text-white leading-tight">{template.name}</p>
-                                {template.default_duration_minutes && (
-                                  <p className="text-[10px] text-gray-400 mt-0.5">{template.default_duration_minutes} min</p>
-                                )}
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  {template.default_duration_minutes && (
+                                    <span className="text-[10px] text-gray-400">{template.default_duration_minutes} min</span>
+                                  )}
+                                  {template.constraint_level && (
+                                    <span className="text-[9px] px-1 py-0.5 bg-white/5 rounded text-gray-500">
+                                      L{template.constraint_level}
+                                    </span>
+                                  )}
+                                  {template.phase && (
+                                    <span className="text-[9px] px-1 py-0.5 bg-white/5 rounded text-gray-500">
+                                      P{template.phase}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
 

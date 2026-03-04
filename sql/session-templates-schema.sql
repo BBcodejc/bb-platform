@@ -26,8 +26,15 @@ CREATE TABLE IF NOT EXISTS session_templates (
   category TEXT NOT NULL DEFAULT 'shooting'
     CHECK (category IN (
       'shooting', 'movement', 'ball-handling', 'vision',
-      'recovery', 'mental', 'live-play', 'film', 'assessment', 'strength', 'pregame'
+      'recovery', 'mental', 'live-play', 'film', 'assessment', 'strength', 'pregame', 'cognitive'
     )),
+
+  -- BB Method metadata
+  session_code TEXT,               -- e.g. S-01, M-02, BM-01, CL-01, LP-01, E-01, R-01
+  constraint_level TEXT,           -- e.g. '1-2', '3', '4-5', '5-6'
+  phase TEXT,                      -- e.g. '1', '2-3', '4', 'Any', 'Entry'
+  progression_notes TEXT,          -- when to advance to next session
+  regression_notes TEXT,           -- when to step back
 
   -- Equipment / environment requirements
   required_equipment TEXT[] DEFAULT '{}',

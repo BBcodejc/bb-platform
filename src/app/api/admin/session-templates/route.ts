@@ -77,6 +77,11 @@ export async function POST(request: NextRequest) {
       defaultCoachingNotes,
       requiredEquipment,
       environment,
+      sessionCode,
+      constraintLevel,
+      phase,
+      progressionNotes,
+      regressionNotes,
     } = body;
 
     if (!name || !slug || !defaultTitle) {
@@ -105,6 +110,11 @@ export async function POST(request: NextRequest) {
         default_coaching_notes: defaultCoachingNotes || null,
         required_equipment: requiredEquipment || [],
         environment: environment || ['court'],
+        session_code: sessionCode || null,
+        constraint_level: constraintLevel || null,
+        phase: phase || null,
+        progression_notes: progressionNotes || null,
+        regression_notes: regressionNotes || null,
         created_by: 'admin',
       })
       .select()
