@@ -142,7 +142,7 @@ export async function PATCH(
 
         const { error } = await supabase
           .from('elite_game_reports')
-          .insert({
+          .upsert({
             player_id: playerId,
             opponent: data.opponent,
             opponent_logo: data.opponentLogo,
@@ -153,15 +153,26 @@ export async function PATCH(
             three_point_makes: data.threePointMakes,
             three_point_percentage: threePointPct,
             points: data.points,
+            field_goal_makes: data.fieldGoalMakes,
+            field_goal_attempts: data.fieldGoalAttempts,
             bb_notes: data.bbNotes,
             hunting_next_game: data.huntingNextGame,
-            created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-          });
+          }, { onConflict: 'player_id,game_date' });
 
         if (error) throw error;
         await updatePlayerStats(supabase, playerId);
         return NextResponse.json({ success: true });
+      }
+
+      case 'clear_game_reports': {
+        const { error } = await supabase
+          .from('elite_game_reports')
+          .delete()
+          .eq('player_id', playerId);
+
+        if (error) throw error;
+        return NextResponse.json({ success: true, message: 'All game reports cleared' });
       }
 
       case 'add_video': {

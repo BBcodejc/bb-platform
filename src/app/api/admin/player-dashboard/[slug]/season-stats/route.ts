@@ -100,7 +100,7 @@ export async function POST(
     if (error) {
       console.error('Season stats upsert error:', error);
       return NextResponse.json(
-        { error: 'Failed to save season stats' },
+        { error: 'Failed to save season stats', details: error.message, code: error.code },
         { status: 500 }
       );
     }
