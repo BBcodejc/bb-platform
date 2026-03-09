@@ -804,7 +804,7 @@ export default function PlayerDashboardPage() {
                           >
                             {/* Date */}
                             <div className="text-[10px] text-gray-500 mb-1.5">
-                              {new Date(game.gameDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              {new Date(game.gameDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                             </div>
 
                             {/* Opponent + W/L */}
@@ -1004,7 +1004,7 @@ export default function PlayerDashboardPage() {
                           )} />
 
                           <div className="text-[10px] text-gray-600 mb-1">
-                            {new Date(h.date).toLocaleDateString('en-US', {
+                            {new Date(h.date + 'T12:00:00').toLocaleDateString('en-US', {
                               month: 'short', day: 'numeric', year: 'numeric',
                             })}
                             {h.opponent && <span className="text-gray-700 ml-2">vs {h.opponent}</span>}
