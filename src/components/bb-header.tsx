@@ -76,10 +76,10 @@ export function BBHeader({ variant = 'default', showNav = true, transparent = tr
                   BB Gear
                 </Link>
                 <Link
-                  href="/player-info"
+                  href="/start/coaching"
                   className="text-sm font-semibold bg-site-gold hover:bg-site-gold-hover text-site-primary px-5 py-2 rounded-md transition-colors"
                 >
-                  Get Evaluated
+                  Apply Now
                 </Link>
               </nav>
             )}
@@ -163,11 +163,11 @@ export function BBHeader({ variant = 'default', showNav = true, transparent = tr
               </Link>
               <div className="pt-4">
                 <Link
-                  href="/player-info"
+                  href="/start/coaching"
                   onClick={() => setMobileOpen(false)}
                   className="block text-center font-semibold bg-site-gold hover:bg-site-gold-hover text-site-primary px-5 py-3 rounded-md transition-colors"
                 >
-                  Get Evaluated
+                  Apply Now
                 </Link>
               </div>
             </nav>
