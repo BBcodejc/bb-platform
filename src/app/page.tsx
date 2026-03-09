@@ -164,11 +164,12 @@ const TEAM_STEPS = [
 ];
 
 const BENEFITS = [
-  'Understand WHY you miss, not just that you miss',
-  'Protocols based on YOUR constraints, not generic drills',
-  'A written BB Profile: your main Limiting Factors + priority roadmap',
-  'Track progress with objective standards (BB Levels 1-4)',
-  'Option to apply for 3-month mentorship with full equipment (oversized ball, strobes, blockers)',
+  'Full BB Lens assessment across all domains — shooting, movement, and deception',
+  'Custom weekly programming tailored to YOUR specific limiting factors',
+  'Weekly video reviews with detailed feedback from BB coaches',
+  'Monthly 1-on-1 coaching calls + group calls',
+  'Equipment guidance & constraint recommendations (oversized ball, strobes, blockers)',
+  '3-month commitment with progression benchmarks and BB Standard tracking',
 ];
 
 const TESTIMONIALS = [
@@ -672,7 +673,7 @@ function BBStandardSection() {
   );
 }
 
-function EvaluationCTASection() {
+function CoachingCTASection() {
   const { ref, isVisible } = useScrollReveal();
 
   return (
@@ -684,9 +685,12 @@ function EvaluationCTASection() {
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          <SectionHeadline>What You Get — $250 One-Time</SectionHeadline>
+          <SectionHeadline>The Full BB Experience — 1:1 Coaching</SectionHeadline>
+          <p className="text-site-muted text-base max-w-xl mx-auto mt-4 mb-8">
+            We assess every dimension of your game — shooting, movement, and deception — then build a custom program to transform how you play.
+          </p>
 
-          <ul className="text-left max-w-xl mx-auto mt-8 space-y-3">
+          <ul className="text-left max-w-xl mx-auto space-y-3">
             {BENEFITS.map((benefit) => (
               <li key={benefit} className="flex items-start gap-3">
                 <svg className="w-5 h-5 text-site-gold shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -698,16 +702,11 @@ function EvaluationCTASection() {
           </ul>
 
           <div className="mt-10">
-            <span className="font-barlow font-extrabold text-site-gold text-5xl glow-site-gold-sm">$250</span>
-            <span className="text-site-dim text-sm ml-2">one-time</span>
-          </div>
-
-          <div className="mt-6">
             <Link
-              href="/start/shooting"
+              href="/start/coaching"
               className="inline-block font-barlow font-bold text-sm tracking-wider uppercase bg-site-gold hover:bg-site-gold-hover text-site-primary px-10 py-4 rounded-md transition-all glow-site-gold-sm hover:glow-site-gold"
             >
-              Start Your Evaluation →
+              Apply for 1:1 Coaching →
             </Link>
           </div>
         </div>
@@ -831,15 +830,14 @@ function FinalCTASection() {
         <div ref={ref} className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <SectionHeadline>Ready to Find Your Limiting Factors?</SectionHeadline>
           <p className="text-site-muted text-base sm:text-lg mb-8 max-w-xl mx-auto">
-            Join the players who stopped guessing and started calibrating. Get your personalized BB Profile — your Limiting Factors exposed, your roadmap built.
+            Join the players who stopped guessing and started calibrating. Apply for 1:1 coaching and get your personalized BB Profile — your Limiting Factors exposed, your roadmap built.
           </p>
           <Link
-            href="/start/shooting"
+            href="/start/coaching"
             className="inline-block font-barlow font-bold tracking-wider uppercase bg-site-gold hover:bg-site-gold-hover text-site-primary px-10 py-4 rounded-md transition-all text-base glow-site-gold-sm hover:glow-site-gold"
           >
-            Get Your BB Profile — $250 →
+            Apply for 1:1 Coaching →
           </Link>
-          <p className="text-site-dim text-xs mt-4">High-ticket 3-month mentorship available for qualified candidates</p>
         </div>
       </div>
     </section>
@@ -864,7 +862,7 @@ export default function HomePage() {
       <ResearchSection />
       <LimitingFactorsSection />
       <BBStandardSection />
-      <EvaluationCTASection />
+      <CoachingCTASection />
       <OrganizationsSection />
       <TestimonialsSection />
       <FinalCTASection />
@@ -879,13 +877,13 @@ export default function HomePage() {
       >
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <p className="hidden sm:block text-site-muted text-sm">
-            BB Shooting Evaluation — <span className="text-site-gold font-semibold">$250</span>
+            BB 1:1 Coaching — <span className="text-site-gold font-semibold">Now Open</span>
           </p>
           <Link
-            href="/start/shooting"
+            href="/start/coaching"
             className="w-full sm:w-auto text-center font-barlow font-bold text-sm tracking-wider uppercase bg-site-gold hover:bg-site-gold-hover text-site-primary px-6 py-2.5 rounded-md transition-colors"
           >
-            Get Evaluated →
+            Apply Now →
           </Link>
         </div>
       </div>
