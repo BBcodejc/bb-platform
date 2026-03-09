@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -22,9 +22,19 @@ import {
   Edit3,
   Save,
   X,
+  Upload,
+  Video,
+  ExternalLink,
+  Check,
+  Star,
+  ChevronDown,
+  ChevronUp,
+  Wrench,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getCurrentUser, canEditElite, type AuthUser } from '@/lib/middleware/auth';
+import { BLOCK_CATEGORY_CONFIG } from '@/types/session-library';
+import type { SessionPlanWithBlocks, SessionBlock } from '@/types/session-library';
 
 interface SessionData {
   id: string;
@@ -41,6 +51,10 @@ interface SessionData {
   coachingNotes?: string;
   coachingNotesVisible?: boolean;
   link?: string;
+  videoUrl?: string;
+  videoUrlClient?: string;
+  bestTestOfDay?: string;
+  sessionPlanId?: string;
   createdBy?: string;
   createdAt: string;
 }
@@ -101,8 +115,59 @@ function parseSessionNotes(notes: string): { segments: { title: string; content:
   return { segments, rawLines: lines };
 }
 
+// Render block description with external cues highlighted in gold
+function renderBlockDescription(description: string, externalCues: string[]): React.ReactNode {
+  if (!description) return null;
+  if (!externalCues || externalCues.length === 0) {
+    return description;
+  }
+
+  // Split the description into parts, highlighting cue text
+  const parts: React.ReactNode[] = [];
+  const lines = description.split('\n');
+
+  lines.forEach((line, lineIndex) => {
+    if (lineIndex > 0) parts.push('\n');
+
+    // Check if this line contains "External cue:" pattern
+    const cueMatch = line.match(/External cue:\s*(.*)/i);
+    if (cueMatch) {
+      const beforeCue = line.substring(0, line.indexOf(cueMatch[0]));
+      parts.push(beforeCue);
+      parts.push(
+        <span key={`cue-label-${lineIndex}`} className="text-gold-400 font-medium">
+          External cue: {cueMatch[1]}
+        </span>
+      );
+    } else {
+      // Check if any cue string appears in this line
+      let hasHighlight = false;
+      for (const cue of externalCues) {
+        const idx = line.toLowerCase().indexOf(cue.toLowerCase());
+        if (idx >= 0) {
+          parts.push(line.substring(0, idx));
+          parts.push(
+            <span key={`cue-${lineIndex}`} className="text-gold-400 font-medium">
+              {line.substring(idx, idx + cue.length)}
+            </span>
+          );
+          parts.push(line.substring(idx + cue.length));
+          hasHighlight = true;
+          break;
+        }
+      }
+      if (!hasHighlight) {
+        parts.push(line);
+      }
+    }
+  });
+
+  return <>{parts}</>;
+}
+
 export default function SessionDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const slug = params.slug as string;
   const sessionId = params.sessionId as string;
 
@@ -112,7 +177,16 @@ export default function SessionDetailPage() {
   const [error, setError] = useState(false);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
 
+  // Session plan state (block-based view)
+  const [sessionPlan, setSessionPlan] = useState<SessionPlanWithBlocks | null>(null);
+  const [planLoading, setPlanLoading] = useState(false);
+  const [expandedBlock, setExpandedBlock] = useState<string | null>(null);
+  const [playerNotes, setPlayerNotes] = useState('');
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [savingBlock, setSavingBlock] = useState<string | null>(null);
+
   // Auth state
+  const [authChecked, setAuthChecked] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
 
   // Edit state
@@ -120,15 +194,40 @@ export default function SessionDetailPage() {
   const [editingNotes, setEditingNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
+  // Video upload state
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Check authentication — dual auth (Supabase admin OR elite token)
   useEffect(() => {
     async function checkAuth() {
+      // First try Supabase admin auth
       const result = await getCurrentUser();
       if (result.isAuthenticated && result.user) {
         setCanEdit(canEditElite(result.user.role));
+        setAuthChecked(true);
+        return;
       }
+      // Then try elite token auth
+      try {
+        const res = await fetch(`/api/elite/auth/verify?slug=${slug}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.valid) {
+            setCanEdit(false);
+            setAuthChecked(true);
+            return;
+          }
+        }
+      } catch {}
+      // No auth — redirect to elite login
+      router.push(`/elite/login?redirect=/elite/${slug}/session/${sessionId}`);
     }
     checkAuth();
-  }, []);
+  }, [slug, sessionId, router]);
 
   useEffect(() => {
     fetchSession();
@@ -137,11 +236,17 @@ export default function SessionDetailPage() {
   async function fetchSession() {
     try {
       setLoading(true);
-      const res = await fetch(`/api/elite-players/${slug}/sessions/${sessionId}`);
+      // Use the elite token-auth endpoint (not admin-only)
+      const res = await fetch(`/api/elite/${slug}/sessions/${sessionId}`);
       if (res.ok) {
         const data = await res.json();
         setSession(data.session);
         setPlayer(data.player);
+
+        // If session has a linked plan, fetch block details
+        if (data.session.sessionPlanId) {
+          fetchSessionPlan(data.session.sessionPlanId);
+        }
       } else {
         setError(true);
       }
@@ -150,6 +255,80 @@ export default function SessionDetailPage() {
       setError(true);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchSessionPlan(planId: string) {
+    try {
+      setPlanLoading(true);
+      const res = await fetch(`/api/elite/${slug}/session-plans/${planId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSessionPlan(data.plan);
+        setPlayerNotes(data.plan.playerNotes || '');
+      }
+    } catch (err) {
+      console.error('Failed to fetch session plan:', err);
+    } finally {
+      setPlanLoading(false);
+    }
+  }
+
+  async function toggleBlockComplete(blockId: string) {
+    if (!sessionPlan) return;
+    setSavingBlock(blockId);
+
+    const isCompleted = sessionPlan.completedBlocks.includes(blockId);
+    const newCompleted = isCompleted
+      ? sessionPlan.completedBlocks.filter(b => b !== blockId)
+      : [...sessionPlan.completedBlocks, blockId];
+
+    const allDone = newCompleted.length === sessionPlan.blockIds.length;
+    const newStatus = allDone ? 'completed' : newCompleted.length > 0 ? 'in_progress' : 'assigned';
+
+    // Optimistic update
+    setSessionPlan({
+      ...sessionPlan,
+      completedBlocks: newCompleted,
+      status: newStatus as any,
+    });
+
+    try {
+      await fetch(`/api/elite/${slug}/session-plans/${sessionPlan.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          completedBlocks: newCompleted,
+          status: newStatus,
+        }),
+      });
+    } catch (err) {
+      console.error('Failed to update block completion:', err);
+      // Revert on error
+      setSessionPlan({
+        ...sessionPlan,
+        completedBlocks: sessionPlan.completedBlocks,
+        status: sessionPlan.status,
+      });
+    } finally {
+      setSavingBlock(null);
+    }
+  }
+
+  async function savePlayerNotes() {
+    if (!sessionPlan) return;
+    setSavingNotes(true);
+    try {
+      await fetch(`/api/elite/${slug}/session-plans/${sessionPlan.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerNotes }),
+      });
+      setSessionPlan({ ...sessionPlan, playerNotes });
+    } catch (err) {
+      console.error('Failed to save player notes:', err);
+    } finally {
+      setSavingNotes(false);
     }
   }
 
@@ -187,7 +366,78 @@ export default function SessionDetailPage() {
     }
   }
 
-  if (loading) {
+  // Client video upload
+  async function handleVideoUpload(file: File) {
+    const allowedTypes = ['video/mp4', 'video/quicktime'];
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError('Invalid file type. Use MP4 or MOV.');
+      return;
+    }
+    if (file.size > 200 * 1024 * 1024) {
+      setUploadError('File too large. Max 200MB.');
+      return;
+    }
+
+    setUploading(true);
+    setUploadError(null);
+    setUploadSuccess(null);
+    setUploadProgress(0);
+
+    try {
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 5, 90));
+      }, 500);
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch(`/api/elite/${slug}/sessions/${sessionId}/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      clearInterval(progressInterval);
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Upload failed');
+      }
+
+      const { url } = await res.json();
+      setUploadProgress(100);
+      setUploadSuccess('Video uploaded successfully!');
+
+      // Update session state with the new client video
+      if (session) {
+        setSession({ ...session, videoUrlClient: url });
+      }
+    } catch (err: any) {
+      console.error('Video upload error:', err);
+      setUploadError(err.message || 'Failed to upload video');
+    } finally {
+      setUploading(false);
+      setTimeout(() => setUploadSuccess(null), 4000);
+    }
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleVideoUpload(file);
+  }
+
+  if (loading || !authChecked) {
     return (
       <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-gold-500 animate-spin" />
@@ -306,8 +556,30 @@ export default function SessionDetailPage() {
         </div>
       </div>
 
-      {/* Progress Bar (if there are checkable items) */}
-      {allItems.length > 0 && (
+      {/* Progress Bar — block-based or legacy bullet-based */}
+      {sessionPlan ? (() => {
+        const blockProgress = sessionPlan.blocks.length > 0
+          ? Math.round((sessionPlan.completedBlocks.length / sessionPlan.blocks.length) * 100)
+          : 0;
+        return (
+          <div className="sticky top-0 z-10 bg-[#0A0A0A]/95 backdrop-blur border-b border-[#1A1A1A]">
+            <div className="max-w-2xl mx-auto px-5 py-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs text-gray-500">
+                  {sessionPlan.completedBlocks.length} / {sessionPlan.blocks.length} blocks completed
+                </span>
+                <span className="text-xs font-bold text-gold-500">{blockProgress}%</span>
+              </div>
+              <div className="h-1.5 bg-[#1A1A1A] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-gold-500 to-gold-400 rounded-full transition-all duration-500"
+                  style={{ width: `${blockProgress}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        );
+      })() : allItems.length > 0 && (
         <div className="sticky top-0 z-10 bg-[#0A0A0A]/95 backdrop-blur border-b border-[#1A1A1A]">
           <div className="max-w-2xl mx-auto px-5 py-3">
             <div className="flex items-center justify-between mb-1.5">
@@ -329,6 +601,262 @@ export default function SessionDetailPage() {
       {/* Session Content */}
       <div className="max-w-2xl mx-auto px-5 py-8 space-y-6">
 
+        {/* Best Test of the Day — prominent gold callout */}
+        {!isEditing && session.bestTestOfDay && (
+          <div className="rounded-2xl border-2 border-gold-500/30 overflow-hidden bg-gradient-to-br from-gold-500/10 to-gold-500/5">
+            <div className="px-5 py-4 border-b border-gold-500/20 flex items-center gap-2">
+              <Star className="w-5 h-5 text-gold-500 fill-gold-500" />
+              <h2 className="text-sm font-bold text-gold-400 uppercase tracking-wider">
+                Best Test of the Day
+              </h2>
+              <Star className="w-5 h-5 text-gold-500 fill-gold-500" />
+            </div>
+            <div className="px-5 py-5">
+              <p className="text-base text-white font-medium leading-relaxed whitespace-pre-wrap">
+                {session.bestTestOfDay}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Coach Exercise Video (from coach) */}
+        {!isEditing && session.videoUrl && (
+          <div className="rounded-2xl border border-blue-500/20 overflow-hidden">
+            <div className="px-5 py-4 bg-blue-500/5 border-b border-blue-500/10 flex items-center gap-2">
+              <Film className="w-4 h-4 text-blue-400" />
+              <h2 className="text-sm font-bold text-blue-400 uppercase tracking-wider">
+                Exercise Video
+              </h2>
+            </div>
+            <div className="p-4">
+              <video
+                src={session.videoUrl}
+                controls
+                className="w-full rounded-xl"
+                preload="metadata"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ========== BLOCK-BASED SESSION VIEW ========== */}
+        {!isEditing && sessionPlan && (
+          <>
+            {/* Loading state for plan */}
+            {planLoading && (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-6 h-6 text-gold-500 animate-spin" />
+              </div>
+            )}
+
+            {/* Coaching Notes (from coach for this plan) */}
+            {sessionPlan.coachingNotes && (
+              <div className="rounded-2xl border border-gold-500/20 overflow-hidden">
+                <div className="px-5 py-4 bg-gold-500/5 border-b border-gold-500/10">
+                  <h2 className="text-sm font-bold text-gold-400 uppercase tracking-wider">
+                    Coach&apos;s Notes
+                  </h2>
+                </div>
+                <div className="px-5 py-4">
+                  <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
+                    {sessionPlan.coachingNotes}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Ordered Block Cards */}
+            {sessionPlan.blocks.map((block, index) => {
+              const catConfig = BLOCK_CATEGORY_CONFIG[block.category] || BLOCK_CATEGORY_CONFIG.shooting;
+              const isExpanded = expandedBlock === block.blockId;
+              const isCompleted = sessionPlan.completedBlocks.includes(block.blockId);
+              const blockNote = sessionPlan.blockNotes?.[block.blockId];
+
+              return (
+                <div
+                  key={`${block.blockId}-${index}`}
+                  className={cn(
+                    'rounded-2xl border overflow-hidden transition-all',
+                    isCompleted
+                      ? 'border-gold-500/20 bg-gold-500/5'
+                      : 'border-[#1A1A1A]'
+                  )}
+                >
+                  {/* Block Header — always visible */}
+                  <div
+                    className="px-5 py-4 flex items-center gap-3 cursor-pointer"
+                    onClick={() => setExpandedBlock(isExpanded ? null : block.blockId)}
+                  >
+                    {/* Completion checkbox */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleBlockComplete(block.blockId);
+                      }}
+                      disabled={savingBlock === block.blockId}
+                      className="flex-shrink-0"
+                    >
+                      {savingBlock === block.blockId ? (
+                        <Loader2 className="w-5 h-5 text-gold-500 animate-spin" />
+                      ) : isCompleted ? (
+                        <CheckCircle2 className="w-5 h-5 text-gold-500" />
+                      ) : (
+                        <Circle className="w-5 h-5 text-gray-600 hover:text-gray-400 transition-colors" />
+                      )}
+                    </button>
+
+                    {/* Block ID badge */}
+                    <span className={cn(
+                      'px-2 py-0.5 rounded text-xs font-bold border',
+                      catConfig.bgColor,
+                      catConfig.color
+                    )}>
+                      {block.blockId}
+                    </span>
+
+                    {/* Block info */}
+                    <div className="flex-1 min-w-0">
+                      <p className={cn(
+                        'text-sm font-medium truncate',
+                        isCompleted ? 'text-gray-500 line-through' : 'text-white'
+                      )}>
+                        {block.name}
+                      </p>
+                      <div className="flex items-center gap-3 mt-0.5">
+                        <span className="text-xs text-gray-600 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {block.durationDisplay}
+                        </span>
+                        {block.equipment.length > 0 && (
+                          <span className="text-xs text-gray-600 flex items-center gap-1">
+                            <Wrench className="w-3 h-3" />
+                            {block.equipment.length}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Expand chevron */}
+                    {isExpanded ? (
+                      <ChevronUp className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                    )}
+                  </div>
+
+                  {/* Expanded Content */}
+                  {isExpanded && (
+                    <div className="px-5 pb-5 space-y-4 border-t border-[#1A1A1A]">
+                      {/* Equipment pills */}
+                      {block.equipment.length > 0 && (
+                        <div className="pt-4">
+                          <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Equipment</p>
+                          <div className="flex flex-wrap gap-2">
+                            {block.equipment.map(eq => (
+                              <span
+                                key={eq}
+                                className="px-2.5 py-1 rounded-full bg-[#1A1A1A] border border-[#2A2A2A] text-xs text-gray-400"
+                              >
+                                {eq}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Constraint Level Indicator */}
+                      {(block.constraintLevelMin || block.constraintLevelMax) && (
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Constraint Level</p>
+                          <div className="flex items-center gap-1.5">
+                            {[1, 2, 3, 4, 5, 6].map(level => {
+                              const min = block.constraintLevelMin || 1;
+                              const max = block.constraintLevelMax || 6;
+                              const isActive = level >= min && level <= max;
+                              return (
+                                <div
+                                  key={level}
+                                  className={cn(
+                                    'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
+                                    isActive
+                                      ? 'bg-gold-500/20 text-gold-400 border border-gold-500/40'
+                                      : 'bg-[#1A1A1A] text-gray-600 border border-[#2A2A2A]'
+                                  )}
+                                >
+                                  {level}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Full description with external cues highlighted */}
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Instructions</p>
+                        <div className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
+                          {renderBlockDescription(block.description, block.externalCues)}
+                        </div>
+                      </div>
+
+                      {/* Per-block coach note */}
+                      {blockNote && (
+                        <div className="rounded-xl bg-gold-500/5 border border-gold-500/20 px-4 py-3">
+                          <p className="text-xs font-semibold text-gold-400 uppercase tracking-wider mb-1">Coach Note</p>
+                          <p className="text-sm text-gray-300">{blockNote}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Player Notes Textarea */}
+            <div className="rounded-2xl border border-[#1A1A1A] overflow-hidden">
+              <div className="px-5 py-4 bg-[#111] border-b border-[#1A1A1A] flex items-center justify-between">
+                <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+                  Your Notes
+                </h2>
+                {playerNotes !== (sessionPlan.playerNotes || '') && (
+                  <button
+                    onClick={savePlayerNotes}
+                    disabled={savingNotes}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold-500/10 border border-gold-500/30 text-gold-400 hover:bg-gold-500/20 transition-all text-sm disabled:opacity-50"
+                  >
+                    {savingNotes ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                    {savingNotes ? 'Saving...' : 'Save'}
+                  </button>
+                )}
+              </div>
+              <div className="p-5">
+                <textarea
+                  value={playerNotes}
+                  onChange={(e) => setPlayerNotes(e.target.value)}
+                  onBlur={() => {
+                    if (playerNotes !== (sessionPlan.playerNotes || '')) {
+                      savePlayerNotes();
+                    }
+                  }}
+                  className="w-full min-h-[120px] bg-[#0A0A0A] border border-[#2A2A2A] rounded-xl p-4 text-sm text-white leading-relaxed focus:outline-none focus:border-gold-500/40 resize-y"
+                  placeholder="What felt difficult? What broke down? Any observations..."
+                />
+              </div>
+            </div>
+
+            {/* Complete Session badge */}
+            {sessionPlan.completedBlocks.length === sessionPlan.blocks.length && sessionPlan.blocks.length > 0 && (
+              <div className="text-center py-8">
+                <div className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-gold-500/10 border border-gold-500/20">
+                  <CheckCircle2 className="w-6 h-6 text-gold-500" />
+                  <span className="text-gold-500 font-bold">Session Complete</span>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ========== LEGACY NOTES-BASED VIEW ========== */}
         {/* Edit Mode */}
         {isEditing && (
           <div className="rounded-2xl border border-gold-500/20 bg-[#111] overflow-hidden">
@@ -366,8 +894,8 @@ export default function SessionDetailPage() {
           </div>
         )}
 
-        {/* Read Mode */}
-        {!isEditing && parsed.segments.map((segment, si) => (
+        {/* Read Mode — only show legacy segments when no block-based plan */}
+        {!isEditing && !sessionPlan && parsed.segments.map((segment, si) => (
           <div key={si} className="rounded-2xl border border-[#1A1A1A] overflow-hidden">
             {/* Segment Header */}
             {segment.title && (
@@ -440,15 +968,15 @@ export default function SessionDetailPage() {
           </div>
         ))}
 
-        {/* If no parsed segments, show raw notes */}
-        {!isEditing && parsed.segments.length === 0 && session.notes && (
+        {/* If no parsed segments, show raw notes (only when no block-based plan) */}
+        {!isEditing && !sessionPlan && parsed.segments.length === 0 && session.notes && (
           <div className="rounded-2xl border border-[#1A1A1A] p-5">
             <p className="text-sm text-gray-300 whitespace-pre-wrap">{session.notes}</p>
           </div>
         )}
 
-        {/* Coach's Notes (only shown when API returns them — i.e. coaching_notes_visible = true) */}
-        {!isEditing && session.coachingNotes && (
+        {/* Coach's Notes — only in legacy view (block view shows coaching notes inline) */}
+        {!isEditing && !sessionPlan && session.coachingNotes && (
           <div className="rounded-2xl border border-gold-500/20 overflow-hidden">
             <div className="px-5 py-4 bg-gold-500/5 border-b border-gold-500/10">
               <h2 className="text-sm font-bold text-gold-400 uppercase tracking-wider">
@@ -459,6 +987,29 @@ export default function SessionDetailPage() {
               <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
                 {session.coachingNotes}
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* Session Link (resource link) */}
+        {!isEditing && session.link && (
+          <div className="rounded-2xl border border-[#1A1A1A] overflow-hidden">
+            <div className="px-5 py-4 bg-[#111] border-b border-[#1A1A1A] flex items-center gap-2">
+              <ExternalLink className="w-4 h-4 text-gray-400" />
+              <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+                Session Resource
+              </h2>
+            </div>
+            <div className="p-5">
+              <a
+                href={session.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gold-500/10 border border-gold-500/20 text-gold-400 hover:bg-gold-500/20 transition-all text-sm font-medium"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Open Resource Link
+              </a>
             </div>
           </div>
         )}
@@ -502,8 +1053,105 @@ export default function SessionDetailPage() {
           </div>
         )}
 
-        {/* Completion badge */}
-        {!isEditing && allItems.length > 0 && progressPercent === 100 && (
+        {/* Client Video Upload / Display */}
+        {!isEditing && (
+          <div className="rounded-2xl border border-[#1A1A1A] overflow-hidden">
+            <div className="px-5 py-4 bg-[#111] border-b border-[#1A1A1A] flex items-center gap-2">
+              <Video className="w-4 h-4 text-gray-400" />
+              <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+                Your Video
+              </h2>
+            </div>
+            <div className="p-5">
+              {session.videoUrlClient ? (
+                <div className="space-y-3">
+                  <video
+                    src={session.videoUrlClient}
+                    controls
+                    className="w-full rounded-xl"
+                    preload="metadata"
+                  />
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-green-400 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Video submitted
+                    </p>
+                    <a
+                      href={session.videoUrlClient}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-gold-500 hover:underline inline-flex items-center gap-1"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      Open Full Video
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={cn(
+                    'relative border-2 border-dashed rounded-xl p-8 text-center transition-all',
+                    isDragging
+                      ? 'border-gold-500/50 bg-gold-500/5'
+                      : 'border-[#2A2A2A] hover:border-gold-500/30'
+                  )}
+                >
+                  {uploading ? (
+                    <div className="space-y-3">
+                      <Loader2 className="w-8 h-8 text-gold-500 animate-spin mx-auto" />
+                      <p className="text-sm text-gold-400">Uploading... {uploadProgress}%</p>
+                      <div className="w-full max-w-xs mx-auto bg-[#1A1A1A] rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-gold-500 to-gold-400 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        type="file"
+                        accept="video/mp4,video/quicktime,.mp4,.mov"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleVideoUpload(file);
+                          e.target.value = '';
+                        }}
+                      />
+                      <Upload className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+                      <p className="text-sm text-gray-400">
+                        Drop your video here or tap to upload
+                      </p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        MP4 or MOV — Max 200MB
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {uploadError && (
+                <p className="text-sm text-red-400 mt-3 flex items-center gap-1.5">
+                  <X className="w-4 h-4" />
+                  {uploadError}
+                </p>
+              )}
+              {uploadSuccess && (
+                <p className="text-sm text-green-400 mt-3 flex items-center gap-1.5">
+                  <Check className="w-4 h-4" />
+                  {uploadSuccess}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Legacy Completion badge (non-plan sessions) */}
+        {!isEditing && !sessionPlan && allItems.length > 0 && progressPercent === 100 && (
           <div className="text-center py-8">
             <div className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-gold-500/10 border border-gold-500/20">
               <CheckCircle2 className="w-6 h-6 text-gold-500" />

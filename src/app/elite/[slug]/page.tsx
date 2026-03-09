@@ -63,6 +63,9 @@ interface Session {
   coachingNotes?: string;
   coachingNotesVisible?: boolean;
   link?: string;
+  videoUrl?: string;
+  videoUrlClient?: string;
+  bestTestOfDay?: string;
   createdBy?: string;
   createdAt: string;
 }
@@ -250,7 +253,7 @@ function EliteProfileContent() {
       try {
         const today = new Date();
         const res = await fetch(
-          `/api/elite-players/${slug}/sessions?month=${today.getMonth() + 1}&year=${today.getFullYear()}`
+          `/api/elite/${slug}/sessions?month=${today.getMonth() + 1}&year=${today.getFullYear()}`
         );
         if (res.ok) {
           const data = await res.json();
@@ -268,7 +271,7 @@ function EliteProfileContent() {
       setSessionsLoading(true);
       try {
         const res = await fetch(
-          `/api/elite-players/${slug}/sessions?month=${currentMonth + 1}&year=${currentYear}`
+          `/api/elite/${slug}/sessions?month=${currentMonth + 1}&year=${currentYear}`
         );
         if (res.ok) {
           const data = await res.json();

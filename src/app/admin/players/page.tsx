@@ -421,7 +421,7 @@ export default function BBPlayersPage() {
                           <div className="flex items-center gap-2">
                             {player.isElite ? (
                               <>
-                                <Link href={`/players/${player.slug}?admin=true`}>
+                                <Link href={`/admin/players/${player.slug}/dashboard`}>
                                   <Button variant="ghost" size="sm" className="text-gold-500 hover:text-gold-400">
                                     <ArrowUpRight className="w-4 h-4 mr-1" />
                                     Dashboard

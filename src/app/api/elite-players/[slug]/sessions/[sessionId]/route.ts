@@ -65,6 +65,9 @@ export async function GET(
         coachingNotes: isAdmin ? session.coaching_notes : (session.coaching_notes_visible ? session.coaching_notes : null),
         coachingNotesVisible: session.coaching_notes_visible ?? false,
         link: session.link,
+        videoUrl: session.video_url,
+        videoUrlClient: session.video_url_client,
+        bestTestOfDay: session.best_test_of_day,
         createdBy: session.created_by,
         createdAt: session.created_at,
       },
@@ -111,6 +114,8 @@ export async function PATCH(
     if (body.durationMinutes !== undefined) updateData.duration_minutes = body.durationMinutes;
     if (body.coachingNotes !== undefined) updateData.coaching_notes = body.coachingNotes;
     if (body.coachingNotesVisible !== undefined) updateData.coaching_notes_visible = body.coachingNotesVisible;
+    if (body.videoUrl !== undefined) updateData.video_url = body.videoUrl;
+    if (body.bestTestOfDay !== undefined) updateData.best_test_of_day = body.bestTestOfDay;
     updateData.updated_at = new Date().toISOString();
 
     const { error: updateError } = await supabase

@@ -53,6 +53,86 @@ export async function verifyEliteTokenForSlug(slug: string): Promise<EliteTokenU
 }
 
 /**
+ * Verify elite player token from a NextRequest (for API route handlers).
+ * Also falls back to admin Supabase auth.
+ * Returns the player if valid, null if invalid.
+ */
+export async function verifyEliteRequest(
+  request: import('next/server').NextRequest,
+  slug: string
+): Promise<{ player: EliteTokenUser | null; isAdmin: boolean }> {
+  const { createServiceRoleClient: getSvc } = await import('@/lib/supabase');
+  const supabase = getSvc();
+
+  // Try elite token first
+  const eliteToken = request.cookies.get('bb-elite-token')?.value;
+  if (eliteToken) {
+    const { data: player, error } = await supabase
+      .from('elite_players')
+      .select('id, slug, first_name, last_name, is_active')
+      .eq('access_token', eliteToken)
+      .eq('slug', slug)
+      .eq('is_active', true)
+      .single();
+
+    if (!error && player) {
+      return {
+        player: {
+          id: player.id,
+          slug: player.slug,
+          firstName: player.first_name,
+          lastName: player.last_name,
+          isActive: player.is_active,
+        },
+        isAdmin: false,
+      };
+    }
+  }
+
+  // Fallback: admin Supabase auth
+  try {
+    const { createServerClient } = await import('@supabase/ssr');
+    const supabaseAuth = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) { return request.cookies.get(name)?.value; },
+          set() {},
+          remove() {},
+        },
+      }
+    );
+
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+    if (user) {
+      const { data: player } = await supabase
+        .from('elite_players')
+        .select('id, slug, first_name, last_name, is_active')
+        .eq('slug', slug)
+        .single();
+
+      if (player) {
+        return {
+          player: {
+            id: player.id,
+            slug: player.slug,
+            firstName: player.first_name,
+            lastName: player.last_name,
+            isActive: player.is_active,
+          },
+          isAdmin: true,
+        };
+      }
+    }
+  } catch {
+    // Admin auth failed
+  }
+
+  return { player: null, isAdmin: false };
+}
+
+/**
  * Generate a new random access token.
  */
 export function generateAccessToken(firstName: string, lastName: string): string {

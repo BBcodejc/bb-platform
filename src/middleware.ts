@@ -22,7 +22,6 @@ export async function middleware(request: NextRequest) {
     '/leaderboard',
     '/senaptec',
     '/elite/login',
-    '/elite',
     // '/library', — REMOVED: library is admin-only
     '/system',
     '/masterclass',
@@ -59,6 +58,46 @@ export async function middleware(request: NextRequest) {
 
   if (isPublicRoute || isPublicApi) {
     return response;
+  }
+
+  // For /elite/ pages (NOT /elite/login), check for elite token cookie OR admin Supabase auth
+  // This protects player portal pages so only authenticated players/admins can view them
+  if (pathname.startsWith('/elite/') && !pathname.startsWith('/elite/login')) {
+    const eliteToken = request.cookies.get('bb-elite-token')?.value;
+    if (eliteToken) {
+      // Player has an elite token cookie — allow through (API routes verify token validity)
+      return response;
+    }
+
+    // No elite token — check for admin Supabase auth as fallback
+    try {
+      const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            get(name: string) {
+              return request.cookies.get(name)?.value;
+            },
+            set() {},
+            remove() {},
+          },
+        }
+      );
+
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) {
+        // No auth at all — redirect to elite login
+        const loginUrl = new URL('/elite/login', request.url);
+        loginUrl.searchParams.set('redirect', pathname);
+        return NextResponse.redirect(loginUrl);
+      }
+      // Admin/coach user — allow through
+    } catch {
+      const loginUrl = new URL('/elite/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
   // For /admin routes AND /api/admin routes, verify authentication at middleware level

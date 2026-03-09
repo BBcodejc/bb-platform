@@ -698,10 +698,16 @@ function AdminPlayerEditorContent() {
                   ))}
                 </select>
               </div>
+              <Link href={`/admin/players/${slug}/dashboard`}>
+                <Button variant="ghost" size="sm" className="text-gold-500 hover:text-gold-400">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  2K Dashboard
+                </Button>
+              </Link>
               <Link href={`/players/${slug}`} target="_blank">
                 <Button variant="ghost" size="sm">
                   <ExternalLink className="w-4 h-4 mr-2" />
-                  View Dashboard
+                  Public View
                 </Button>
               </Link>
             </div>

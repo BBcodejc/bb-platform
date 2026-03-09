@@ -30,6 +30,9 @@ import {
   BookOpen,
   ChevronDown,
   ChevronUp,
+  Upload,
+  Video,
+  Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,6 +55,9 @@ interface Session {
   coachingNotes?: string;
   coachingNotesVisible?: boolean;
   link?: string;
+  videoUrl?: string;
+  videoUrlClient?: string;
+  bestTestOfDay?: string;
   createdBy?: string;
   createdAt: string;
 }
@@ -185,6 +191,18 @@ export default function SessionCalendarPage() {
   const [dailyNoteText, setDailyNoteText] = useState('');
   const [dailyNoteVisible, setDailyNoteVisible] = useState(false);
   const [savingDailyNote, setSavingDailyNote] = useState(false);
+
+  // Video upload state
+  const [uploadingVideoId, setUploadingVideoId] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Best Test of the Day state
+  const [editingBestTestId, setEditingBestTestId] = useState<string | null>(null);
+  const [editBestTestText, setEditBestTestText] = useState('');
+  const [savingBestTest, setSavingBestTest] = useState(false);
 
   // Template state
   const [templates, setTemplates] = useState<SessionTemplate[]>([]);
@@ -425,6 +443,107 @@ export default function SessionCalendarPage() {
     }
   }
 
+  // Video upload handlers
+  async function handleVideoUpload(file: File, sessionId: string) {
+    const allowedTypes = ['video/mp4', 'video/quicktime'];
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError('Invalid file type. Use MP4 or MOV.');
+      return;
+    }
+    if (file.size > 200 * 1024 * 1024) {
+      setUploadError('File too large. Max 200MB.');
+      return;
+    }
+
+    setUploadingVideoId(sessionId);
+    setUploadError(null);
+    setUploadSuccess(null);
+    setUploadProgress(0);
+
+    try {
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 5, 90));
+      }, 500);
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('slug', slug);
+
+      const uploadRes = await fetch('/api/upload/session-video', {
+        method: 'POST',
+        body: formData,
+      });
+
+      clearInterval(progressInterval);
+
+      if (!uploadRes.ok) {
+        const err = await uploadRes.json();
+        throw new Error(err.error || 'Upload failed');
+      }
+
+      const { url } = await uploadRes.json();
+      setUploadProgress(95);
+
+      await fetch(`/api/elite-players/${slug}/sessions/${sessionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoUrl: url }),
+      });
+
+      setUploadProgress(100);
+      setUploadSuccess('Video uploaded successfully!');
+      await fetchSessions();
+    } catch (err: any) {
+      console.error('Video upload error:', err);
+      setUploadError(err.message || 'Failed to upload video');
+    } finally {
+      setUploadingVideoId(null);
+      setTimeout(() => setUploadSuccess(null), 3000);
+    }
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+  }
+
+  function handleDrop(e: React.DragEvent, sessionId: string) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleVideoUpload(file, sessionId);
+  }
+
+  // Best Test of the Day handlers
+  function startEditingBestTest(session: Session) {
+    setEditingBestTestId(session.id);
+    setEditBestTestText(session.bestTestOfDay || '');
+  }
+
+  async function handleSaveBestTest(sessionId: string) {
+    setSavingBestTest(true);
+    try {
+      const res = await fetch(`/api/elite-players/${slug}/sessions/${sessionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bestTestOfDay: editBestTestText || null }),
+      });
+      if (res.ok) {
+        await fetchSessions();
+        setEditingBestTestId(null);
+      }
+    } catch (err) {
+      console.error('Failed to save best test:', err);
+    } finally {
+      setSavingBestTest(false);
+    }
+  }
+
   // Calendar helpers
   function getDaysInMonth(month: number, year: number) {
     return new Date(year, month + 1, 0).getDate();
@@ -528,6 +647,16 @@ export default function SessionCalendarPage() {
                 <LayoutGrid className="w-4 h-4 mr-1" />
                 Templates
               </Button>
+              <Link href={`/admin/players/${slug}/session-builder`}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-blue-400 border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20"
+                >
+                  <Zap className="w-4 h-4 mr-1" />
+                  Build Plan
+                </Button>
+              </Link>
               <Button
                 onClick={() => setShowAddModal(true)}
                 className="bg-gold-500 hover:bg-gold-600 text-black"
@@ -981,6 +1110,177 @@ export default function SessionCalendarPage() {
                                   </div>
                                 )}
                               </div>
+
+                              {/* Best Test of the Day */}
+                              <div className="mt-3 pt-3 border-t border-black/20">
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                  <Star className="w-3 h-3 text-gold-500" />
+                                  <span className="text-[10px] font-medium text-gold-500 uppercase tracking-wider">
+                                    Best Test of the Day
+                                  </span>
+                                </div>
+
+                                {editingBestTestId === session.id ? (
+                                  <div className="space-y-2">
+                                    <textarea
+                                      value={editBestTestText}
+                                      onChange={(e) => setEditBestTestText(e.target.value)}
+                                      rows={3}
+                                      className="w-full px-3 py-2 rounded-lg bg-black/30 border border-gold-500/30 text-white text-xs focus:outline-none focus:ring-1 focus:ring-gold-500/50 resize-none"
+                                      placeholder="e.g., 8/10 from deep line back rim — best distance session of the week"
+                                      autoFocus
+                                    />
+                                    <div className="flex gap-2">
+                                      <button
+                                        onClick={() => handleSaveBestTest(session.id)}
+                                        disabled={savingBestTest}
+                                        className="text-[10px] px-2.5 py-1 rounded bg-gold-500/20 text-gold-400 hover:bg-gold-500/30 transition-colors disabled:opacity-50"
+                                      >
+                                        {savingBestTest ? 'Saving...' : 'Save'}
+                                      </button>
+                                      <button
+                                        onClick={() => setEditingBestTestId(null)}
+                                        className="text-[10px] px-2.5 py-1 rounded bg-gray-700/30 text-gray-500 hover:bg-gray-700/50 transition-colors"
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div>
+                                    {session.bestTestOfDay ? (
+                                      <div className="px-3 py-2 rounded-lg bg-gold-500/5 border border-gold-500/20">
+                                        <p className="text-xs text-gold-300 whitespace-pre-wrap">{session.bestTestOfDay}</p>
+                                      </div>
+                                    ) : (
+                                      <p className="text-xs text-gray-600 italic">No best test recorded</p>
+                                    )}
+                                    <button
+                                      onClick={() => startEditingBestTest(session)}
+                                      className="text-[10px] text-gold-500 hover:underline mt-1"
+                                    >
+                                      {session.bestTestOfDay ? 'Edit' : 'Add Best Test'}
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Session Video */}
+                              <div className="mt-3 pt-3 border-t border-black/20">
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                  <Video className="w-3 h-3 text-gray-500" />
+                                  <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                                    Session Video
+                                  </span>
+                                </div>
+
+                                {session.videoUrl ? (
+                                  <div className="space-y-2">
+                                    <video
+                                      src={session.videoUrl}
+                                      controls
+                                      className="w-full rounded-lg max-h-48"
+                                      preload="metadata"
+                                    />
+                                    <a
+                                      href={session.videoUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[10px] text-gold-500 hover:underline inline-flex items-center gap-1"
+                                    >
+                                      <ExternalLink className="w-3 h-3" />
+                                      Open Full Video
+                                    </a>
+                                  </div>
+                                ) : (
+                                  <div
+                                    onDragOver={handleDragOver}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={(e) => handleDrop(e, session.id)}
+                                    className={cn(
+                                      'relative border-2 border-dashed rounded-lg p-4 text-center transition-colors',
+                                      isDragging
+                                        ? 'border-gold-500/50 bg-gold-500/5'
+                                        : 'border-[#2A2A2A] hover:border-gold-500/30'
+                                    )}
+                                  >
+                                    {uploadingVideoId === session.id ? (
+                                      <div className="space-y-2">
+                                        <Loader2 className="w-5 h-5 text-gold-500 animate-spin mx-auto" />
+                                        <p className="text-[10px] text-gold-400">Uploading... {uploadProgress}%</p>
+                                        <div className="w-full bg-[#2A2A2A] rounded-full h-1.5">
+                                          <div
+                                            className="bg-gold-500 h-1.5 rounded-full transition-all duration-300"
+                                            style={{ width: `${uploadProgress}%` }}
+                                          />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <input
+                                          type="file"
+                                          accept="video/mp4,video/quicktime,.mp4,.mov"
+                                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                          onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) handleVideoUpload(file, session.id);
+                                            e.target.value = '';
+                                          }}
+                                        />
+                                        <Upload className="w-5 h-5 text-gray-600 mx-auto mb-1" />
+                                        <p className="text-[10px] text-gray-500">
+                                          Drop video here or click to upload
+                                        </p>
+                                        <p className="text-[9px] text-gray-600 mt-0.5">
+                                          MP4 or MOV — Max 200MB
+                                        </p>
+                                      </>
+                                    )}
+                                  </div>
+                                )}
+
+                                {uploadError && uploadingVideoId === null && (
+                                  <p className="text-[10px] text-red-400 mt-1">{uploadError}</p>
+                                )}
+                                {uploadSuccess && (
+                                  <p className="text-[10px] text-green-400 mt-1 flex items-center gap-1">
+                                    <Check className="w-3 h-3" />
+                                    {uploadSuccess}
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Client-Uploaded Video */}
+                              {session.videoUrlClient && (
+                                <div className="mt-3 pt-3 border-t border-black/20">
+                                  <div className="flex items-center gap-1.5 mb-1.5">
+                                    <Video className="w-3 h-3 text-blue-400" />
+                                    <span className="text-[10px] font-medium text-blue-400 uppercase tracking-wider">
+                                      Client Video
+                                    </span>
+                                    <span className="text-[9px] bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded-full ml-auto">
+                                      Submitted by Player
+                                    </span>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <video
+                                      src={session.videoUrlClient}
+                                      controls
+                                      className="w-full rounded-lg max-h-48"
+                                      preload="metadata"
+                                    />
+                                    <a
+                                      href={session.videoUrlClient}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[10px] text-blue-400 hover:underline inline-flex items-center gap-1"
+                                    >
+                                      <ExternalLink className="w-3 h-3" />
+                                      Open Full Video
+                                    </a>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           );
                         })}

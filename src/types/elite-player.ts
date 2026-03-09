@@ -337,3 +337,191 @@ export const DEFAULT_PREGAME_SPOTS: PregameSpot[] = [
   { id: 'wing-right', name: 'Wing Right', position: 'wing-right', shotTypes: [], reps: 5 },
   { id: 'top', name: 'Top of Key', position: 'top', shotTypes: [], reps: 5 },
 ];
+
+// =====================================================
+// PLAYER DASHBOARD TYPES (2K-style)
+// =====================================================
+
+export interface SeasonStats {
+  id: string;
+  playerId: string;
+  season: string;
+  league: string;
+  gamesPlayed: number;
+  ppg: number;
+  rpg: number;
+  apg: number;
+  spg: number;
+  bpg: number;
+  topg: number;
+  mpg: number;
+  fgPct: number;
+  threePtPct: number;
+  ftPct: number;
+  fgMade: number;
+  fgAttempted: number;
+  threePtMade: number;
+  threePtAttempted: number;
+  ftMade: number;
+  ftAttempted: number;
+  midRangePct?: number;
+  paintPct?: number;
+  source: 'manual' | 'balldontlie' | 'nba_api';
+  lastSyncedAt?: string;
+}
+
+export interface BBMetrics {
+  id: string;
+  playerId: string;
+  metricDate: string;
+  backRimRate?: number;
+  movementBandwidth?: number;
+  strobeLevel?: number;
+  deepDistanceAccuracy?: number;
+  catchShootSpeed?: number;
+  offDribbleCalibration?: number;
+  energyTransferScore?: number;
+  fourteenSpotScore?: number;
+  fourteenSpotTotal?: number;
+  notes?: string;
+  createdBy?: string;
+}
+
+export interface Highlight {
+  id: string;
+  playerId: string;
+  title: string;
+  description?: string;
+  highlightDate: string;
+  category: 'game' | 'training' | 'milestone' | 'coaching' | 'personal-best';
+  statLine?: string;
+  opponent?: string;
+  videoUrl?: string;
+  isPinned: boolean;
+  createdBy?: string;
+  createdAt: string;
+}
+
+export interface DashboardClip {
+  id: string;
+  playerId: string;
+  videoClipId?: string;
+  title: string;
+  thumbnailUrl?: string;
+  url: string;
+  duration?: number;
+  category: 'game-clip' | 'training' | 'breakdown' | 'highlight';
+  displayOrder: number;
+  isActive: boolean;
+}
+
+export interface AutoHighlight {
+  id: string;
+  type: 'auto';
+  title: string;
+  date: string;
+  statLine?: string;
+  opponent?: string;
+  category: string;
+}
+
+export interface PlayerDashboardData {
+  player: ElitePlayer;
+  seasonStats: SeasonStats | null;
+  recentGames: GameScoutingReport[];
+  bbMetrics: BBMetrics | null;
+  rollingStats: PlayerStats | null;
+  upcomingSessions: Array<{
+    id: string;
+    date: string;
+    sessionType: string;
+    title: string;
+    description?: string;
+  }>;
+  highlights: Highlight[];
+  clips: DashboardClip[];
+  videoClips: VideoClip[];
+  autoHighlights: AutoHighlight[];
+}
+
+// Mappers: snake_case DB rows → camelCase interfaces
+export function mapSeasonStatsRow(row: any): SeasonStats {
+  return {
+    id: row.id,
+    playerId: row.player_id,
+    season: row.season,
+    league: row.league,
+    gamesPlayed: row.games_played || 0,
+    ppg: parseFloat(row.ppg) || 0,
+    rpg: parseFloat(row.rpg) || 0,
+    apg: parseFloat(row.apg) || 0,
+    spg: parseFloat(row.spg) || 0,
+    bpg: parseFloat(row.bpg) || 0,
+    topg: parseFloat(row.topg) || 0,
+    mpg: parseFloat(row.mpg) || 0,
+    fgPct: parseFloat(row.fg_pct) || 0,
+    threePtPct: parseFloat(row.three_pt_pct) || 0,
+    ftPct: parseFloat(row.ft_pct) || 0,
+    fgMade: row.fg_made || 0,
+    fgAttempted: row.fg_attempted || 0,
+    threePtMade: row.three_pt_made || 0,
+    threePtAttempted: row.three_pt_attempted || 0,
+    ftMade: row.ft_made || 0,
+    ftAttempted: row.ft_attempted || 0,
+    midRangePct: row.mid_range_pct ? parseFloat(row.mid_range_pct) : undefined,
+    paintPct: row.paint_pct ? parseFloat(row.paint_pct) : undefined,
+    source: row.source || 'manual',
+    lastSyncedAt: row.last_synced_at,
+  };
+}
+
+export function mapBBMetricsRow(row: any): BBMetrics {
+  return {
+    id: row.id,
+    playerId: row.player_id,
+    metricDate: row.metric_date,
+    backRimRate: row.back_rim_rate ? parseFloat(row.back_rim_rate) : undefined,
+    movementBandwidth: row.movement_bandwidth ? parseFloat(row.movement_bandwidth) : undefined,
+    strobeLevel: row.strobe_level ? parseFloat(row.strobe_level) : undefined,
+    deepDistanceAccuracy: row.deep_distance_accuracy ? parseFloat(row.deep_distance_accuracy) : undefined,
+    catchShootSpeed: row.catch_shoot_speed ? parseFloat(row.catch_shoot_speed) : undefined,
+    offDribbleCalibration: row.off_dribble_calibration ? parseFloat(row.off_dribble_calibration) : undefined,
+    energyTransferScore: row.energy_transfer_score ? parseFloat(row.energy_transfer_score) : undefined,
+    fourteenSpotScore: row.fourteen_spot_score,
+    fourteenSpotTotal: row.fourteen_spot_total || 14,
+    notes: row.notes,
+    createdBy: row.created_by,
+  };
+}
+
+export function mapHighlightRow(row: any): Highlight {
+  return {
+    id: row.id,
+    playerId: row.player_id,
+    title: row.title,
+    description: row.description,
+    highlightDate: row.highlight_date,
+    category: row.category,
+    statLine: row.stat_line,
+    opponent: row.opponent,
+    videoUrl: row.video_url,
+    isPinned: row.is_pinned || false,
+    createdBy: row.created_by,
+    createdAt: row.created_at,
+  };
+}
+
+export function mapDashboardClipRow(row: any): DashboardClip {
+  return {
+    id: row.id,
+    playerId: row.player_id,
+    videoClipId: row.video_clip_id,
+    title: row.title,
+    thumbnailUrl: row.thumbnail_url,
+    url: row.url,
+    duration: row.duration,
+    category: row.category,
+    displayOrder: row.display_order || 0,
+    isActive: row.is_active !== false,
+  };
+}
