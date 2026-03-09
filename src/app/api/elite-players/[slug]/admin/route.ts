@@ -140,9 +140,7 @@ export async function PATCH(
           ? (data.threePointMakes / data.threePointAttempts) * 100
           : 0;
 
-        const { error } = await supabase
-          .from('elite_game_reports')
-          .upsert({
+        const row = {
             player_id: playerId,
             opponent: data.opponent,
             opponent_logo: data.opponentLogo,
@@ -158,7 +156,26 @@ export async function PATCH(
             bb_notes: data.bbNotes,
             hunting_next_game: data.huntingNextGame,
             updated_at: new Date().toISOString(),
-          }, { onConflict: 'player_id,game_date' });
+          };
+
+        // Try upsert first (if unique constraint exists), fall back to insert
+        let result = await supabase
+          .from('elite_game_reports')
+          .upsert(row, { onConflict: 'player_id,game_date' });
+
+        if (result.error?.code === '42P10') {
+          // No unique constraint - fall back to delete + insert
+          await supabase
+            .from('elite_game_reports')
+            .delete()
+            .eq('player_id', playerId)
+            .eq('game_date', data.gameDate);
+          result = await supabase
+            .from('elite_game_reports')
+            .insert(row);
+        }
+
+        const { error } = result;
 
         if (error) throw error;
         await updatePlayerStats(supabase, playerId);
