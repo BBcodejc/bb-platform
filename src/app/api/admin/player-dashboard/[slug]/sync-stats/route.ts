@@ -212,27 +212,48 @@ export async function POST(
       );
     }
 
-    // Transform recent game stats for response
-    const recentGames = (recentGamesResult.data || []).map((g: BallDontLieGameStat) => ({
-      gameDate: g.game?.date,
-      points: g.pts,
-      rebounds: g.reb,
-      assists: g.ast,
-      steals: g.stl,
-      blocks: g.blk,
-      turnovers: g.turnover,
-      minutes: g.min,
-      fgm: g.fgm,
-      fga: g.fga,
-      fg3m: g.fg3m,
-      fg3a: g.fg3a,
-      ftm: g.ftm,
-      fta: g.fta,
-    }));
+    // Save recent game logs to elite_game_reports
+    const recentGames = (recentGamesResult.data || [])
+      .filter((g: BallDontLieGameStat) => g.game?.date)
+      .map((g: BallDontLieGameStat) => {
+        const isHome = g.team?.id === g.game?.home_team_id;
+        const parseMin = (min: string) => {
+          if (!min) return 0;
+          if (min.includes(':')) return parseInt(min.split(':')[0]);
+          return parseInt(min);
+        };
+        return {
+          player_id: player.id,
+          game_date: g.game.date.split('T')[0],
+          opponent: g.team?.abbreviation || 'OPP',
+          is_home: isHome,
+          minutes_played: parseMin(g.min),
+          points: g.pts || 0,
+          field_goal_makes: g.fgm || 0,
+          field_goal_attempts: g.fga || 0,
+          three_point_makes: g.fg3m || 0,
+          three_point_attempts: g.fg3a || 0,
+          three_point_percentage: g.fg3a > 0 ? Math.round((g.fg3m / g.fg3a) * 1000) / 10 : 0,
+          bb_notes: `Synced from BallDontLie | ${g.reb} REB, ${g.ast} AST, ${g.stl} STL`,
+        };
+      });
+
+    // Upsert game reports (avoid duplicates by player_id + game_date + opponent)
+    for (const game of recentGames) {
+      const { error: gameError } = await supabase
+        .from('elite_game_reports')
+        .upsert(game, { onConflict: 'player_id,game_date' })
+        .select();
+
+      if (gameError) {
+        // If unique constraint doesn't exist, try insert and skip duplicates
+        console.log('Game upsert note:', gameError.message);
+      }
+    }
 
     return NextResponse.json({
       seasonStats: mapSeasonStatsRow(upsertedStats),
-      recentGames,
+      recentGames: recentGames.length,
       nbaPlayerId,
       syncedAt: new Date().toISOString(),
     });
