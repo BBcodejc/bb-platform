@@ -4,6 +4,7 @@ import { createServerClient } from '@supabase/ssr';
 // Admin emails — the ONLY accounts with admin access
 const ADMIN_EMAILS = [
   'bbcodejc@gmail.com',
+  'basketballbiomechanics@gmail.com',
 ];
 
 /**
