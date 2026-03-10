@@ -24,6 +24,7 @@ import {
   CheckCircle2,
   LayoutGrid,
   MessageSquare,
+  Weight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,6 +52,7 @@ const CATEGORY_ICONS: Record<string, any> = {
   ball_manipulation: Zap,
   live_play: CircleDot,
   evaluation: ClipboardCheck,
+  strength: Weight,
 };
 
 const CATEGORIES = [
@@ -60,6 +62,7 @@ const CATEGORIES = [
   { value: 'ball_manipulation', label: 'Ball Manip' },
   { value: 'live_play', label: 'Live Play' },
   { value: 'evaluation', label: 'Evaluation' },
+  { value: 'strength', label: 'Strength' },
 ];
 
 export default function SessionBuilderPage() {

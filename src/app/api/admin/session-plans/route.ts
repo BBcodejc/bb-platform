@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
         ball_manipulation: 'Ball Handling',
         live_play: 'Live Play',
         evaluation: 'Evaluation',
+        strength: 'Strength',
       };
       return map[c] || c;
     });

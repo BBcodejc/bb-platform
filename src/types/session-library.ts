@@ -7,7 +7,7 @@ export interface SessionBlock {
   id: string;
   blockId: string;           // 'SH-01', 'MV-02', etc.
   name: string;
-  category: 'shooting' | 'movement' | 'ball_manipulation' | 'live_play' | 'evaluation';
+  category: 'shooting' | 'movement' | 'ball_manipulation' | 'live_play' | 'evaluation' | 'strength';
   durationMinutes: number;
   durationDisplay: string;   // "15-20 min"
   minPhase: number;          // 1-5
@@ -89,6 +89,12 @@ export const BLOCK_CATEGORY_CONFIG: Record<string, {
     color: 'text-orange-400',
     bgColor: 'bg-orange-500/10 border-orange-500/20',
     dotColor: 'bg-orange-500',
+  },
+  strength: {
+    label: 'Strength',
+    color: 'text-emerald-400',
+    bgColor: 'bg-emerald-500/10 border-emerald-500/20',
+    dotColor: 'bg-emerald-500',
   },
 };
 
