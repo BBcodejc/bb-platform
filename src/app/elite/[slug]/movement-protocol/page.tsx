@@ -94,6 +94,7 @@ interface BBPattern {
   id: string;
   name: string;
   description: string;
+  folderUrl?: string;
   videos: PatternVideo[];
 }
 
@@ -102,9 +103,10 @@ const BB_PATTERNS: BBPattern[] = [
     id: 'abrupt-stop',
     name: 'Abrupt Stop',
     description: 'Explosive deceleration from full speed to dead stop',
+    folderUrl: 'https://drive.google.com/drive/folders/166nlmNQx1HihcR0pZFlfEF5e79-tVZtM',
     videos: [
-      { id: 'abrupt-stop-nba', label: 'NBA Reference', type: 'nba-reference' },
-      { id: 'abrupt-stop-bb', label: 'BB Player', type: 'bb-player' },
+      { id: 'abrupt-stop-nba', label: 'Kyrie Abrupt Stop', type: 'nba-reference', url: 'https://drive.google.com/file/d/1Nh-pT-AbmvytZV1f57Tn71i3QEB8uSc1/view' },
+      { id: 'abrupt-stop-nba2', label: 'Dame Stop and Go', type: 'nba-reference', url: 'https://drive.google.com/file/d/18ZA1QbWTFhVaq3GbMuX1NxPFJSysQqgP/view' },
       { id: 'abrupt-stop-coach', label: 'Coach Jake Breakdown (Slo-Mo)', type: 'coach-breakdown' },
     ],
   },
@@ -112,9 +114,10 @@ const BB_PATTERNS: BBPattern[] = [
     id: 'smooth-stop',
     name: 'Smooth Stop',
     description: 'Controlled deceleration with fluid body control',
+    folderUrl: 'https://drive.google.com/drive/folders/1C510O7sc4qe_xdYOnTXEQMY8xdS6z_dv',
     videos: [
-      { id: 'smooth-stop-nba', label: 'NBA Reference', type: 'nba-reference' },
-      { id: 'smooth-stop-bb', label: 'BB Player', type: 'bb-player' },
+      { id: 'smooth-stop-nba', label: 'Kyrie Smooth Stop', type: 'nba-reference', url: 'https://drive.google.com/file/d/1adofisaTxfEq-NDFq6C0zZWvACkQMUf5/view' },
+      { id: 'smooth-stop-bb', label: 'Tobias Smooth Stop', type: 'bb-player', url: 'https://drive.google.com/file/d/19Fu1HFpmub_DgFBOYYjdWiIS0KVSdIZU/view' },
       { id: 'smooth-stop-coach', label: 'Coach Jake Breakdown (Slo-Mo)', type: 'coach-breakdown' },
     ],
   },
@@ -122,9 +125,10 @@ const BB_PATTERNS: BBPattern[] = [
     id: 'delay',
     name: 'Delay',
     description: 'Intentional speed manipulation — pull then push acceleration',
+    folderUrl: 'https://drive.google.com/drive/folders/1wxhM0cXPZ2jmfT92B5AHLK4kkni8-rf5',
     videos: [
       { id: 'delay-nba', label: 'NBA Reference', type: 'nba-reference' },
-      { id: 'delay-bb', label: 'BB Player', type: 'bb-player' },
+      { id: 'delay-bb', label: 'Delay by Justin', type: 'bb-player', url: 'https://drive.google.com/file/d/1-zauNtWlNOC69dBsL05LeZBJhzLHGbeq/view' },
       { id: 'delay-coach', label: 'Coach Jake Breakdown (Slo-Mo)', type: 'coach-breakdown' },
     ],
   },
@@ -142,20 +146,22 @@ const BB_PATTERNS: BBPattern[] = [
     id: 'walk-step-variation',
     name: 'Walk Step Variation',
     description: 'Tempo manipulation using walk-step entries',
+    folderUrl: 'https://drive.google.com/drive/folders/1gr_5FJSADedpmBhA6sNFkUzBdFomu7mV',
     videos: [
-      { id: 'walk-step-nba', label: 'NBA Reference', type: 'nba-reference' },
-      { id: 'walk-step-bb', label: 'BB Player', type: 'bb-player' },
-      { id: 'walk-step-coach', label: 'Coach Jake Breakdown (Slo-Mo)', type: 'coach-breakdown' },
+      { id: 'walk-step-nba', label: 'Kyrie Walk Step to Gallop', type: 'nba-reference', url: 'https://drive.google.com/file/d/1rNpW4ID0Xo-AA89nq2XTTJgxlmXOf7WT/view' },
+      { id: 'walk-step-bb', label: 'Same Time Walk Step Body Fake', type: 'bb-player', url: 'https://drive.google.com/file/d/1CP4m39-MnmpUkZNx7QETYZGIppq7PWWt/view' },
+      { id: 'walk-step-coach', label: 'Delayed Walk Step', type: 'coach-breakdown', url: 'https://drive.google.com/file/d/1z2d_wJzHyxpT4rUURA14FkcotEl2Em5N/view' },
     ],
   },
   {
     id: 'body-fake-variations',
     name: 'Body Fake Variations',
     description: 'Upper body deception to manipulate defensive reads',
+    folderUrl: 'https://drive.google.com/drive/folders/1gr_5FJSADedpmBhA6sNFkUzBdFomu7mV',
     videos: [
-      { id: 'body-fake-nba', label: 'NBA Reference', type: 'nba-reference' },
-      { id: 'body-fake-bb', label: 'BB Player', type: 'bb-player' },
-      { id: 'body-fake-coach', label: 'Coach Jake Breakdown (Slo-Mo)', type: 'coach-breakdown' },
+      { id: 'body-fake-nba', label: 'Kyrie Body Fake (Celtics)', type: 'nba-reference', url: 'https://drive.google.com/file/d/1WVMhI1_6cgB3mLJjj-gUhmFmFcOt7I6a/view' },
+      { id: 'body-fake-bb', label: 'Body Fake — Tobias', type: 'bb-player', url: 'https://drive.google.com/file/d/1ZlpRcO01BE5HjWmK0uBbVjDfvEdPKmpY/view' },
+      { id: 'body-fake-coach', label: 'Delayed Body Fake Breakdown', type: 'coach-breakdown', url: 'https://drive.google.com/file/d/1MTyziPtsp2OJIY3l9hesQZwbfZKnBgf2/view' },
     ],
   },
   {
@@ -513,6 +519,22 @@ function MovementProtocolContent() {
                           </div>
                         );
                       })}
+
+                      {/* Browse All Clips — folder link */}
+                      {pattern.folderUrl && (
+                        <a
+                          href={pattern.folderUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group flex items-center justify-center gap-2 mt-2 p-2.5 rounded-xl border border-dashed border-gold-500/20 hover:border-gold-500/40 hover:bg-gold-500/5 transition-all"
+                        >
+                          <FolderOpen className="w-3.5 h-3.5 text-gold-500/60 group-hover:text-gold-500 transition-colors" />
+                          <span className="text-xs text-gold-500/60 group-hover:text-gold-500 font-medium transition-colors">
+                            Browse All Clips in Drive
+                          </span>
+                          <ExternalLink className="w-3 h-3 text-gold-500/40 group-hover:text-gold-500/80 transition-colors" />
+                        </a>
+                      )}
                     </div>
                   )}
                 </div>
