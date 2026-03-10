@@ -33,6 +33,7 @@ import {
   Upload,
   Video,
   Star,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -199,6 +200,10 @@ export default function SessionCalendarPage() {
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Delete session state
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   // Best Test of the Day state
   const [editingBestTestId, setEditingBestTestId] = useState<string | null>(null);
   const [editBestTestText, setEditBestTestText] = useState('');
@@ -317,6 +322,26 @@ export default function SessionCalendarPage() {
       console.error('Failed to quick-add template:', err);
     } finally {
       setQuickAdding(null);
+    }
+  }
+
+  async function handleDeleteSession(sessionId: string) {
+    setDeleteLoading(true);
+    try {
+      const res = await fetch(`/api/elite-players/${slug}/sessions/${sessionId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setDeletingSessionId(null);
+        await fetchSessions();
+      } else {
+        const data = await res.json();
+        console.error('Delete failed:', data.error);
+      }
+    } catch (err) {
+      console.error('Failed to delete session:', err);
+    } finally {
+      setDeleteLoading(false);
     }
   }
 
@@ -960,11 +985,35 @@ export default function SessionCalendarPage() {
                         {selectedSessions.map(session => {
                           const typeInfo = getSessionTypeInfo(session.sessionType);
                           const TypeIcon = typeInfo.icon;
+                          const isConfirmingDelete = deletingSessionId === session.id;
                           return (
                             <div
                               key={session.id}
                               className={cn('p-3 rounded-xl border', typeInfo.color)}
                             >
+                              {/* Delete confirmation bar */}
+                              {isConfirmingDelete && (
+                                <div className="flex items-center justify-between gap-2 mb-3 p-2 rounded-lg bg-red-500/10 border border-red-500/30">
+                                  <span className="text-xs text-red-400">Delete this session?</span>
+                                  <div className="flex items-center gap-1.5">
+                                    <button
+                                      onClick={() => setDeletingSessionId(null)}
+                                      disabled={deleteLoading}
+                                      className="px-2 py-1 text-[10px] rounded bg-[#2A2A2A] text-gray-300 hover:bg-[#333] transition-colors"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteSession(session.id)}
+                                      disabled={deleteLoading}
+                                      className="px-2 py-1 text-[10px] rounded bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center gap-1"
+                                    >
+                                      {deleteLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+                                      Delete
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
                               <div className="flex items-start gap-3">
                                 <TypeIcon className="w-4 h-4 mt-0.5 flex-shrink-0" />
                                 <div className="flex-1 min-w-0">
@@ -997,6 +1046,16 @@ export default function SessionCalendarPage() {
                                       <Eye className="w-3 h-3" />
                                       View Session
                                     </Link>
+                                    {/* Delete button */}
+                                    {!isConfirmingDelete && (
+                                      <button
+                                        onClick={() => setDeletingSessionId(session.id)}
+                                        className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-red-400 transition-colors ml-auto"
+                                        title="Delete session"
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </button>
+                                    )}
                                     {session.link && (
                                       <Link
                                         href={session.link}

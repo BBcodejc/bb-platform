@@ -135,3 +135,70 @@ export async function PATCH(
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+// DELETE - Remove a session (and its linked session plan if one exists)
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { slug: string; sessionId: string } }
+) {
+  try {
+    const { error: authError } = await requireAdmin(request);
+    if (authError) return authError;
+
+    const supabase = createServiceRoleClient();
+    const { slug, sessionId } = params;
+
+    // Get player by slug
+    const { data: player, error: playerError } = await supabase
+      .from('elite_players')
+      .select('id')
+      .eq('slug', slug)
+      .single();
+
+    if (playerError || !player) {
+      return NextResponse.json({ error: 'Player not found' }, { status: 404 });
+    }
+
+    // Look up the session to check for a linked session_plan
+    const { data: session, error: fetchError } = await supabase
+      .from('elite_training_sessions')
+      .select('id, session_plan_id')
+      .eq('id', sessionId)
+      .eq('player_id', player.id)
+      .single();
+
+    if (fetchError || !session) {
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+    }
+
+    // Delete the training session
+    const { error: deleteError } = await supabase
+      .from('elite_training_sessions')
+      .delete()
+      .eq('id', sessionId)
+      .eq('player_id', player.id);
+
+    if (deleteError) {
+      console.error('Session delete error:', deleteError);
+      return NextResponse.json({ error: 'Failed to delete session' }, { status: 500 });
+    }
+
+    // If there's a linked session plan, delete it too
+    if (session.session_plan_id) {
+      const { error: planDeleteError } = await supabase
+        .from('session_plans')
+        .delete()
+        .eq('id', session.session_plan_id);
+
+      if (planDeleteError) {
+        console.error('Session plan delete error (non-fatal):', planDeleteError);
+        // Non-fatal — the main session is already deleted
+      }
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Session delete API error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
