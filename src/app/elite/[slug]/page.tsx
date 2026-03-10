@@ -27,6 +27,7 @@ import {
   TrendingUp,
   ExternalLink,
   Pause,
+  Footprints,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -727,6 +728,24 @@ function EliteProfileContent() {
 
           {/* ===== RIGHT COLUMN ===== */}
           <div className="lg:col-span-5 space-y-6">
+
+            {/* --- MOVEMENT PROTOCOL LINK --- */}
+            <section>
+              <Link href={`/elite/${slug}/movement-protocol`} className="group block">
+                <div className="rounded-2xl bg-[#111] border border-[#1A1A1A] p-5 transition-all hover:border-gold-500/30 hover:shadow-lg hover:shadow-gold-500/5">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-xl bg-gold-500/10 border border-gold-500/20">
+                      <Footprints className="w-6 h-6 text-gold-500" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-white font-semibold text-sm">Movement Protocol</h3>
+                      <p className="text-gray-500 text-xs mt-0.5">Videos, drills & on-court patterns</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gold-500 transition-colors" />
+                  </div>
+                </div>
+              </Link>
+            </section>
 
             {/* --- COACH NOTES --- */}
             <section>
