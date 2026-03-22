@@ -101,27 +101,23 @@ function formatCoachCertEmail(data: Record<string, unknown>): { subject: string;
 }
 
 function formatOrgInquiryEmail(data: Record<string, unknown>): { subject: string; html: string } {
+  const contactName = data.contactName || `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'Not provided';
   const subject = `New Organization Inquiry - ${data.orgName}`;
   const html = `
     <h2>New Team/Organization Inquiry</h2>
-    <p><strong>Contact Name:</strong> ${data.contactName}</p>
+    <p><strong>Contact Name:</strong> ${contactName}</p>
+    <p><strong>Role/Title:</strong> ${data.role || 'Not provided'}</p>
     <p><strong>Email:</strong> ${data.email}</p>
     <p><strong>Phone:</strong> ${data.phone || 'Not provided'}</p>
     <hr />
     <p><strong>Organization:</strong> ${data.orgName}</p>
-    <p><strong>Type:</strong> ${data.orgType || 'Not provided'}</p>
-    <p><strong>Player Count:</strong> ${data.playerCount || 'Not provided'}</p>
+    <p><strong>Level:</strong> ${data.orgType || 'Not provided'}</p>
+    <p><strong>Roster Size:</strong> ${data.playerCount || 'Not provided'}</p>
     <hr />
-    <p><strong>Current Challenge:</strong></p>
+    <p><strong>What They're Looking to Address:</strong></p>
     <p>${data.currentChallenge || 'Not provided'}</p>
-    <p><strong>Ideal Outcome:</strong></p>
-    <p>${data.idealOutcome || 'Not provided'}</p>
     <hr />
-    <p><strong>Support Needed:</strong> ${data.supportNeeded || 'Not provided'}</p>
-    <p><strong>Timeline:</strong> ${data.timeline || 'Not provided'}</p>
-    <hr />
-    <p><strong>Additional Info:</strong></p>
-    <p>${data.additionalInfo || 'Not provided'}</p>
+    <p><strong>How They Heard About BB:</strong> ${data.howHeard || 'Not provided'}</p>
     <hr />
     <p style="color: #888; font-size: 12px;">Submitted at ${new Date().toISOString()}</p>
   `;
@@ -161,10 +157,16 @@ export async function POST(request: NextRequest) {
     } else {
       role = 'organization';
       email = formData.email as string;
-      const contactName = (formData.contactName as string) || '';
-      const nameParts = contactName.split(' ');
-      firstName = nameParts[0] || '';
-      lastName = nameParts.slice(1).join(' ') || '';
+      // Form sends firstName/lastName directly (split from contactName on client)
+      firstName = (formData.firstName as string) || '';
+      lastName = (formData.lastName as string) || '';
+      // Fallback: if contactName was sent directly (e.g. from a different form)
+      if (!firstName && formData.contactName) {
+        const contactName = formData.contactName as string;
+        const nameParts = contactName.split(' ');
+        firstName = nameParts[0] || '';
+        lastName = nameParts.slice(1).join(' ') || '';
+      }
     }
 
     // Validate required fields
@@ -203,7 +205,11 @@ export async function POST(request: NextRequest) {
     } else if (type === 'organization_inquiry') {
       Object.assign(prospectData, {
         org_name: formData.orgName || null,
-        notes: `Application Type: ${type}\nOrg Type: ${formData.orgType || 'N/A'}\nPlayer Count: ${formData.playerCount || 'N/A'}\nChallenge: ${formData.currentChallenge || 'N/A'}\nIdeal Outcome: ${formData.idealOutcome || 'N/A'}\nSupport Needed: ${formData.supportNeeded || 'N/A'}\nTimeline: ${formData.timeline || 'N/A'}`,
+        org_type: formData.orgType || null,
+        team_count: formData.playerCount || null,
+        org_problems: formData.currentChallenge ? [formData.currentChallenge] : null,
+        source: formData.howHeard || null,
+        notes: `Application Type: ${type}\nRole/Title: ${formData.role || 'N/A'}\nOrg Level: ${formData.orgType || 'N/A'}\nRoster Size: ${formData.playerCount || 'N/A'}\nLooking to Address: ${formData.currentChallenge || 'N/A'}\nHow Heard: ${formData.howHeard || 'N/A'}`,
       });
     }
 
