@@ -205,10 +205,8 @@ export async function POST(request: NextRequest) {
     } else if (type === 'organization_inquiry') {
       Object.assign(prospectData, {
         org_name: formData.orgName || null,
-        org_type: formData.orgType || null,
-        team_count: formData.playerCount || null,
-        org_problems: formData.currentChallenge ? [formData.currentChallenge] : null,
-        source: formData.howHeard || null,
+        org_player_count: formData.playerCount || null,
+        org_goals: formData.currentChallenge || null,
         notes: `Application Type: ${type}\nRole/Title: ${formData.role || 'N/A'}\nOrg Level: ${formData.orgType || 'N/A'}\nRoster Size: ${formData.playerCount || 'N/A'}\nLooking to Address: ${formData.currentChallenge || 'N/A'}\nHow Heard: ${formData.howHeard || 'N/A'}`,
       });
     }
