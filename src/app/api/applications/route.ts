@@ -76,24 +76,20 @@ function formatFullAssessmentEmail(data: Record<string, unknown>): { subject: st
 }
 
 function formatCoachCertEmail(data: Record<string, unknown>): { subject: string; html: string } {
-  const subject = `New Coach Certification Application - ${data.firstName} ${data.lastName}`;
+  const subject = `New Coach Inquiry - ${data.firstName} ${data.lastName}`;
   const html = `
-    <h2>New Coach Certification Application</h2>
+    <h2>New Coach Inquiry</h2>
     <p><strong>Name:</strong> ${data.firstName} ${data.lastName}</p>
     <p><strong>Email:</strong> ${data.email}</p>
     <p><strong>Phone:</strong> ${data.phone || 'Not provided'}</p>
-    <p><strong>Location:</strong> ${data.location || 'Not provided'}</p>
     <hr />
-    <p><strong>Coaching Role:</strong> ${data.coachingRole || 'Not provided'}</p>
+    <p><strong>Coaching Level:</strong> ${data.coachRole || data.coachingRole || 'Not provided'}</p>
     <p><strong>Years Coaching:</strong> ${data.yearsCoaching || 'Not provided'}</p>
-    <p><strong>Works With:</strong> ${data.playerLevelWorkWith || 'Not provided'}</p>
     <hr />
-    <p><strong>Why Interested:</strong></p>
+    <p><strong>What They're Looking to Learn/Solve:</strong></p>
     <p>${data.whyInterested || 'Not provided'}</p>
-    <p><strong>Current Training Style:</strong></p>
-    <p>${data.currentTrainingStyle || 'Not provided'}</p>
     <hr />
-    <p><strong>Open to Investment:</strong> ${data.investmentInterest || 'Not provided'}</p>
+    <p><strong>How They Heard About BB:</strong> ${data.howHeard || 'Not provided'}</p>
     <hr />
     <p style="color: #888; font-size: 12px;">Submitted at ${new Date().toISOString()}</p>
   `;
@@ -200,7 +196,7 @@ export async function POST(request: NextRequest) {
       });
     } else if (type === 'coach_cert_application') {
       Object.assign(prospectData, {
-        notes: `Application Type: ${type}\nCoaching Role: ${formData.coachingRole || 'N/A'}\nYears Coaching: ${formData.yearsCoaching || 'N/A'}\nWorks With: ${formData.playerLevelWorkWith || 'N/A'}\nWhy Interested: ${formData.whyInterested || 'N/A'}\nCurrent Training Style: ${formData.currentTrainingStyle || 'N/A'}\nLocation: ${formData.location || 'N/A'}`,
+        notes: `Application Type: ${type}\nCoaching Level: ${formData.coachRole || 'N/A'}\nYears Coaching: ${formData.yearsCoaching || 'N/A'}\nLooking to Learn/Solve: ${formData.whyInterested || 'N/A'}\nHow Heard: ${formData.howHeard || 'N/A'}`,
       });
     } else if (type === 'organization_inquiry') {
       Object.assign(prospectData, {
