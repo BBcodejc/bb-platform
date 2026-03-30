@@ -82,12 +82,16 @@ function formatCoachCertEmail(data: Record<string, unknown>): { subject: string;
     <p><strong>Name:</strong> ${data.firstName} ${data.lastName}</p>
     <p><strong>Email:</strong> ${data.email}</p>
     <p><strong>Phone:</strong> ${data.phone || 'Not provided'}</p>
+    ${data.location ? `<p><strong>Location:</strong> ${data.location}</p>` : ''}
     <hr />
     <p><strong>Coaching Level:</strong> ${data.coachRole || data.coachingRole || 'Not provided'}</p>
     <p><strong>Years Coaching:</strong> ${data.yearsCoaching || 'Not provided'}</p>
+    ${data.playerLevelWorkWith ? `<p><strong>Works With:</strong> ${data.playerLevelWorkWith}</p>` : ''}
     <hr />
     <p><strong>What They're Looking to Learn/Solve:</strong></p>
     <p>${data.whyInterested || 'Not provided'}</p>
+    ${data.currentTrainingStyle ? `<p><strong>Current Training Style:</strong></p><p>${data.currentTrainingStyle}</p>` : ''}
+    ${data.investmentInterest ? `<p><strong>Open to Investment:</strong> ${data.investmentInterest}</p>` : ''}
     <hr />
     <p><strong>How They Heard About BB:</strong> ${data.howHeard || 'Not provided'}</p>
     <hr />
@@ -196,13 +200,17 @@ export async function POST(request: NextRequest) {
       });
     } else if (type === 'coach_cert_application') {
       Object.assign(prospectData, {
-        notes: `Application Type: ${type}\nCoaching Level: ${formData.coachRole || 'N/A'}\nYears Coaching: ${formData.yearsCoaching || 'N/A'}\nLooking to Learn/Solve: ${formData.whyInterested || 'N/A'}\nHow Heard: ${formData.howHeard || 'N/A'}`,
+        coach_level: formData.coachRole || formData.coachingRole || null,
+        source: formData.howHeard || null,
+        notes: `Application Type: ${type}\nCoaching Level: ${formData.coachRole || formData.coachingRole || 'N/A'}\nYears Coaching: ${formData.yearsCoaching || 'N/A'}\nLooking to Learn/Solve: ${formData.whyInterested || 'N/A'}\nHow Heard: ${formData.howHeard || 'N/A'}`,
       });
     } else if (type === 'organization_inquiry') {
       Object.assign(prospectData, {
         org_name: formData.orgName || null,
-        org_player_count: formData.playerCount || null,
-        org_goals: formData.currentChallenge || null,
+        org_type: formData.orgType || null,
+        team_count: formData.playerCount || null,
+        org_problems: formData.currentChallenge ? [formData.currentChallenge as string] : null,
+        source: formData.howHeard || null,
         notes: `Application Type: ${type}\nRole/Title: ${formData.role || 'N/A'}\nOrg Level: ${formData.orgType || 'N/A'}\nRoster Size: ${formData.playerCount || 'N/A'}\nLooking to Address: ${formData.currentChallenge || 'N/A'}\nHow Heard: ${formData.howHeard || 'N/A'}`,
       });
     }
