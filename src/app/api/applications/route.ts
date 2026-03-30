@@ -200,17 +200,11 @@ export async function POST(request: NextRequest) {
       });
     } else if (type === 'coach_cert_application') {
       Object.assign(prospectData, {
-        coach_level: formData.coachRole || formData.coachingRole || null,
-        source: formData.howHeard || null,
-        notes: `Application Type: ${type}\nCoaching Level: ${formData.coachRole || formData.coachingRole || 'N/A'}\nYears Coaching: ${formData.yearsCoaching || 'N/A'}\nLooking to Learn/Solve: ${formData.whyInterested || 'N/A'}\nHow Heard: ${formData.howHeard || 'N/A'}`,
+        notes: `Application Type: ${type}\nCoaching Level: ${formData.coachRole || formData.coachingRole || 'N/A'}\nYears Coaching: ${formData.yearsCoaching || 'N/A'}\nLooking to Learn/Solve: ${formData.whyInterested || 'N/A'}\nHow Heard: ${formData.howHeard || 'N/A'}\nLocation: ${formData.location || 'N/A'}\nWorks With: ${formData.playerLevelWorkWith || 'N/A'}\nTraining Style: ${formData.currentTrainingStyle || 'N/A'}\nOpen to Investment: ${formData.investmentInterest || 'N/A'}`,
       });
     } else if (type === 'organization_inquiry') {
       Object.assign(prospectData, {
         org_name: formData.orgName || null,
-        org_type: formData.orgType || null,
-        team_count: formData.playerCount || null,
-        org_problems: formData.currentChallenge ? [formData.currentChallenge as string] : null,
-        source: formData.howHeard || null,
         notes: `Application Type: ${type}\nRole/Title: ${formData.role || 'N/A'}\nOrg Level: ${formData.orgType || 'N/A'}\nRoster Size: ${formData.playerCount || 'N/A'}\nLooking to Address: ${formData.currentChallenge || 'N/A'}\nHow Heard: ${formData.howHeard || 'N/A'}`,
       });
     }
