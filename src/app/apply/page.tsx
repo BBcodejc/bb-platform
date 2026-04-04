@@ -160,7 +160,7 @@ export default function ApplyPage() {
         </div>
 
         {/* Application Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} data-form-type="other" className="space-y-6">
           {/* Personal Info */}
           <div>
             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
@@ -170,6 +170,8 @@ export default function ApplyPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="First Name"
+                  name="firstName"
+                  autoComplete="given-name"
                   placeholder="First name"
                   value={formData.firstName}
                   onChange={(e) => update('firstName', e.target.value)}
@@ -177,6 +179,8 @@ export default function ApplyPage() {
                 />
                 <Input
                   label="Last Name"
+                  name="lastName"
+                  autoComplete="family-name"
                   placeholder="Last name"
                   value={formData.lastName}
                   onChange={(e) => update('lastName', e.target.value)}
@@ -186,6 +190,8 @@ export default function ApplyPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Email"
+                  name="email"
+                  autoComplete="email"
                   type="email"
                   placeholder="you@example.com"
                   value={formData.email}
@@ -194,6 +200,8 @@ export default function ApplyPage() {
                 />
                 <Input
                   label="Phone"
+                  name="phone"
+                  autoComplete="tel"
                   type="tel"
                   placeholder="(555) 123-4567"
                   value={formData.phone}
@@ -202,6 +210,8 @@ export default function ApplyPage() {
               </div>
               <Input
                 label="Age"
+                name="age"
+                autoComplete="off"
                 type="number"
                 placeholder="e.g. 22"
                 value={formData.age}
@@ -242,12 +252,16 @@ export default function ApplyPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Team / School"
+                  name="team"
+                  autoComplete="off"
                   placeholder="e.g. UCLA, AAU team name"
                   value={formData.team}
                   onChange={(e) => update('team', e.target.value)}
                 />
                 <Input
                   label="Position"
+                  name="position"
+                  autoComplete="off"
                   placeholder="e.g. SG, PF, Wing"
                   value={formData.position}
                   onChange={(e) => update('position', e.target.value)}
@@ -311,6 +325,8 @@ export default function ApplyPage() {
             <div className="space-y-4">
               <Textarea
                 label="What are your goals?"
+                name="goals"
+                autoComplete="off"
                 placeholder="What do you want to improve? Where do you see yourself in 6 months?"
                 value={formData.goals}
                 onChange={(e) => update('goals', e.target.value)}
@@ -319,6 +335,8 @@ export default function ApplyPage() {
               />
               <Textarea
                 label="What challenges are you facing?"
+                name="challenges"
+                autoComplete="off"
                 placeholder="What's holding you back right now? Where do you feel stuck?"
                 value={formData.challenges}
                 onChange={(e) => update('challenges', e.target.value)}
@@ -326,6 +344,8 @@ export default function ApplyPage() {
               />
               <Input
                 label="How did you hear about BB?"
+                name="howHeard"
+                autoComplete="off"
                 placeholder="e.g. Instagram, a friend, NBA highlight"
                 value={formData.howHeard}
                 onChange={(e) => update('howHeard', e.target.value)}

@@ -119,6 +119,7 @@ export default function CoachCertificationPage() {
         {/* Form Card */}
         <form
           onSubmit={handleSubmit}
+          data-form-type="other"
           className="max-w-xl mx-auto bg-site-card border border-site-border rounded-xl p-6 sm:p-8 space-y-5"
         >
           {/* Name fields */}
@@ -127,6 +128,8 @@ export default function CoachCertificationPage() {
               <label className={labelClass}>First Name *</label>
               <input
                 type="text"
+                name="firstName"
+                autoComplete="given-name"
                 required
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
@@ -138,6 +141,8 @@ export default function CoachCertificationPage() {
               <label className={labelClass}>Last Name *</label>
               <input
                 type="text"
+                name="lastName"
+                autoComplete="family-name"
                 required
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
@@ -152,6 +157,8 @@ export default function CoachCertificationPage() {
             <label className={labelClass}>Email *</label>
             <input
               type="email"
+              name="email"
+              autoComplete="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -165,6 +172,8 @@ export default function CoachCertificationPage() {
             <label className={labelClass}>Phone *</label>
             <input
               type="tel"
+              name="phone"
+              autoComplete="tel"
               required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -178,6 +187,8 @@ export default function CoachCertificationPage() {
             <label className={labelClass}>City / Country</label>
             <input
               type="text"
+              name="location"
+              autoComplete="address-level2"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="Los Angeles, CA"
@@ -190,6 +201,8 @@ export default function CoachCertificationPage() {
             <div>
               <label className={labelClass}>Coaching Role *</label>
               <select
+                name="coachingRole"
+                autoComplete="off"
                 required
                 value={coachingRole}
                 onChange={(e) => setCoachingRole(e.target.value)}
@@ -207,6 +220,8 @@ export default function CoachCertificationPage() {
               <label className={labelClass}>Years Coaching</label>
               <input
                 type="number"
+                name="yearsCoaching"
+                autoComplete="off"
                 min="0"
                 max="50"
                 value={yearsCoaching}
@@ -221,6 +236,8 @@ export default function CoachCertificationPage() {
           <div>
             <label className={labelClass}>Who do you mainly work with?</label>
             <select
+              name="playerLevel"
+              autoComplete="off"
               value={playerLevelWorkWith}
               onChange={(e) => setPlayerLevelWorkWith(e.target.value)}
               className={`${inputClass} ${!playerLevelWorkWith ? 'text-site-dim' : ''}`}
@@ -240,6 +257,8 @@ export default function CoachCertificationPage() {
               Why are you interested in the Basketball Biomechanics lens? *
             </label>
             <textarea
+              name="whyInterested"
+              autoComplete="off"
               required
               value={whyInterested}
               onChange={(e) => setWhyInterested(e.target.value)}
@@ -255,6 +274,8 @@ export default function CoachCertificationPage() {
               How do you currently train players? (describe a typical session)
             </label>
             <textarea
+              name="trainingStyle"
+              autoComplete="off"
               value={currentTrainingStyle}
               onChange={(e) => setCurrentTrainingStyle(e.target.value)}
               placeholder="e.g., warm-up, form shooting, game shots, 1v1, etc."

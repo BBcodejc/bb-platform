@@ -92,6 +92,7 @@ export default function OrganizationInquiryPage() {
         {/* Form Card */}
         <form
           onSubmit={handleSubmit}
+          data-form-type="other"
           className="max-w-xl mx-auto bg-site-card border border-site-border rounded-xl p-6 sm:p-8 space-y-5"
         >
           {/* Organization Name */}
@@ -99,6 +100,8 @@ export default function OrganizationInquiryPage() {
             <label className={labelClass}>Organization Name *</label>
             <input
               type="text"
+              name="org-name"
+              autoComplete="organization"
               required
               value={orgName}
               onChange={(e) => setOrgName(e.target.value)}
@@ -112,6 +115,8 @@ export default function OrganizationInquiryPage() {
             <label className={labelClass}>Contact Name *</label>
             <input
               type="text"
+              name="contact-name"
+              autoComplete="name"
               required
               value={contactName}
               onChange={(e) => setContactName(e.target.value)}
@@ -125,6 +130,8 @@ export default function OrganizationInquiryPage() {
             <label className={labelClass}>Email *</label>
             <input
               type="email"
+              name="email"
+              autoComplete="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -138,6 +145,8 @@ export default function OrganizationInquiryPage() {
             <label className={labelClass}>Phone *</label>
             <input
               type="tel"
+              name="phone"
+              autoComplete="tel"
               required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -151,6 +160,8 @@ export default function OrganizationInquiryPage() {
             <label className={labelClass}>Role / Title</label>
             <input
               type="text"
+              name="role"
+              autoComplete="organization-title"
               value={role}
               onChange={(e) => setRole(e.target.value)}
               placeholder="e.g. Head Coach, Director of Player Development"
@@ -162,6 +173,8 @@ export default function OrganizationInquiryPage() {
           <div>
             <label className={labelClass}>Organization Level *</label>
             <select
+              name="org-level"
+              autoComplete="off"
               required
               value={level}
               onChange={(e) => setLevel(e.target.value)}
@@ -180,7 +193,11 @@ export default function OrganizationInquiryPage() {
           <div>
             <label className={labelClass}>Roster Size</label>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              name="roster-size"
+              autoComplete="off"
               value={rosterSize}
               onChange={(e) => setRosterSize(e.target.value)}
               placeholder="Number of players"
@@ -192,6 +209,8 @@ export default function OrganizationInquiryPage() {
           <div>
             <label className={labelClass}>What are you looking to address? *</label>
             <textarea
+              name="goals"
+              autoComplete="off"
               required
               value={goals}
               onChange={(e) => setGoals(e.target.value)}
@@ -205,6 +224,8 @@ export default function OrganizationInquiryPage() {
           <div>
             <label className={labelClass}>How did you hear about BB? *</label>
             <select
+              name="how-heard"
+              autoComplete="off"
               required
               value={howHeard}
               onChange={(e) => setHowHeard(e.target.value)}

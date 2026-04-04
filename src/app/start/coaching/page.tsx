@@ -144,6 +144,7 @@ export default function CoachingApplicationPage() {
         {/* Form Card */}
         <form
           onSubmit={handleSubmit}
+          data-form-type="other"
           className="max-w-xl mx-auto bg-site-card border border-site-border rounded-xl p-6 sm:p-8 space-y-5"
         >
           {/* Full Name */}
@@ -151,6 +152,8 @@ export default function CoachingApplicationPage() {
             <label className={labelClass}>Full Name *</label>
             <input
               type="text"
+              name="fullName"
+              autoComplete="name"
               required
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -164,6 +167,8 @@ export default function CoachingApplicationPage() {
             <label className={labelClass}>Email *</label>
             <input
               type="email"
+              name="email"
+              autoComplete="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -177,6 +182,8 @@ export default function CoachingApplicationPage() {
             <label className={labelClass}>Phone *</label>
             <input
               type="tel"
+              name="phone"
+              autoComplete="tel"
               required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -190,6 +197,8 @@ export default function CoachingApplicationPage() {
             <label className={labelClass}>Age *</label>
             <input
               type="number"
+              name="age"
+              autoComplete="off"
               required
               min="10"
               max="50"
@@ -204,6 +213,8 @@ export default function CoachingApplicationPage() {
           <div>
             <label className={labelClass}>Current Level *</label>
             <select
+              name="currentLevel"
+              autoComplete="off"
               required
               value={currentLevel}
               onChange={(e) => setCurrentLevel(e.target.value)}
@@ -220,6 +231,8 @@ export default function CoachingApplicationPage() {
           <div>
             <label className={labelClass}>Position *</label>
             <select
+              name="position"
+              autoComplete="off"
               required
               value={position}
               onChange={(e) => setPosition(e.target.value)}
@@ -237,6 +250,8 @@ export default function CoachingApplicationPage() {
             <label className={labelClass}>Current 3PT% (if known)</label>
             <input
               type="text"
+              name="threePt"
+              autoComplete="off"
               value={threePt}
               onChange={(e) => setThreePt(e.target.value)}
               placeholder="e.g. 35%"
@@ -249,6 +264,8 @@ export default function CoachingApplicationPage() {
             <label className={labelClass}>Instagram or Film Link (optional)</label>
             <input
               type="text"
+              name="filmLink"
+              autoComplete="off"
               value={filmLink}
               onChange={(e) => setFilmLink(e.target.value)}
               placeholder="@handle or link to film"
@@ -262,6 +279,8 @@ export default function CoachingApplicationPage() {
               Top 2–3 goals for the next 3 months *
             </label>
             <textarea
+              name="goals"
+              autoComplete="off"
               required
               value={goals}
               onChange={(e) => setGoals(e.target.value)}
@@ -277,6 +296,8 @@ export default function CoachingApplicationPage() {
               What have you tried that hasn&apos;t worked? *
             </label>
             <textarea
+              name="whatTried"
+              autoComplete="off"
               required
               value={whatTried}
               onChange={(e) => setWhatTried(e.target.value)}
@@ -290,6 +311,8 @@ export default function CoachingApplicationPage() {
           <div>
             <label className={labelClass}>How did you hear about BB? *</label>
             <select
+              name="howHeard"
+              autoComplete="off"
               required
               value={howHeard}
               onChange={(e) => setHowHeard(e.target.value)}
@@ -308,6 +331,8 @@ export default function CoachingApplicationPage() {
               What is your commitment level to improving? *
             </label>
             <select
+              name="commitment"
+              autoComplete="off"
               required
               value={canCommit}
               onChange={(e) => setCanCommit(e.target.value)}

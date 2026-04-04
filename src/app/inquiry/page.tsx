@@ -127,6 +127,7 @@ export default function InquiryPage() {
         {activeTab === 'coach' && (
           <form
             onSubmit={handleSubmit}
+            data-form-type="other"
             className="max-w-xl mx-auto bg-site-card border border-site-border rounded-xl p-6 sm:p-8 space-y-5"
           >
             {/* Full Name */}
@@ -134,6 +135,8 @@ export default function InquiryPage() {
               <label className={labelClass}>Full Name *</label>
               <input
                 type="text"
+                name="full-name"
+                autoComplete="name"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -147,6 +150,8 @@ export default function InquiryPage() {
               <label className={labelClass}>Email *</label>
               <input
                 type="email"
+                name="email"
+                autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -160,6 +165,8 @@ export default function InquiryPage() {
               <label className={labelClass}>Phone *</label>
               <input
                 type="tel"
+                name="phone"
+                autoComplete="tel"
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -172,6 +179,8 @@ export default function InquiryPage() {
             <div>
               <label className={labelClass}>Coaching Level *</label>
               <select
+                name="coaching-level"
+                autoComplete="off"
                 required
                 value={level}
                 onChange={(e) => setLevel(e.target.value)}
@@ -190,7 +199,11 @@ export default function InquiryPage() {
             <div>
               <label className={labelClass}>Years Coaching</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                name="years-coaching"
+                autoComplete="off"
                 value={years}
                 onChange={(e) => setYears(e.target.value)}
                 placeholder="Number of years"
@@ -204,6 +217,8 @@ export default function InquiryPage() {
                 What are you looking to learn or solve? *
               </label>
               <textarea
+                name="coaching-goals"
+                autoComplete="off"
                 required
                 value={goals}
                 onChange={(e) => setGoals(e.target.value)}
@@ -217,6 +232,8 @@ export default function InquiryPage() {
             <div>
               <label className={labelClass}>How did you hear about BB? *</label>
               <select
+                name="how-heard"
+                autoComplete="off"
                 required
                 value={howHeard}
                 onChange={(e) => setHowHeard(e.target.value)}
