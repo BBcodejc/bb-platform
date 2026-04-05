@@ -7,6 +7,25 @@ import type { ApplicationType } from '@/lib/email-templates';
 const NOTIFICATION_EMAIL = 'bbcodejc@gmail.com';
 const FROM_EMAIL = 'Jake from BB <jake@trainwjc.com>';
 
+// Server-side validation — catches password manager garbage & bot spam
+function isValidPhone(val: unknown): boolean {
+  if (!val || typeof val !== 'string') return true; // optional
+  const digits = val.replace(/\D/g, '');
+  return digits.length >= 7 && digits.length <= 15 && /^[\d\s\-().+]+$/.test(val);
+}
+function looksLikeGarbage(val: unknown): boolean {
+  if (!val || typeof val !== 'string' || val.length < 6) return false;
+  const hasNoSpaces = !val.includes(' ');
+  const hasMixedCase = /[a-z]/.test(val) && /[A-Z]/.test(val);
+  const isAlphaOnly = /^[a-zA-Z]+$/.test(val);
+  return hasNoSpaces && hasMixedCase && isAlphaOnly && val.length > 8;
+}
+function sanitizePhone(val: unknown): string | null {
+  if (!val || typeof val !== 'string') return null;
+  if (!isValidPhone(val)) return null;
+  return val;
+}
+
 interface ApplicationData {
   type: 'full_assessment_application' | 'coach_cert_application' | 'organization_inquiry';
   [key: string]: unknown;
@@ -127,7 +146,8 @@ function formatOrgInquiryEmail(data: Record<string, unknown>): { subject: string
 export async function POST(request: NextRequest) {
   try {
     const body: ApplicationData = await request.json();
-    const { type, ...formData } = body;
+    const { type, ...rawFormData } = body;
+    const formData: Record<string, unknown> = { ...rawFormData };
 
     if (!type || !['full_assessment_application', 'coach_cert_application', 'organization_inquiry'].includes(type)) {
       return NextResponse.json(
@@ -135,6 +155,26 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Server-side validation — reject garbage from password managers / bots
+    if (formData.phone && !isValidPhone(formData.phone)) {
+      return NextResponse.json(
+        { success: false, error: 'Please enter a valid phone number.' },
+        { status: 400 }
+      );
+    }
+    // Check critical fields for password-manager garbage
+    const fieldsToCheck = [formData.phone, formData.currentChallenge, formData.whyInterested, formData.goals];
+    for (const field of fieldsToCheck) {
+      if (looksLikeGarbage(field)) {
+        return NextResponse.json(
+          { success: false, error: 'Some fields appear to contain auto-filled data. Please clear your form and re-enter your information manually.' },
+          { status: 400 }
+        );
+      }
+    }
+    // Sanitize phone — strip garbage, keep only valid phone numbers
+    formData.phone = sanitizePhone(formData.phone);
 
     const supabase = createServiceRoleClient();
 

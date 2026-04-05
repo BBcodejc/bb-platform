@@ -13,6 +13,20 @@ import {
   Target,
 } from 'lucide-react';
 
+// Validation helpers — catches password manager garbage
+function isValidPhone(val: string): boolean {
+  if (!val) return true;
+  const digits = val.replace(/\D/g, '');
+  return digits.length >= 7 && digits.length <= 15 && /^[\d\s\-().+]+$/.test(val);
+}
+function looksLikeGarbage(val: string): boolean {
+  if (!val || val.length < 6) return false;
+  const hasNoSpaces = !val.includes(' ');
+  const hasMixedCase = /[a-z]/.test(val) && /[A-Z]/.test(val);
+  const isAlphaOnly = /^[a-zA-Z]+$/.test(val);
+  return hasNoSpaces && hasMixedCase && isAlphaOnly && val.length > 8;
+}
+
 const programs = [
   { id: 'calibration-7', label: '7-Day Shooting Calibration' },
   { id: 'assessment-30', label: 'Full Assessment + 30-Day Protocol' },
@@ -62,6 +76,17 @@ export default function ApplyPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    // Validate phone — catch password manager garbage
+    if (!isValidPhone(formData.phone)) {
+      alert('Please enter a valid phone number (digits, dashes, and parentheses only).');
+      return;
+    }
+    if (looksLikeGarbage(formData.phone) || looksLikeGarbage(formData.goals)) {
+      alert('Some fields appear to have been auto-filled incorrectly. Please clear and re-enter your information.');
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await fetch('/api/applications', {

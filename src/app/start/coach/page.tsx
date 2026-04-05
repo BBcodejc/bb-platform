@@ -31,6 +31,20 @@ const INVESTMENT_INTEREST = [
   { value: 'no', label: 'No' },
 ];
 
+// Validation helpers — catches password manager garbage
+function isValidPhone(val: string): boolean {
+  if (!val) return true;
+  const digits = val.replace(/\D/g, '');
+  return digits.length >= 7 && digits.length <= 15 && /^[\d\s\-().+]+$/.test(val);
+}
+function looksLikeGarbage(val: string): boolean {
+  if (!val || val.length < 6) return false;
+  const hasNoSpaces = !val.includes(' ');
+  const hasMixedCase = /[a-z]/.test(val) && /[A-Z]/.test(val);
+  const isAlphaOnly = /^[a-zA-Z]+$/.test(val);
+  return hasNoSpaces && hasMixedCase && isAlphaOnly && val.length > 8;
+}
+
 const inputClass =
   'w-full bg-site-primary border border-site-border rounded-lg px-4 py-3 text-white placeholder:text-site-dim focus:border-site-gold/50 focus:outline-none focus:ring-1 focus:ring-site-gold/30 transition-colors';
 const labelClass = 'block text-sm text-site-muted mb-1.5 font-medium';
@@ -57,6 +71,17 @@ export default function CoachCertificationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Validate phone — catch password manager garbage
+    if (!isValidPhone(phone)) {
+      setError('Please enter a valid phone number (digits, dashes, and parentheses only).');
+      return;
+    }
+    if (looksLikeGarbage(phone) || looksLikeGarbage(whyInterested)) {
+      setError('Some fields appear to have been auto-filled incorrectly. Please clear and re-enter your information.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
