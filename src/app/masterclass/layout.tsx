@@ -18,20 +18,19 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: 'Shooting Calibration Masterclass | Basketball Biomechanics',
   description:
-    'The same shooting calibration system used by Tobias Harris, Jabari Smith, and OG Anunoby. 14 chapters. 51 lessons. $150 lifetime access. Transform your shot in 14 days.',
+    'Calibrate your shot in 14 days. The exact protocols used with NBA players. $150 lifetime access.',
   keywords: [
     'shooting calibration',
     'basketball shooting course',
     'BB masterclass',
     'motor learning basketball',
     'back rim calibration',
-    'deep distance shooting',
     'basketball biomechanics course',
   ],
   openGraph: {
-    title: 'Shooting Calibration Masterclass | Basketball Biomechanics',
+    title: 'Calibrate Your Shot In 14 Days | Basketball Biomechanics',
     description:
-      'Tobias Harris went from 33% to 47% from three. Mid-season. The Masterclass gives you the exact same protocols.',
+      'The exact protocols used with NBA players. $150. Lifetime access.',
     type: 'website',
   },
 };
