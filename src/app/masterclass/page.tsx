@@ -78,7 +78,7 @@ export default function MasterclassPage() {
         <p className="hero-pre">The system NBA players use to CALIBRATE their shooting in weeks.</p>
         <h1 className="hero-headline">Calibrate Your Shot In 14 Days.</h1>
         <p className="hero-sub">
-          The exact protocols players use to immediately feel more control over their shot. $150. Lifetime access.
+          The exact protocols that took an NBA player from 18% to 47% from three. In-season. $150. Lifetime access.
         </p>
         <EnrollButton />
       </section>
@@ -116,7 +116,7 @@ export default function MasterclassPage() {
             logo="/players/grizzlies-logo.svg"
           />
           <ResultCard
-            name="Trey Drexler (D1 HS Commit)"
+            name="Trey Drexler (HS PG, D1 Commit)"
             result="47% from 3 this year, 26.5 PPG, 90% FT"
             quote="Calibration changed my game"
           />
