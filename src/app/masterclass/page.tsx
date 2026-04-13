@@ -39,10 +39,13 @@ function SectionLabel({ text }: { text: string }) {
 
 // ─── RESULT CARD ─────────────────────────────────────────────────────────────
 
-function ResultCard({ name, result, quote }: { name: string; result: string; quote?: string }) {
+function ResultCard({ name, result, quote, logo }: { name: string; result: string; quote?: string; logo?: string }) {
   return (
     <div className="result-card">
-      <p className="result-name">{name}</p>
+      <div className="result-card-header">
+        {logo && <img src={logo} alt="" className="result-logo" />}
+        <p className="result-name">{name}</p>
+      </div>
       {result && <p className="result-stat">{result}</p>}
       {quote && <p className="result-quote">&ldquo;{quote}&rdquo;</p>}
     </div>
@@ -72,10 +75,10 @@ export default function MasterclassPage() {
           alt="BB"
           className="logo"
         />
-        <p className="hero-pre">The system NBA players use to transform their shooting in weeks.</p>
+        <p className="hero-pre">The system NBA players use to CALIBRATE their shooting in weeks.</p>
         <h1 className="hero-headline">Calibrate Your Shot In 14 Days.</h1>
         <p className="hero-sub">
-          The exact protocols used with NBA players. $150. Lifetime access.
+          The exact protocols players use to immediately feel more control over their shot. $150. Lifetime access.
         </p>
         <EnrollButton />
       </section>
@@ -88,24 +91,29 @@ export default function MasterclassPage() {
           <ResultCard
             name="Tobias Harris (Pistons)"
             result="18% to 47% (In less than 100 Days)"
+            logo="/players/pistons-logo.svg"
           />
           <ResultCard
             name="Paul Reed (Pistons)"
             result="15% to 40% and 7x'd Amount of Makes"
             quote="My shot feels effortless"
+            logo="/players/pistons-logo.svg"
           />
           <ResultCard
             name="Tyler Perkins (Villanova)"
             result="20% to 40% (In-Season)"
+            logo="/players/villanova-logo.svg"
           />
           <ResultCard
-            name="OG Anunoby"
+            name="OG Anunoby (Knicks)"
             result="Career High 3pt % while being consulted by BB"
+            logo="/players/knicks-logo.svg"
           />
           <ResultCard
             name="Tyler Burton (Grizzlies)"
             result="29% to 44% In less than 2 weeks"
             quote="My shot never has felt better"
+            logo="/players/grizzlies-logo.svg"
           />
           <ResultCard
             name="Trey Drexler (D1 HS Commit)"
@@ -115,15 +123,18 @@ export default function MasterclassPage() {
           <ResultCard
             name="Dominick Stewart (Penn State)"
             result="32% to 42% This season, In 3 weeks"
+            logo="/players/pennstate-logo.svg"
           />
           <ResultCard
             name="Matisse Thybulle (Trail Blazers)"
             result="Finished 2026 Season Shooting 40%"
+            logo="/players/blazers-logo.svg"
           />
           <ResultCard
             name="Dylan Cardwell (Kings)"
             result=""
             quote="Applying BB Methods was the best basketball session of my life"
+            logo="/players/kings-logo.svg"
           />
           <ResultCard
             name="HS Coach"
@@ -182,6 +193,20 @@ export default function MasterclassPage() {
               />
             </div>
           ))}
+        </div>
+
+        {/* YouTube Calibration Session */}
+        <div className="youtube-section">
+          <p className="youtube-label">Watch a Full Calibration Session Here:</p>
+          <div className="youtube-embed">
+            <iframe
+              src="https://www.youtube.com/embed/Bpm-jAX8c38"
+              title="Full Calibration Session"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
         </div>
 
         <div style={{ marginTop: '1.25rem' }}>
@@ -358,6 +383,36 @@ export default function MasterclassPage() {
           min-width: unset !important;
         }
 
+        /* ── YouTube Embed ───────────────────────────────────────── */
+        .youtube-section {
+          margin-top: 2rem;
+        }
+        .youtube-label {
+          font-family: var(--font-oswald), sans-serif;
+          font-weight: 700;
+          font-size: 1.1rem;
+          color: #000000;
+          text-align: center;
+          margin-bottom: 1rem;
+        }
+        .youtube-embed {
+          position: relative;
+          width: 100%;
+          padding-bottom: 56.25%;
+          height: 0;
+          overflow: hidden;
+          border-radius: 10px;
+          border: 2px solid #D4A843;
+        }
+        .youtube-embed iframe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border: 0;
+        }
+
         /* ── Feature List ────────────────────────────────────────── */
         .feature-list {
           list-style: none;
@@ -436,12 +491,23 @@ export default function MasterclassPage() {
           padding: 1rem 1.25rem;
           background: #FFFFFF;
         }
+        .result-card-header {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 0.25rem;
+        }
+        .result-logo {
+          width: 28px;
+          height: 28px;
+          object-fit: contain;
+          flex-shrink: 0;
+        }
         .result-name {
           font-family: var(--font-oswald), sans-serif;
           font-weight: 700;
           font-size: 1.05rem;
           color: #000000;
-          margin-bottom: 0.25rem;
         }
         .result-stat {
           color: #D4A843;
