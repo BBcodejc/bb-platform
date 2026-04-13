@@ -72,6 +72,7 @@ export default function MasterclassPage() {
           alt="BB"
           className="logo"
         />
+        <p className="hero-pre">The system NBA players use to transform their shooting in weeks.</p>
         <h1 className="hero-headline">Calibrate Your Shot In 14 Days.</h1>
         <p className="hero-sub">
           The exact protocols used with NBA players. $150. Lifetime access.
@@ -224,6 +225,7 @@ export default function MasterclassPage() {
 
         <div style={{ marginTop: '1.5rem' }}>
           <EnrollButton />
+          <p className="trust-line">Trusted by NBA, D1 teams, and high school players worldwide.</p>
         </div>
       </section>
 
@@ -254,11 +256,18 @@ export default function MasterclassPage() {
         }
         .hero {
           position: relative;
-          padding: 5rem 1.5rem 2rem;
+          padding: 5rem 1.5rem 1.25rem;
           display: flex;
           flex-direction: column;
           align-items: center;
           text-align: center;
+        }
+        .hero-pre {
+          font-size: 0.85rem;
+          color: #D4A843;
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+          letter-spacing: 0.02em;
         }
         .hero-headline {
           font-family: var(--font-oswald), sans-serif;
@@ -470,6 +479,14 @@ export default function MasterclassPage() {
           font-size: 0.9rem;
           margin-top: 0.4rem;
           line-height: 1.4;
+        }
+
+        /* ── Trust Line ───────────────────────────────────────────── */
+        .trust-line {
+          color: #555555;
+          font-size: 0.85rem;
+          text-align: center;
+          margin-top: 1rem;
         }
 
         /* ── Desktop ─────────────────────────────────────────────── */
