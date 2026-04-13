@@ -153,6 +153,7 @@ export default function MasterclassPage() {
         <SectionLabel text="WHAT IS INSIDE" />
 
         <ul className="feature-list">
+          <li>Full 14 Day Calibration Plan for immediate enhancement</li>
           <li>Full Protocols to RUN AFTER THE 14 DAYS</li>
           <li>Back rim calibration protocol</li>
           <li>Deep distance calibration protocol</li>
