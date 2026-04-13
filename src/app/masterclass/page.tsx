@@ -1,8 +1,17 @@
 'use client';
 
+import { useEffect } from 'react';
+
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
 const THINKIFIC_URL = 'https://bbcode.thinkific.com/enroll/3585033';
+
+const REELS = [
+  'https://www.instagram.com/reel/DXAZutfkXm_/',
+  'https://www.instagram.com/reel/DW8vktWBrPU/',
+  'https://www.instagram.com/reel/DVBd9SyEfnU/',
+  'https://www.instagram.com/reel/DUBOdZZEXRM/',
+];
 
 // ─── ENROLL BUTTON ───────────────────────────────────────────────────────────
 
@@ -34,7 +43,7 @@ function ResultCard({ name, result, quote }: { name: string; result: string; quo
   return (
     <div className="result-card">
       <p className="result-name">{name}</p>
-      <p className="result-stat">{result}</p>
+      {result && <p className="result-stat">{result}</p>}
       {quote && <p className="result-quote">&ldquo;{quote}&rdquo;</p>}
     </div>
   );
@@ -43,6 +52,17 @@ function ResultCard({ name, result, quote }: { name: string; result: string; quo
 // ─── PAGE ────────────────────────────────────────────────────────────────────
 
 export default function MasterclassPage() {
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !(window as any).instgrm) {
+      const s = document.createElement('script');
+      s.src = '//www.instagram.com/embed.js';
+      s.async = true;
+      document.body.appendChild(s);
+    } else if ((window as any).instgrm) {
+      (window as any).instgrm.Embeds.process();
+    }
+  }, []);
+
   return (
     <main className="page">
       {/* ── SECTION 1: HERO ─────────────────────────────────────────── */}
@@ -82,7 +102,39 @@ export default function MasterclassPage() {
         <EnrollButton />
       </section>
 
-      {/* ── SECTION 3: WHAT YOU GET ─────────────────────────────────── */}
+      {/* ── SECTION 3: VISUAL EVIDENCE ──────────────────────────────── */}
+      <section className="section">
+        <SectionLabel text="VISUAL EVIDENCE" />
+
+        <div className="reels-grid">
+          {REELS.map((url) => (
+            <div key={url} className="reel-embed">
+              <blockquote
+                className="instagram-media"
+                data-instgrm-permalink={url}
+                data-instgrm-version="14"
+                style={{
+                  background: '#FFF',
+                  border: 0,
+                  borderRadius: '3px',
+                  boxShadow: 'none',
+                  margin: '0 auto',
+                  maxWidth: '540px',
+                  minWidth: '280px',
+                  padding: 0,
+                  width: '100%',
+                }}
+              />
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: '1.5rem' }}>
+          <EnrollButton />
+        </div>
+      </section>
+
+      {/* ── SECTION 4: WHAT YOU GET ─────────────────────────────────── */}
       <section className="section">
         <SectionLabel text="WHAT IS INSIDE" />
 
@@ -102,7 +154,7 @@ export default function MasterclassPage() {
         <EnrollButton />
       </section>
 
-      {/* ── SECTION 4: CREDIBILITY ──────────────────────────────────── */}
+      {/* ── SECTION 5: CREDIBILITY ──────────────────────────────────── */}
       <section className="section">
         <SectionLabel text="THE METHOD" />
         <p className="method-text">
@@ -110,7 +162,7 @@ export default function MasterclassPage() {
         </p>
       </section>
 
-      {/* ── SECTION 5: FINAL CTA ────────────────────────────────────── */}
+      {/* ── SECTION 6: FINAL CTA ────────────────────────────────────── */}
       <section className="section cta-section">
         <h2 className="cta-headline">Stop Guessing. Start Calibrating.</h2>
         <p className="cta-sub">$150. Lifetime access. Start today.</p>
@@ -118,7 +170,7 @@ export default function MasterclassPage() {
         <p className="cta-note">Instant access after purchase.</p>
       </section>
 
-      {/* ── SECTION 6: DETAILED RESULTS ─────────────────────────────── */}
+      {/* ── SECTION 7: DETAILED RESULTS ─────────────────────────────── */}
       <section className="section">
         <SectionLabel text="PLAYER RESULTS" />
 
@@ -134,7 +186,7 @@ export default function MasterclassPage() {
           />
           <ResultCard
             name="Tyler Perkins (Villanova)"
-            result="20% to 42% (In-Season)"
+            result="20% to 40% (In-Season)"
           />
           <ResultCard
             name="OG Anunoby"
@@ -142,7 +194,7 @@ export default function MasterclassPage() {
           />
           <ResultCard
             name="Tyler Burton (Grizzlies)"
-            result="29% to 43% In less than 2 weeks"
+            result="29% to 44% In less than 2 weeks"
             quote="My shot never has felt better"
           />
           <ResultCard
@@ -152,7 +204,7 @@ export default function MasterclassPage() {
           />
           <ResultCard
             name="Dominick Stewart (Penn State)"
-            result="20% to 35% This season, In 3 weeks"
+            result="32% to 42% This season, In 3 weeks"
           />
           <ResultCard
             name="Matisse Thybulle (Trail Blazers)"
@@ -168,13 +220,9 @@ export default function MasterclassPage() {
             result=""
             quote="Calibration has evolved our program and we shot the best in years on the methods"
           />
-          <ResultCard
-            name="Hundreds of HS Players"
-            result="Gone from not being able to shoot, to knocking shots down in days, not months"
-          />
         </div>
 
-        <div style={{ marginTop: '3rem' }}>
+        <div style={{ marginTop: '1.5rem' }}>
           <EnrollButton />
         </div>
       </section>
@@ -183,6 +231,10 @@ export default function MasterclassPage() {
       <style jsx global>{`
         /* ── Reset & Base ─────────────────────────────────────────── */
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+          background: #FFFFFF !important;
+        }
 
         .page {
           background: #FFFFFF;
@@ -202,13 +254,11 @@ export default function MasterclassPage() {
         }
         .hero {
           position: relative;
-          padding: 1.5rem 1.5rem 2.5rem;
+          padding: 5rem 1.5rem 2rem;
           display: flex;
           flex-direction: column;
           align-items: center;
           text-align: center;
-          min-height: 100dvh;
-          justify-content: center;
         }
         .hero-headline {
           font-family: var(--font-oswald), sans-serif;
@@ -216,13 +266,13 @@ export default function MasterclassPage() {
           font-weight: 700;
           line-height: 1.1;
           color: #000000;
-          margin-bottom: 1rem;
+          margin-bottom: 0.75rem;
         }
         .hero-sub {
           font-size: clamp(0.95rem, 3.5vw, 1.2rem);
           color: #D4A843;
           font-weight: 600;
-          margin-bottom: 1.75rem;
+          margin-bottom: 1.5rem;
           line-height: 1.4;
         }
 
@@ -250,14 +300,14 @@ export default function MasterclassPage() {
 
         /* ── Section ─────────────────────────────────────────────── */
         .section {
-          padding: 4rem 1.5rem;
+          padding: 2.25rem 1.5rem;
           max-width: 680px;
           margin: 0 auto;
         }
 
         /* ── Section Label ───────────────────────────────────────── */
         .section-label-wrapper {
-          margin-bottom: 2rem;
+          margin-bottom: 1.25rem;
         }
         .section-label {
           font-family: var(--font-oswald), sans-serif;
@@ -266,7 +316,7 @@ export default function MasterclassPage() {
           letter-spacing: 0.15em;
           color: #D4A843;
           display: block;
-          margin-bottom: 0.75rem;
+          margin-bottom: 0.5rem;
         }
         .gold-divider {
           height: 2px;
@@ -278,8 +328,8 @@ export default function MasterclassPage() {
         .proof-blocks {
           display: flex;
           flex-direction: column;
-          gap: 2rem;
-          margin-bottom: 2.5rem;
+          gap: 1.25rem;
+          margin-bottom: 1.5rem;
         }
         .proof-block {
           padding-left: 1rem;
@@ -304,18 +354,34 @@ export default function MasterclassPage() {
           font-size: 1.15rem;
           color: #000000;
           text-align: center;
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
+        }
+
+        /* ── Reels Grid ──────────────────────────────────────────── */
+        .reels-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+        .reel-embed {
+          width: 100%;
+          overflow: hidden;
+        }
+        .reel-embed .instagram-media {
+          margin: 0 auto !important;
+          width: 100% !important;
+          min-width: unset !important;
         }
 
         /* ── Feature List ────────────────────────────────────────── */
         .feature-list {
           list-style: none;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.25rem;
         }
         .feature-list li {
           position: relative;
           padding-left: 1.5rem;
-          margin-bottom: 0.85rem;
+          margin-bottom: 0.7rem;
           color: #000000;
           font-size: 1rem;
           line-height: 1.5;
@@ -333,13 +399,13 @@ export default function MasterclassPage() {
         .feature-list li:first-child {
           font-weight: 700;
           font-size: 1.05rem;
-          margin-bottom: 1.25rem;
+          margin-bottom: 1rem;
         }
         .feature-desc {
           color: #555555;
           font-size: 0.95rem;
           line-height: 1.5;
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
         }
 
         /* ── Method / Credibility ────────────────────────────────── */
@@ -359,30 +425,30 @@ export default function MasterclassPage() {
           font-weight: 700;
           color: #000000;
           line-height: 1.15;
-          margin-bottom: 1rem;
+          margin-bottom: 0.75rem;
         }
         .cta-sub {
           color: #D4A843;
           font-weight: 600;
           font-size: 1.1rem;
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
         }
         .cta-note {
           color: #555555;
           font-size: 0.85rem;
-          margin-top: 1rem;
+          margin-top: 0.75rem;
         }
 
-        /* ── Results Grid (Section 6) ────────────────────────────── */
+        /* ── Results Grid ────────────────────────────────────────── */
         .results-grid {
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
+          gap: 0.75rem;
         }
         .result-card {
           border: 2px solid #D4A843;
           border-radius: 10px;
-          padding: 1.25rem 1.5rem;
+          padding: 1rem 1.25rem;
           background: #FFFFFF;
         }
         .result-name {
@@ -390,7 +456,7 @@ export default function MasterclassPage() {
           font-weight: 700;
           font-size: 1.05rem;
           color: #000000;
-          margin-bottom: 0.35rem;
+          margin-bottom: 0.25rem;
         }
         .result-stat {
           color: #D4A843;
@@ -402,26 +468,33 @@ export default function MasterclassPage() {
           color: #555555;
           font-style: italic;
           font-size: 0.9rem;
-          margin-top: 0.5rem;
+          margin-top: 0.4rem;
           line-height: 1.4;
         }
 
         /* ── Desktop ─────────────────────────────────────────────── */
         @media (min-width: 768px) {
           .section {
-            padding: 5rem 2rem;
+            padding: 3rem 2rem;
           }
           .hero {
-            padding: 3rem 2rem 4rem;
+            padding: 5rem 2rem 2.5rem;
+          }
+          .hero-headline {
+            font-size: 3.5rem;
           }
           .enroll-btn {
             width: auto;
             min-width: 320px;
           }
+          .reels-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+          }
           .results-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1.25rem;
+            gap: 1rem;
           }
         }
       `}</style>
