@@ -65,7 +65,7 @@ export default function MasterclassPage() {
 
   return (
     <main className="page">
-      {/* ── SECTION 1: HERO ─────────────────────────────────────────── */}
+      {/* ── HERO ────────────────────────────────────────────────────── */}
       <section className="hero">
         <img
           src="/players/bblogolandingpage.png"
@@ -80,98 +80,7 @@ export default function MasterclassPage() {
         <EnrollButton />
       </section>
 
-      {/* ── SECTION 2: PROOF ────────────────────────────────────────── */}
-      <section className="section">
-        <SectionLabel text="RESULTS" />
-
-        <div className="proof-blocks">
-          <div className="proof-block">
-            <p className="proof-player">NBA Vet</p>
-            <p className="proof-result">18% to 47% from three. In-season. Under 100 days.</p>
-          </div>
-          <div className="proof-block">
-            <p className="proof-player">NBA Big Man</p>
-            <p className="proof-result">15% to 40% from three. In-season. 4 months.</p>
-          </div>
-          <div className="proof-block">
-            <p className="proof-player">D1 Guard</p>
-            <p className="proof-result">29% to 44% from three. In-season. 2 weeks.</p>
-          </div>
-        </div>
-
-        <p className="calibration-only">Zero form corrections. Calibration only.</p>
-        <EnrollButton />
-      </section>
-
-      {/* ── SECTION 3: VISUAL EVIDENCE ──────────────────────────────── */}
-      <section className="section">
-        <SectionLabel text="VISUAL EVIDENCE" />
-
-        <div className="reels-grid">
-          {REELS.map((url) => (
-            <div key={url} className="reel-embed">
-              <blockquote
-                className="instagram-media"
-                data-instgrm-permalink={url}
-                data-instgrm-version="14"
-                style={{
-                  background: '#FFF',
-                  border: 0,
-                  borderRadius: '3px',
-                  boxShadow: 'none',
-                  margin: '0 auto',
-                  maxWidth: '540px',
-                  minWidth: '280px',
-                  padding: 0,
-                  width: '100%',
-                }}
-              />
-            </div>
-          ))}
-        </div>
-
-        <div style={{ marginTop: '1.5rem' }}>
-          <EnrollButton />
-        </div>
-      </section>
-
-      {/* ── SECTION 4: WHAT YOU GET ─────────────────────────────────── */}
-      <section className="section">
-        <SectionLabel text="WHAT IS INSIDE" />
-
-        <ul className="feature-list">
-          <li>Full Protocols to RUN AFTER THE 14 DAYS</li>
-          <li>Back rim calibration protocol</li>
-          <li>Deep distance calibration protocol</li>
-          <li>Ball flight exploration methods</li>
-          <li>Pre-game calibration routine</li>
-          <li>Exit speed and precision protocols</li>
-          <li>The exact system used with NBA players</li>
-        </ul>
-
-        <p className="feature-desc">
-          Everything you need to calibrate your shot for what the game actually demands.
-        </p>
-        <EnrollButton />
-      </section>
-
-      {/* ── SECTION 5: CREDIBILITY ──────────────────────────────────── */}
-      <section className="section">
-        <SectionLabel text="THE METHOD" />
-        <p className="method-text">
-          Founded by Coach Tommy Tempesta. 25+ years of research in motor learning and biomechanics out of Columbia University. Every protocol is backed by visual evidence and tested at the highest level.
-        </p>
-      </section>
-
-      {/* ── SECTION 6: FINAL CTA ────────────────────────────────────── */}
-      <section className="section cta-section">
-        <h2 className="cta-headline">Stop Guessing. Start Calibrating.</h2>
-        <p className="cta-sub">$150. Lifetime access. Start today.</p>
-        <EnrollButton />
-        <p className="cta-note">Instant access after purchase.</p>
-      </section>
-
-      {/* ── SECTION 7: DETAILED RESULTS ─────────────────────────────── */}
+      {/* ── PLAYER RESULTS ──────────────────────────────────────────── */}
       <section className="section">
         <SectionLabel text="PLAYER RESULTS" />
 
@@ -223,10 +132,77 @@ export default function MasterclassPage() {
           />
         </div>
 
-        <div style={{ marginTop: '1.5rem' }}>
+        <div style={{ marginTop: '1.25rem' }}>
           <EnrollButton />
-          <p className="trust-line">Trusted by NBA, D1 teams, and high school players worldwide.</p>
         </div>
+      </section>
+
+      {/* ── WHAT IS INSIDE ──────────────────────────────────────────── */}
+      <section className="section">
+        <SectionLabel text="WHAT IS INSIDE" />
+
+        <ul className="feature-list">
+          <li>Full Protocols to RUN AFTER THE 14 DAYS</li>
+          <li>Back rim calibration protocol</li>
+          <li>Deep distance calibration protocol</li>
+          <li>Ball flight exploration methods</li>
+          <li>Pre-game calibration routine</li>
+          <li>Exit speed and precision protocols</li>
+          <li>The exact system used with NBA players</li>
+        </ul>
+
+        <p className="feature-desc">
+          Everything you need to calibrate your shot for what the game actually demands.
+        </p>
+        <EnrollButton />
+      </section>
+
+      {/* ── VISUAL EVIDENCE ─────────────────────────────────────────── */}
+      <section className="section">
+        <SectionLabel text="VISUAL EVIDENCE" />
+
+        <div className="reels-grid">
+          {REELS.map((url) => (
+            <div key={url} className="reel-embed">
+              <blockquote
+                className="instagram-media"
+                data-instgrm-permalink={url}
+                data-instgrm-version="14"
+                style={{
+                  background: '#FFF',
+                  border: 0,
+                  borderRadius: '3px',
+                  boxShadow: 'none',
+                  margin: '0 auto',
+                  maxWidth: '540px',
+                  minWidth: '280px',
+                  padding: 0,
+                  width: '100%',
+                }}
+              />
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: '1.25rem' }}>
+          <EnrollButton />
+        </div>
+      </section>
+
+      {/* ── THE METHOD ──────────────────────────────────────────────── */}
+      <section className="section">
+        <SectionLabel text="THE METHOD" />
+        <p className="method-text">
+          Founded by Coach Tommy Tempesta. 25+ years of research in motor learning and biomechanics out of Columbia University. Every protocol is backed by visual evidence and tested at the highest level.
+        </p>
+      </section>
+
+      {/* ── FINAL CTA ───────────────────────────────────────────────── */}
+      <section className="section cta-section">
+        <h2 className="cta-headline">Stop Guessing. Start Calibrating.</h2>
+        <p className="cta-sub">$150. Lifetime access. Start today.</p>
+        <EnrollButton />
+        <p className="trust-line">Trusted by NBA, D1, and high school players worldwide.</p>
       </section>
 
       {/* ── STYLES ──────────────────────────────────────────────────── */}
@@ -256,7 +232,7 @@ export default function MasterclassPage() {
         }
         .hero {
           position: relative;
-          padding: 5rem 1.5rem 1.25rem;
+          padding: 4.5rem 1.5rem 1rem;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -309,7 +285,7 @@ export default function MasterclassPage() {
 
         /* ── Section ─────────────────────────────────────────────── */
         .section {
-          padding: 2.25rem 1.5rem;
+          padding: 1.75rem 1.5rem;
           max-width: 680px;
           margin: 0 auto;
         }
@@ -492,10 +468,10 @@ export default function MasterclassPage() {
         /* ── Desktop ─────────────────────────────────────────────── */
         @media (min-width: 768px) {
           .section {
-            padding: 3rem 2rem;
+            padding: 2.5rem 2rem;
           }
           .hero {
-            padding: 5rem 2rem 2.5rem;
+            padding: 5rem 2rem 1.5rem;
           }
           .hero-headline {
             font-size: 3.5rem;
