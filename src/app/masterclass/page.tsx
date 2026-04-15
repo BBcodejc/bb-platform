@@ -219,6 +219,35 @@ export default function MasterclassPage() {
         <EnrollButton />
       </section>
 
+      {/* ── MEET THE COACH ────────────────────────────────────────── */}
+      <section className="section coach-section">
+        <SectionLabel text="MEET THE COACH BEHIND CALIBRATION" />
+
+        <div className="coach-photo-wrap">
+          <img
+            src="/players/tommy-coach.jpg"
+            alt="Coach Tommy Tempesta"
+            className="coach-photo"
+          />
+        </div>
+
+        <p className="coach-name">Tommy Tempesta</p>
+        <p className="coach-title">NBA Coach &amp; Biomechanics Specialist</p>
+
+        <p className="coach-bio">
+          With over 25 years of research and application at the highest levels of basketball, Coach Tommy has developed the shooting calibration system used by NBA players worldwide.
+        </p>
+
+        <p className="coach-work-label">His Work Includes:</p>
+        <ul className="coach-work-list">
+          <li>Coaching NBA players including Tobias Harris, OG Anunoby, Paul Reed, Moses Brown, and Tyler Burton</li>
+          <li>Consulting for NBA and NCAA teams like the Mavericks and Auburn University on player development and shooting calibration</li>
+          <li>Pioneering the Basketball Biomechanics methodology that revolutionizes how players learn to shoot</li>
+        </ul>
+
+        <EnrollButton />
+      </section>
+
       {/* ── VISUAL EVIDENCE ─────────────────────────────────────────── */}
       <section className="section">
         <SectionLabel text="VISUAL EVIDENCE" />
@@ -558,6 +587,76 @@ export default function MasterclassPage() {
           color: #444444;
           font-size: 0.95rem;
           line-height: 1.5;
+        }
+
+        /* ── Coach Section ───────────────────────────────────────── */
+        .coach-section {
+          text-align: center;
+        }
+        .coach-photo-wrap {
+          width: 240px;
+          height: 280px;
+          margin: 0 auto 1.25rem;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 2px solid #D4A843;
+        }
+        .coach-photo {
+          width: 100%;
+          height: 180%;
+          object-fit: cover;
+          object-position: center 10%;
+        }
+        .coach-name {
+          font-family: var(--font-oswald), sans-serif;
+          font-weight: 700;
+          font-size: 1.4rem;
+          color: #000000;
+          margin-bottom: 0.15rem;
+        }
+        .coach-title {
+          color: #D4A843;
+          font-weight: 600;
+          font-size: 0.95rem;
+          margin-bottom: 1rem;
+        }
+        .coach-bio {
+          color: #444444;
+          font-size: 1rem;
+          line-height: 1.6;
+          margin-bottom: 1.25rem;
+          text-align: left;
+        }
+        .coach-work-label {
+          font-family: var(--font-oswald), sans-serif;
+          font-weight: 700;
+          font-size: 1.05rem;
+          color: #000000;
+          margin-bottom: 0.75rem;
+          text-align: left;
+        }
+        .coach-work-list {
+          list-style: none;
+          margin-bottom: 1.5rem;
+          text-align: left;
+        }
+        .coach-work-list li {
+          position: relative;
+          padding-left: 1.5rem;
+          margin-bottom: 0.75rem;
+          color: #000000;
+          font-size: 0.95rem;
+          line-height: 1.5;
+        }
+        .coach-work-list li::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0.55em;
+          width: 8px;
+          height: 8px;
+          background: #D4A843;
+          border-radius: 50%;
         }
 
         /* ── Reels Grid ──────────────────────────────────────────── */
