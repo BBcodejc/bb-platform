@@ -15,13 +15,10 @@ const REELS = [
 
 // ─── ENROLL BUTTON ───────────────────────────────────────────────────────────
 
-function EnrollButton() {
+function EnrollButton({ label = 'ENROLL NOW' }: { label?: string }) {
   return (
-    <a
-      href={THINKIFIC_URL}
-      className="enroll-btn"
-    >
-      ENROLL NOW
+    <a href={THINKIFIC_URL} className="enroll-btn">
+      {label}
     </a>
   );
 }
@@ -52,6 +49,29 @@ function ResultCard({ name, result, quote, logo }: { name: string; result: strin
   );
 }
 
+// ─── DAY BLOCK ───────────────────────────────────────────────────────────────
+
+function DayBlock({ days, title, children }: { days: string; title: string; children: React.ReactNode }) {
+  return (
+    <div className="day-block">
+      <p className="day-range">{days}</p>
+      <p className="day-title">{title}</p>
+      <p className="day-desc">{children}</p>
+    </div>
+  );
+}
+
+// ─── FAQ ITEM ────────────────────────────────────────────────────────────────
+
+function FaqItem({ q, a }: { q: string; a: string }) {
+  return (
+    <div className="faq-item">
+      <p className="faq-q">{q}</p>
+      <p className="faq-a">{a}</p>
+    </div>
+  );
+}
+
 // ─── PAGE ────────────────────────────────────────────────────────────────────
 
 export default function MasterclassPage() {
@@ -75,10 +95,18 @@ export default function MasterclassPage() {
           alt="BB"
           className="logo"
         />
-        <p className="hero-pre">The system NBA players use to CALIBRATE their shooting in weeks.</p>
-        <h1 className="hero-headline">Calibrate Your Shot In 14 Days.</h1>
+        <h1 className="hero-headline">The Only Shooting System That You Will Ever Need</h1>
         <p className="hero-sub">
-          The exact protocols that took an NBA player from 18% to 47% from three. In-season. $150. Lifetime access.
+          14 days to calibration. A lifetime of confidence from anywhere on the court.
+        </p>
+        <p className="hero-body">
+          <strong>Your form isn&rsquo;t the problem. What you explore is.</strong>
+        </p>
+        <p className="hero-body">
+          Most shooting programs teach you to fix your mechanics. We teach your system to adapt to any shot you&rsquo;ll ever take in a game.
+        </p>
+        <p className="hero-body hero-proof">
+          An NBA Vet went from 18% to 47%. Thousands of players calibrated. Available to you now.
         </p>
         <EnrollButton />
       </section>
@@ -148,24 +176,46 @@ export default function MasterclassPage() {
         </div>
       </section>
 
-      {/* ── WHAT IS INSIDE ──────────────────────────────────────────── */}
+      {/* ── THE 14-DAY CALIBRATION JOURNEY ─────────────────────────── */}
       <section className="section">
-        <SectionLabel text="WHAT IS INSIDE" />
+        <SectionLabel text="THE 14-DAY CALIBRATION JOURNEY" />
+        <p className="section-subtitle">What You&rsquo;ll Experience:</p>
 
-        <ul className="feature-list">
-          <li>Full 14 Day Calibration Plan for immediate enhancement</li>
-          <li>Full Protocols to RUN AFTER THE 14 DAYS</li>
-          <li>Back rim calibration protocol</li>
-          <li>Deep distance calibration protocol</li>
-          <li>Ball flight exploration methods</li>
-          <li>Pre-game calibration routine</li>
-          <li>Exit speed and precision protocols</li>
-          <li>The exact system used with NBA players</li>
+        <div className="day-blocks">
+          <DayBlock days="Days 1-3" title="Deep Distance Calibration">
+            Explore extensively from deep range. By day 3, the three-point line will feel like a free throw. Your system learns distance control.
+          </DayBlock>
+          <DayBlock days="Days 4-6" title="Movement Integration">
+            Shoot off the hop, 1-2 step, and in motion. We open your movement bandwidth so calibration transfers to game conditions.
+          </DayBlock>
+          <DayBlock days="Days 7-10" title="Precision Targeting from Deep">
+            Introduce precision from beyond the arc. You&rsquo;ll be knocking down threes from way outside the line &mdash; effortlessly.
+          </DayBlock>
+          <DayBlock days="Days 11-14" title="Precision At Its Best">
+            Test your new calibration. Score above your average. Guaranteed. Your system has adapted, and the results prove it.
+          </DayBlock>
+        </div>
+
+        <EnrollButton />
+      </section>
+
+      {/* ── AFTER THE 14 DAYS ──────────────────────────────────────── */}
+      <section className="section">
+        <SectionLabel text="AFTER THE 14 DAYS: YOUR NEW SHOOTING SYSTEM" />
+        <p className="section-intro">The modules teach you more than just drills. They teach you how to think.</p>
+
+        <ul className="after-list">
+          <li><strong>Understand your miss profile</strong> &mdash; Know exactly what your system needs</li>
+          <li><strong>Your system learns what to calibrate</strong> and explore to continue adapting</li>
+          <li><strong>Game Days:</strong> Run the pre-game protocols to lock in calibration</li>
+          <li><strong>Off-Days:</strong> Run modules 1-4 to maintain and evolve your system</li>
         </ul>
 
-        <p className="feature-desc">
-          Everything you need to calibrate your shot for what the game actually demands.
-        </p>
+        <div className="closing-block">
+          <p className="closing-bold">This is the only shooting course you&rsquo;ll ever need.</p>
+          <p className="closing-text">Your form is not the problem. What you explore is. And this prepares you for any shot you will ever take in a game.</p>
+        </div>
+
         <EnrollButton />
       </section>
 
@@ -196,7 +246,6 @@ export default function MasterclassPage() {
           ))}
         </div>
 
-        {/* YouTube Calibration Session */}
         <div className="youtube-section">
           <p className="youtube-label">Watch a Full Calibration Session Here:</p>
           <div className="youtube-embed">
@@ -215,19 +264,94 @@ export default function MasterclassPage() {
         </div>
       </section>
 
-      {/* ── THE METHOD ──────────────────────────────────────────────── */}
+      {/* ── WHY THIS WORKS ─────────────────────────────────────────── */}
       <section className="section">
-        <SectionLabel text="THE METHOD" />
-        <p className="method-text">
-          Founded by Coach Tommy Tempesta. 25+ years of research in motor learning and biomechanics out of Columbia University. Every protocol is backed by visual evidence and tested at the highest level.
+        <SectionLabel text="WHY THIS WORKS" />
+
+        <div className="compare-grid">
+          <div className="compare-block compare-old">
+            <p className="compare-label">Traditional Shooting Coaching</p>
+            <p className="compare-text">Fix your form. Repeat the same shot 1,000 times. Hope it translates to games.</p>
+          </div>
+          <div className="compare-block compare-new">
+            <p className="compare-label">Calibration-Based Training</p>
+            <p className="compare-text">Your nervous system adapts through strategic exploration. You don&rsquo;t just learn one shot &mdash; you learn to make any shot.</p>
+          </div>
+        </div>
+
+        <p className="compare-result">
+          The result? Confidence from anywhere. Consistency under pressure. Percentages that actually improve in games, not just in the gym.
         </p>
+      </section>
+
+      {/* ── WHO THIS IS FOR ────────────────────────────────────────── */}
+      <section className="section">
+        <SectionLabel text="WHO THIS IS FOR" />
+
+        <ul className="check-list">
+          <li>Players who can shoot in practice but struggle in games</li>
+          <li>Athletes looking to expand their range beyond the arc</li>
+          <li>Coaches who want a system, not just drills</li>
+          <li>Anyone tired of &ldquo;fix your form&rdquo; advice that doesn&rsquo;t work</li>
+        </ul>
+      </section>
+
+      {/* ── WHAT'S INCLUDED ────────────────────────────────────────── */}
+      <section className="section">
+        <SectionLabel text="WHAT'S INCLUDED" />
+
+        <ul className="included-list">
+          <li>14-Day Calibration Protocol (video demonstrations)</li>
+          <li>Pre-Game Shooting Protocols</li>
+          <li>4 Core Modules for continuous adaptation</li>
+          <li>Miss Profile Analysis framework</li>
+          <li>Lifetime access to all updates</li>
+        </ul>
+      </section>
+
+      {/* ── THE GUARANTEE ──────────────────────────────────────────── */}
+      <section className="section guarantee-section">
+        <SectionLabel text="THE GUARANTEE" />
+        <p className="guarantee-text">
+          Complete the 14-day protocol as designed. Test out on day 14. <strong>Your Score will be Higher.</strong>
+        </p>
+      </section>
+
+      {/* ── PRICING ────────────────────────────────────────────────── */}
+      <section className="section pricing-section">
+        <SectionLabel text="PRICING" />
+        <div className="pricing-card">
+          <p className="pricing-old">Regular Price: <span className="strikethrough">$299</span></p>
+          <p className="pricing-current">Off-Season Price: <span className="pricing-amount">$149</span></p>
+          <p className="pricing-urgency">Early access ends April 30th. Join now and lock in the off-season rate forever.</p>
+          <EnrollButton />
+        </div>
+      </section>
+
+      {/* ── FAQ ────────────────────────────────────────────────────── */}
+      <section className="section">
+        <SectionLabel text="FAQ" />
+
+        <div className="faq-list">
+          <FaqItem
+            q="Is this just another shooting drill program?"
+            a="No. This teaches your nervous system to adapt to any shot through strategic exploration. Drills are the vehicle, calibration is the outcome."
+          />
+          <FaqItem
+            q="Will this work if I'm a beginner?"
+            a="Yes. Calibration works at every level because it's based on how your nervous system learns, not your current skill level."
+          />
+          <FaqItem
+            q="How is this different from form-based coaching?"
+            a="Form coaching tries to make you shoot the same way every time. Calibration trains your system to adapt to every situation you'll face in a game."
+          />
+        </div>
       </section>
 
       {/* ── FINAL CTA ───────────────────────────────────────────────── */}
       <section className="section cta-section">
-        <h2 className="cta-headline">Stop Guessing. Start Calibrating.</h2>
-        <p className="cta-sub">$150. Lifetime access. Start today.</p>
-        <EnrollButton />
+        <h2 className="cta-headline">Stop fixing your form. Start calibrating your system.</h2>
+        <EnrollButton label="JOIN THE MASTERCLASS NOW" />
         <p className="trust-line">Trusted by NBA, D1, and high school players worldwide.</p>
       </section>
 
@@ -258,18 +382,13 @@ export default function MasterclassPage() {
         }
         .hero {
           position: relative;
-          padding: 4.5rem 1.5rem 1rem;
+          padding: 4.5rem 1.5rem 2rem;
           display: flex;
           flex-direction: column;
           align-items: center;
           text-align: center;
-        }
-        .hero-pre {
-          font-size: 0.85rem;
-          color: #D4A843;
-          font-weight: 600;
-          margin-bottom: 0.5rem;
-          letter-spacing: 0.02em;
+          max-width: 680px;
+          margin: 0 auto;
         }
         .hero-headline {
           font-family: var(--font-oswald), sans-serif;
@@ -283,8 +402,20 @@ export default function MasterclassPage() {
           font-size: clamp(0.95rem, 3.5vw, 1.2rem);
           color: #D4A843;
           font-weight: 600;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.25rem;
           line-height: 1.4;
+        }
+        .hero-body {
+          font-size: 1rem;
+          color: #333333;
+          line-height: 1.6;
+          margin-bottom: 0.75rem;
+          max-width: 560px;
+        }
+        .hero-proof {
+          color: #D4A843;
+          font-weight: 600;
+          margin-bottom: 1.5rem;
         }
 
         /* ── Enroll Button ───────────────────────────────────────── */
@@ -335,37 +466,98 @@ export default function MasterclassPage() {
           background: #D4A843;
         }
 
-        /* ── Proof Blocks ────────────────────────────────────────── */
-        .proof-blocks {
-          display: flex;
-          flex-direction: column;
-          gap: 1.25rem;
-          margin-bottom: 1.5rem;
-        }
-        .proof-block {
-          padding-left: 1rem;
-          border-left: 3px solid #D4A843;
-        }
-        .proof-player {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 1.1rem;
-          color: #000000;
-          margin-bottom: 0.25rem;
-        }
-        .proof-result {
-          color: #D4A843;
-          font-weight: 600;
-          font-size: 0.95rem;
-          line-height: 1.4;
-        }
-        .calibration-only {
+        /* ── Section Subtitle / Intro ────────────────────────────── */
+        .section-subtitle {
           font-family: var(--font-oswald), sans-serif;
           font-weight: 700;
           font-size: 1.15rem;
           color: #000000;
-          text-align: center;
+          margin-bottom: 1rem;
+        }
+        .section-intro {
+          color: #333333;
+          font-size: 1rem;
+          line-height: 1.6;
+          margin-bottom: 1.25rem;
+        }
+
+        /* ── Day Blocks ──────────────────────────────────────────── */
+        .day-blocks {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
           margin-bottom: 1.5rem;
+        }
+        .day-block {
+          border-left: 4px solid #D4A843;
+          padding: 1rem 1.25rem;
+          background: #FAFAFA;
+          border-radius: 0 8px 8px 0;
+        }
+        .day-range {
+          font-family: var(--font-oswald), sans-serif;
+          font-weight: 700;
+          font-size: 0.8rem;
+          letter-spacing: 0.1em;
+          color: #D4A843;
+          margin-bottom: 0.25rem;
+        }
+        .day-title {
+          font-family: var(--font-oswald), sans-serif;
+          font-weight: 700;
+          font-size: 1.1rem;
+          color: #000000;
+          margin-bottom: 0.4rem;
+        }
+        .day-desc {
+          color: #444444;
+          font-size: 0.95rem;
+          line-height: 1.5;
+        }
+
+        /* ── After List ──────────────────────────────────────────── */
+        .after-list {
+          list-style: none;
+          margin-bottom: 1.5rem;
+        }
+        .after-list li {
+          position: relative;
+          padding-left: 1.5rem;
+          margin-bottom: 0.75rem;
+          color: #000000;
+          font-size: 1rem;
+          line-height: 1.5;
+        }
+        .after-list li::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0.55em;
+          width: 8px;
+          height: 8px;
+          background: #D4A843;
+          border-radius: 50%;
+        }
+
+        /* ── Closing Block ───────────────────────────────────────── */
+        .closing-block {
+          border: 2px solid #D4A843;
+          border-radius: 10px;
+          padding: 1.25rem;
+          margin-bottom: 1.5rem;
+          text-align: center;
+        }
+        .closing-bold {
+          font-family: var(--font-oswald), sans-serif;
+          font-weight: 700;
+          font-size: 1.15rem;
+          color: #000000;
+          margin-bottom: 0.5rem;
+        }
+        .closing-text {
+          color: #444444;
+          font-size: 0.95rem;
+          line-height: 1.5;
         }
 
         /* ── Reels Grid ──────────────────────────────────────────── */
@@ -414,12 +606,71 @@ export default function MasterclassPage() {
           border: 0;
         }
 
-        /* ── Feature List ────────────────────────────────────────── */
-        .feature-list {
-          list-style: none;
+        /* ── Compare Grid ────────────────────────────────────────── */
+        .compare-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
           margin-bottom: 1.25rem;
         }
-        .feature-list li {
+        .compare-block {
+          padding: 1.25rem;
+          border-radius: 10px;
+        }
+        .compare-old {
+          background: #F5F5F5;
+          border: 1px solid #DDD;
+        }
+        .compare-new {
+          background: #FDF8EE;
+          border: 2px solid #D4A843;
+        }
+        .compare-label {
+          font-family: var(--font-oswald), sans-serif;
+          font-weight: 700;
+          font-size: 1rem;
+          margin-bottom: 0.4rem;
+          color: #000000;
+        }
+        .compare-text {
+          color: #444444;
+          font-size: 0.95rem;
+          line-height: 1.5;
+        }
+        .compare-result {
+          color: #D4A843;
+          font-weight: 600;
+          font-size: 1rem;
+          line-height: 1.5;
+          text-align: center;
+          margin-bottom: 1rem;
+        }
+
+        /* ── Check List (Who This Is For) ────────────────────────── */
+        .check-list {
+          list-style: none;
+        }
+        .check-list li {
+          position: relative;
+          padding-left: 2rem;
+          margin-bottom: 0.75rem;
+          color: #000000;
+          font-size: 1rem;
+          line-height: 1.5;
+        }
+        .check-list li::before {
+          content: '✅';
+          position: absolute;
+          left: 0;
+          top: 0;
+          font-size: 1.1rem;
+        }
+
+        /* ── Included List ───────────────────────────────────────── */
+        .included-list {
+          list-style: none;
+        }
+        .included-list li {
           position: relative;
           padding-left: 1.5rem;
           margin-bottom: 0.7rem;
@@ -427,7 +678,7 @@ export default function MasterclassPage() {
           font-size: 1rem;
           line-height: 1.5;
         }
-        .feature-list li::before {
+        .included-list li::before {
           content: '';
           position: absolute;
           left: 0;
@@ -437,47 +688,74 @@ export default function MasterclassPage() {
           background: #D4A843;
           border-radius: 50%;
         }
-        .feature-list li:first-child {
-          font-weight: 700;
-          font-size: 1.05rem;
-          margin-bottom: 1rem;
-        }
-        .feature-desc {
-          color: #555555;
-          font-size: 0.95rem;
-          line-height: 1.5;
-          margin-bottom: 1.5rem;
-        }
 
-        /* ── Method / Credibility ────────────────────────────────── */
-        .method-text {
-          color: #555555;
-          font-size: 1rem;
+        /* ── Guarantee ───────────────────────────────────────────── */
+        .guarantee-section {
+          text-align: center;
+        }
+        .guarantee-text {
+          font-size: 1.1rem;
+          color: #000000;
           line-height: 1.6;
         }
 
-        /* ── CTA Section ─────────────────────────────────────────── */
-        .cta-section {
+        /* ── Pricing ─────────────────────────────────────────────── */
+        .pricing-section {
           text-align: center;
         }
-        .cta-headline {
+        .pricing-card {
+          border: 2px solid #D4A843;
+          border-radius: 12px;
+          padding: 2rem 1.5rem;
+          background: #FAFAFA;
+        }
+        .pricing-old {
+          color: #888888;
+          font-size: 1rem;
+          margin-bottom: 0.25rem;
+        }
+        .strikethrough {
+          text-decoration: line-through;
+        }
+        .pricing-current {
           font-family: var(--font-oswald), sans-serif;
-          font-size: clamp(1.8rem, 6vw, 2.8rem);
           font-weight: 700;
+          font-size: 1.1rem;
           color: #000000;
-          line-height: 1.15;
           margin-bottom: 0.75rem;
         }
-        .cta-sub {
+        .pricing-amount {
+          font-size: 2rem;
           color: #D4A843;
-          font-weight: 600;
-          font-size: 1.1rem;
-          margin-bottom: 1.5rem;
         }
-        .cta-note {
+        .pricing-urgency {
           color: #555555;
-          font-size: 0.85rem;
-          margin-top: 0.75rem;
+          font-size: 0.9rem;
+          line-height: 1.5;
+          margin-bottom: 1.25rem;
+        }
+
+        /* ── FAQ ─────────────────────────────────────────────────── */
+        .faq-list {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        .faq-item {
+          border-bottom: 1px solid #EEE;
+          padding-bottom: 1rem;
+        }
+        .faq-q {
+          font-family: var(--font-oswald), sans-serif;
+          font-weight: 700;
+          font-size: 1.05rem;
+          color: #000000;
+          margin-bottom: 0.4rem;
+        }
+        .faq-a {
+          color: #444444;
+          font-size: 0.95rem;
+          line-height: 1.5;
         }
 
         /* ── Results Grid ────────────────────────────────────────── */
@@ -524,6 +802,19 @@ export default function MasterclassPage() {
           line-height: 1.4;
         }
 
+        /* ── CTA Section ─────────────────────────────────────────── */
+        .cta-section {
+          text-align: center;
+        }
+        .cta-headline {
+          font-family: var(--font-oswald), sans-serif;
+          font-size: clamp(1.8rem, 6vw, 2.8rem);
+          font-weight: 700;
+          color: #000000;
+          line-height: 1.15;
+          margin-bottom: 1.25rem;
+        }
+
         /* ── Trust Line ───────────────────────────────────────────── */
         .trust-line {
           color: #555555;
@@ -538,7 +829,7 @@ export default function MasterclassPage() {
             padding: 2.5rem 2rem;
           }
           .hero {
-            padding: 5rem 2rem 1.5rem;
+            padding: 5rem 2rem 2.5rem;
           }
           .hero-headline {
             font-size: 3.5rem;
@@ -555,6 +846,12 @@ export default function MasterclassPage() {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
+          }
+          .compare-grid {
+            flex-direction: row;
+          }
+          .compare-block {
+            flex: 1;
           }
         }
       `}</style>
