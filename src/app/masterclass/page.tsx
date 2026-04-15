@@ -219,35 +219,6 @@ export default function MasterclassPage() {
         <EnrollButton />
       </section>
 
-      {/* ── MEET THE COACH ────────────────────────────────────────── */}
-      <section className="section coach-section">
-        <SectionLabel text="MEET THE COACH BEHIND CALIBRATION" />
-
-        <div className="coach-photo-wrap">
-          <img
-            src="/players/tommy-coach.jpg"
-            alt="Coach Tommy Tempesta"
-            className="coach-photo"
-          />
-        </div>
-
-        <p className="coach-name">Tommy Tempesta</p>
-        <p className="coach-title">NBA Coach &amp; Biomechanics Specialist</p>
-
-        <p className="coach-bio">
-          With over 25 years of research and application at the highest levels of basketball, Coach Tommy has developed the shooting calibration system used by NBA players worldwide.
-        </p>
-
-        <p className="coach-work-label">His Work Includes:</p>
-        <ul className="coach-work-list">
-          <li>Coaching NBA players including Tobias Harris, OG Anunoby, Paul Reed, Moses Brown, and Tyler Burton</li>
-          <li>Consulting for NBA and NCAA teams like the Mavericks and Auburn University on player development and shooting calibration</li>
-          <li>Pioneering the Basketball Biomechanics methodology that revolutionizes how players learn to shoot</li>
-        </ul>
-
-        <EnrollButton />
-      </section>
-
       {/* ── VISUAL EVIDENCE ─────────────────────────────────────────── */}
       <section className="section">
         <SectionLabel text="VISUAL EVIDENCE" />
@@ -273,6 +244,33 @@ export default function MasterclassPage() {
               />
             </div>
           ))}
+        </div>
+
+        {/* ── MEET THE COACH (inline) ──────────────────────────────── */}
+        <div className="coach-inline">
+          <SectionLabel text="MEET THE COACH BEHIND CALIBRATION" />
+
+          <div className="coach-photo-wrap">
+            <img
+              src="/players/tommy-coach.jpg"
+              alt="Coach Tommy Tempesta"
+              className="coach-photo"
+            />
+          </div>
+
+          <p className="coach-name">Tommy Tempesta</p>
+          <p className="coach-title">NBA Coach &amp; Biomechanics Specialist</p>
+
+          <p className="coach-bio">
+            With over 25 years of research and application at the highest levels of basketball, Coach Tommy has developed the shooting calibration system used by NBA players worldwide.
+          </p>
+
+          <p className="coach-work-label">His Work Includes:</p>
+          <ul className="coach-work-list">
+            <li>Coaching NBA players including Tobias Harris, OG Anunoby, Paul Reed, Moses Brown, and Tyler Burton</li>
+            <li>Consulting for NBA and NCAA teams like the Mavericks and Auburn University on player development and shooting calibration</li>
+            <li>Pioneering the Basketball Biomechanics methodology that revolutionizes how players learn to shoot</li>
+          </ul>
         </div>
 
         <div className="youtube-section">
@@ -590,8 +588,12 @@ export default function MasterclassPage() {
         }
 
         /* ── Coach Section ───────────────────────────────────────── */
-        .coach-section {
+        .coach-inline {
           text-align: center;
+          margin-top: 2rem;
+          margin-bottom: 2rem;
+          padding-top: 2rem;
+          border-top: 1px solid #EEE;
         }
         .coach-photo-wrap {
           width: 240px;
