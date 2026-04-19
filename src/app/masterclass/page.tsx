@@ -99,15 +99,7 @@ export default function MasterclassPage() {
         <p className="hero-sub">
           14 days to calibration. A lifetime of confidence from anywhere on the court.
         </p>
-        <p className="hero-body">
-          <strong>Your form isn&rsquo;t the problem. What you explore is.</strong>
-        </p>
-        <p className="hero-body">
-          Most shooting programs teach you to fix your mechanics. We teach your system to adapt to any shot you&rsquo;ll ever take in a game.
-        </p>
-        <p className="hero-body hero-proof">
-          An NBA Vet went from 18% to 47%. Thousands of players calibrated. Available to you now.
-        </p>
+
         <div className="vsl-embed">
           <video
             controls
@@ -119,6 +111,19 @@ export default function MasterclassPage() {
             Your browser does not support the video tag.
           </video>
         </div>
+
+        <p className="hero-body">
+          <strong>Your form isn&rsquo;t the problem.<br />What you explore is.</strong>
+        </p>
+        <p className="hero-body">
+          Most shooting programs try to fix your mechanics.
+        </p>
+        <p className="hero-body">
+          We teach your system to adapt to any shot you&rsquo;ll ever take in a game.
+        </p>
+        <p className="hero-body hero-proof">
+          An NBA Vet went from 18% to 47%. Thousands of players calibrated. Available to you now.
+        </p>
 
         <EnrollButton />
       </section>
