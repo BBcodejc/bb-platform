@@ -112,18 +112,37 @@ export default function MasterclassPage() {
           </video>
         </div>
 
-        <p className="hero-body">
-          <strong>Your form isn&rsquo;t the problem.<br />What you explore is.</strong>
-        </p>
-        <p className="hero-body">
-          Most shooting programs try to fix your mechanics.
-        </p>
-        <p className="hero-body">
-          We teach your system to adapt to any shot you&rsquo;ll ever take in a game.
-        </p>
-        <p className="hero-body hero-proof">
-          An NBA Vet went from 18% to 47%. Thousands of players calibrated. Available to you now.
-        </p>
+        <EnrollButton />
+
+        <div className="hero-copy-block">
+          <p className="hero-body">
+            <strong>Your shot isn&rsquo;t broken.<br />You&rsquo;ve just never been calibrated.</strong>
+          </p>
+          <p className="hero-body">
+            Most players are taught to fix their form.
+          </p>
+          <p className="hero-body">
+            That&rsquo;s not how the game works.
+          </p>
+          <p className="hero-body">
+            We teach your system to adapt<br />so you can deliver the ball to the target<br />from any position, under any condition.
+          </p>
+          <p className="hero-body hero-proof">
+            18% &rarr; 47%.
+          </p>
+          <p className="hero-body hero-proof">
+            In-season.
+          </p>
+          <p className="hero-body hero-proof">
+            Without changing mechanics.
+          </p>
+          <p className="hero-body hero-proof">
+            Thousands of players calibrated.
+          </p>
+          <p className="hero-body hero-proof" style={{ fontSize: '1.15rem' }}>
+            <strong>Now it&rsquo;s your turn.</strong>
+          </p>
+        </div>
 
         <EnrollButton />
       </section>
@@ -459,6 +478,12 @@ export default function MasterclassPage() {
         .hero-proof {
           color: #D4A843;
           font-weight: 600;
+          margin-bottom: 1.5rem;
+        }
+
+        /* ── Hero Copy Block ─────────────────────────────────────── */
+        .hero-copy-block {
+          margin-top: 1.5rem;
           margin-bottom: 1.5rem;
         }
 
