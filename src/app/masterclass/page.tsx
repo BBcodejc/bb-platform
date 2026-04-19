@@ -108,6 +108,18 @@ export default function MasterclassPage() {
         <p className="hero-body hero-proof">
           An NBA Vet went from 18% to 47%. Thousands of players calibrated. Available to you now.
         </p>
+        <div className="vsl-embed">
+          <video
+            controls
+            playsInline
+            preload="metadata"
+            className="vsl-video"
+          >
+            <source src="/vsl.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
         <EnrollButton />
       </section>
 
@@ -443,6 +455,20 @@ export default function MasterclassPage() {
           color: #D4A843;
           font-weight: 600;
           margin-bottom: 1.5rem;
+        }
+
+        /* ── VSL Video ───────────────────────────────────────────── */
+        .vsl-embed {
+          margin-bottom: 1.5rem;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 2px solid #D4A843;
+          background: #000;
+        }
+        .vsl-video {
+          display: block;
+          width: 100%;
+          height: auto;
         }
 
         /* ── Enroll Button ───────────────────────────────────────── */
