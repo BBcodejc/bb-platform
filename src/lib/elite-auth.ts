@@ -138,6 +138,7 @@ export async function verifyEliteRequest(
 export function generateAccessToken(firstName: string, lastName: string): string {
   const initials = ((firstName?.[0] || 'x') + (lastName?.[0] || 'x')).toLowerCase();
   const year = new Date().getFullYear();
-  const rand = Math.random().toString(36).substring(2, 6);
+  // Use crypto.randomUUID for 128 bits of cryptographic entropy
+  const rand = crypto.randomUUID().replace(/-/g, '').substring(0, 16);
   return `${initials}-bb-${year}-${rand}`;
 }

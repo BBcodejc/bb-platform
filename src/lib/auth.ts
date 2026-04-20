@@ -68,6 +68,17 @@ export async function requireAdmin(request: NextRequest): Promise<{
 
   if (error) return { user: null, error };
 
+  // Actually verify user is an admin — not just authenticated
+  if (!user?.email || !ADMIN_EMAILS.includes(user.email)) {
+    return {
+      user: null,
+      error: NextResponse.json(
+        { error: 'Forbidden — admin access required' },
+        { status: 403 }
+      ),
+    };
+  }
+
   return { user, error: null };
 }
 

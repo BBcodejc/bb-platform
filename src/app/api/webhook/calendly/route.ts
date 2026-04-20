@@ -1,12 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase';
+import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
+
+/**
+ * Verify Calendly webhook signature.
+ * If CALENDLY_WEBHOOK_SECRET is not set, reject all requests.
+ */
+function verifyCalendlySignature(request: NextRequest, rawBody: string): boolean {
+  const secret = process.env.CALENDLY_WEBHOOK_SECRET;
+
+  // If no secret configured, reject — fail closed
+  if (!secret) {
+    console.error('[Calendly Webhook] CALENDLY_WEBHOOK_SECRET not configured — rejecting request');
+    return false;
+  }
+
+  const signature = request.headers.get('calendly-webhook-signature');
+  if (!signature) return false;
+
+  // Calendly signature format: t=timestamp,v1=hash
+  const parts: Record<string, string> = {};
+  for (const part of signature.split(',')) {
+    const [key, value] = part.split('=');
+    if (key && value) parts[key] = value;
+  }
+
+  const timestamp = parts['t'];
+  const expectedSig = parts['v1'];
+  if (!timestamp || !expectedSig) return false;
+
+  // Reject if timestamp is older than 5 minutes (replay attack protection)
+  const tolerance = 5 * 60 * 1000; // 5 minutes
+  if (Math.abs(Date.now() - parseInt(timestamp) * 1000) > tolerance) {
+    console.error('[Calendly Webhook] Timestamp too old — possible replay attack');
+    return false;
+  }
+
+  const payload = `${timestamp}.${rawBody}`;
+  const computedSig = crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(expectedSig),
+    Buffer.from(computedSig)
+  );
+}
 
 // POST /api/webhook/calendly — called by Calendly when someone books
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const rawBody = await request.text();
+
+    // Verify webhook signature
+    if (!verifyCalendlySignature(request, rawBody)) {
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    }
+
+    const body = JSON.parse(rawBody);
 
     // Calendly sends the event type in the top-level `event` field
     const eventType = body.event;

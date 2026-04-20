@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,6 +10,10 @@ export async function PATCH(
   { params }: { params: { slug: string } }
 ) {
   try {
+    // Admin-only: verify the user is an authenticated admin
+    const { user, error: authError } = await requireAdmin(request);
+    if (authError) return authError;
+
     const supabase = createServiceRoleClient();
     const { slug } = params;
     const body = await request.json();

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase';
+import { verifyEliteRequest } from '@/lib/elite-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,8 +10,15 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const supabase = createServiceRoleClient();
     const { slug } = params;
+
+    // Auth check — must be admin or the player themselves
+    const auth = await verifyEliteRequest(request, slug);
+    if (!auth.player) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const supabase = createServiceRoleClient();
 
     // Get elite player
     const { data: player, error: playerError } = await supabase
