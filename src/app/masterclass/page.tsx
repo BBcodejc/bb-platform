@@ -475,11 +475,15 @@ export default function MasterclassPage() {
       {/* ── PRICING ────────────────────────────────────────────────── */}
       <section className="section pricing-section">
         <SectionLabel text="PRICING" />
-        <div className="pricing-card">
-          <p className="pricing-old">Regular Price: <span className="strikethrough">$299</span></p>
-          <p className="pricing-current">Off-Season Price: <span className="pricing-amount">$149</span></p>
-          <p className="pricing-urgency">Early access ends April 30th. Join now and lock in the off-season rate forever.</p>
-          <EnrollButton />
+        <div className="pricing-banner">
+          <p className="pricing-banner-text">
+            This Masterclass is currently <span className="pricing-banner-gold">$150</span>. On May 1st, the price goes to $250.
+          </p>
+          <p className="pricing-banner-bold">This is not a sale. This is the last window at this price.</p>
+          <CountdownDisplay />
+          <div style={{ marginTop: '1rem' }}>
+            <EnrollButton />
+          </div>
         </div>
       </section>
 
@@ -999,36 +1003,27 @@ export default function MasterclassPage() {
         .pricing-section {
           text-align: center;
         }
-        .pricing-card {
-          border: 2px solid #D4A843;
+        .pricing-banner {
+          background: #000000;
           border-radius: 12px;
-          padding: 2rem 1.5rem;
-          background: #FAFAFA;
+          padding: 1.5rem 1.25rem;
+          text-align: center;
         }
-        .pricing-old {
-          color: #888888;
-          font-size: 1rem;
-          margin-bottom: 0.25rem;
-        }
-        .strikethrough {
-          text-decoration: line-through;
-        }
-        .pricing-current {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 1.1rem;
-          color: #000000;
-          margin-bottom: 0.75rem;
-        }
-        .pricing-amount {
-          font-size: 2rem;
-          color: #D4A843;
-        }
-        .pricing-urgency {
-          color: #555555;
-          font-size: 0.9rem;
+        .pricing-banner-text {
+          color: #FFFFFF;
+          font-size: 0.95rem;
           line-height: 1.5;
-          margin-bottom: 1.25rem;
+          margin-bottom: 0.4rem;
+        }
+        .pricing-banner-gold {
+          color: #D4A843;
+          font-weight: 700;
+        }
+        .pricing-banner-bold {
+          color: #D4A843;
+          font-weight: 700;
+          font-size: 0.95rem;
+          margin-bottom: 0.75rem;
         }
 
         /* ── FAQ ─────────────────────────────────────────────────── */
