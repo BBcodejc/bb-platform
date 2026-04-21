@@ -1,6 +1,96 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
+// ─── DEADLINE ────────────────────────────────────────────────────────────────
+// May 1, 2026 12:00 AM Eastern Time (UTC-4 in EDT)
+const DEADLINE = new Date('2026-05-01T04:00:00Z').getTime();
+
+function useCountdown() {
+  const [mounted, setMounted] = useState(false);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    setMounted(true);
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const diff = Math.max(0, DEADLINE - now);
+  const expired = diff === 0;
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+
+  return { days, hours, minutes, seconds, expired, mounted };
+}
+
+function CountdownDisplay() {
+  const { days, hours, minutes, seconds, expired, mounted } = useCountdown();
+
+  if (!mounted) {
+    return <span className="countdown-numbers">&nbsp;</span>;
+  }
+
+  if (expired) {
+    return <span className="countdown-expired">The price is now $250.</span>;
+  }
+
+  return (
+    <span className="countdown-numbers">
+      {days} DAYS : {String(hours).padStart(2, '0')} HOURS : {String(minutes).padStart(2, '0')} MIN : {String(seconds).padStart(2, '0')} SEC
+    </span>
+  );
+}
+
+// ─── STICKY BANNER ───────────────────────────────────────────────────────────
+
+function StickyBanner() {
+  const { expired } = useCountdown();
+
+  return (
+    <div className="urgency-banner urgency-banner--sticky">
+      {expired ? (
+        <p className="urgency-text">
+          <span className="urgency-gold">The price is now $250.</span>
+        </p>
+      ) : (
+        <>
+          <p className="urgency-text">
+            This Masterclass is currently $150. On May 1st, the price goes to $250.{' '}
+            <span className="urgency-gold">This is not a sale. This is the last window at this price.</span>
+          </p>
+          <CountdownDisplay />
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── INLINE COUNTDOWN (above enroll buttons) ────────────────────────────────
+
+function InlineCountdown() {
+  const { expired } = useCountdown();
+
+  return (
+    <div className="urgency-banner urgency-banner--inline">
+      {expired ? (
+        <p className="urgency-text">
+          <span className="urgency-gold">The price is now $250.</span>
+        </p>
+      ) : (
+        <>
+          <p className="urgency-text">
+            $150 ends May 1st.{' '}
+            <span className="urgency-gold">This is the last window at this price.</span>
+          </p>
+          <CountdownDisplay />
+        </>
+      )}
+    </div>
+  );
+}
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
@@ -88,6 +178,8 @@ export default function MasterclassPage() {
 
   return (
     <main className="page">
+      <StickyBanner />
+
       {/* ── HERO ────────────────────────────────────────────────────── */}
       <section className="hero">
         <img
@@ -420,6 +512,53 @@ export default function MasterclassPage() {
 
       {/* ── STYLES ──────────────────────────────────────────────────── */}
       <style jsx global>{`
+        /* ── Urgency Banner ──────────────────────────────────────── */
+        .urgency-banner {
+          background: #000000;
+          text-align: center;
+          padding: 0.75rem 1.25rem;
+        }
+        .urgency-banner--sticky {
+          position: sticky;
+          top: 0;
+          z-index: 1000;
+          border-bottom: 1px solid #222;
+          padding: 1rem 1.25rem;
+        }
+        .urgency-banner--inline {
+          border-radius: 8px;
+          margin-bottom: 0.75rem;
+          padding: 0.6rem 1rem;
+        }
+        .urgency-text {
+          color: #FFFFFF;
+          font-size: 0.85rem;
+          line-height: 1.5;
+          margin-bottom: 0.4rem;
+        }
+        .urgency-gold {
+          color: #D4A843;
+          font-weight: 700;
+        }
+        .countdown-numbers {
+          font-family: var(--font-oswald), sans-serif;
+          font-weight: 700;
+          font-size: 1rem;
+          color: #D4A843;
+          letter-spacing: 0.05em;
+        }
+        .countdown-expired {
+          font-family: var(--font-oswald), sans-serif;
+          font-weight: 700;
+          font-size: 1.05rem;
+          color: #D4A843;
+        }
+        .enroll-wrapper {
+          width: 100%;
+          max-width: 400px;
+          margin: 0 auto;
+        }
+
         /* ── Reset & Base ─────────────────────────────────────────── */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -445,7 +584,7 @@ export default function MasterclassPage() {
         }
         .hero {
           position: relative;
-          padding: 4.5rem 1.5rem 2rem;
+          padding: 3.5rem 1.5rem 2rem;
           display: flex;
           flex-direction: column;
           align-items: center;
