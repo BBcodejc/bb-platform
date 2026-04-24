@@ -33,7 +33,7 @@ export default function ProgramsPage() {
             <div className="label">Week Minimum</div>
           </div>
         </div>
-        <a href="#apply" className="cta-btn">Apply Now</a>
+        <a href="/inquiry" className="cta-btn">Apply Now</a>
       </section>
 
       {/* THE GAP */}
@@ -297,7 +297,7 @@ export default function ProgramsPage() {
             This is a 12-week minimum commitment. Pricing is based on scope, roster size, and level of implementation. We work with a limited number of programs at a time to ensure quality.
           </div>
           <div className="cta-spots">Limited spots remaining for this offseason</div>
-          <a href="mailto:bbcodejc@gmail.com?subject=Program%20Implementation%20Inquiry" className="cta-btn" style={{ animation: 'none' }}>Apply Now</a>
+          <a href="/inquiry" className="cta-btn" style={{ animation: 'none' }}>Apply Now</a>
           <p className="cta-footnote">Or DM @basketballbiomechanics with &ldquo;PLAN&rdquo; to start the conversation.</p>
         </div>
       </section>
