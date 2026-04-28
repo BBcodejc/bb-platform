@@ -1,44 +1,29 @@
 import type { Metadata } from 'next';
-import { Inter, Barlow_Condensed, DM_Sans } from 'next/font/google';
+import { Inter, DM_Sans, Oswald } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
-const barlow = Barlow_Condensed({
-  subsets: ['latin'],
-  weight: ['700', '800'],
-  variable: '--font-barlow',
-  display: 'swap',
-});
 const dmSans = DM_Sans({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-dm-sans',
   display: 'swap',
 });
+const oswald = Oswald({
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  variable: '--font-oswald',
+  display: 'swap',
+});
 
-// Google Analytics Measurement ID - you'll need to create this in Google Analytics
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export const metadata: Metadata = {
   title: 'Basketball Biomechanics | Method-Based Shooting Development',
   description:
-    'Get your personalized BB Shooting Profile. We assess miss profiles, energy patterns, and deep distance calibration to build custom protocols that actually work.',
-  keywords: [
-    'basketball shooting',
-    'shooting coach',
-    'basketball training',
-    'shooting form',
-    'basketball biomechanics',
-    'shooting development',
-  ],
-  openGraph: {
-    title: 'Basketball Biomechanics | Method-Based Shooting Development',
-    description:
-      'Get your personalized BB Shooting Profile with custom protocols based on your miss profile and energy patterns.',
-    type: 'website',
-  },
+    'Calibration-based shooting development used by NBA players. The Shooting Calibration Masterclass.',
 };
 
 export default function RootLayout({
@@ -47,9 +32,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
-        {/* Google Analytics */}
         {GA_MEASUREMENT_ID && (
           <>
             <script
@@ -71,7 +55,7 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className={`${inter.className} ${barlow.variable} ${dmSans.variable} bg-bb-black text-white antialiased`}>
+      <body className={`${inter.className} ${dmSans.variable} ${oswald.variable} antialiased`}>
         {children}
         <Analytics />
         <SpeedInsights />
