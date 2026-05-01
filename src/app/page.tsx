@@ -25,29 +25,56 @@ export default function HomePage() {
           <Link href="/masterclass" className="btn btn-primary">
             ENROLL IN THE MASTERCLASS
           </Link>
-          <Link href="/programs" className="btn btn-secondary">
-            FOR PROGRAMS &amp; ORGANIZATIONS
+          <Link href="/apply" className="btn btn-secondary">
+            APPLY FOR COACHING
           </Link>
         </div>
+      </section>
+
+      {/* WHAT THIS IS */}
+      <section className="what-section">
+        <p className="eyebrow center">WHAT THIS IS</p>
+        <h2 className="what-title">
+          Your shot isn&rsquo;t broken.<br />
+          You&rsquo;ve just never been <span className="gold">calibrated.</span>
+        </h2>
+        <p className="what-body">
+          Basketball Biomechanics is a calibration-based shooting development system built by Coach Tommy Tempesta over 25+ years of research. We don&rsquo;t fix your form. We teach your nervous system to adapt to any shot you&rsquo;ll ever take in a game.
+        </p>
+        <p className="what-body">
+          Trusted by NBA players, D1 programs, and HS players worldwide.
+        </p>
       </section>
 
       {/* CARDS */}
       <section className="cards">
         <Link href="/masterclass" className="card">
-          <div className="card-eyebrow">FOR PLAYERS</div>
+          <div className="card-eyebrow">FOR PLAYERS &middot; SELF-PACED</div>
           <div className="card-title">Shooting Calibration Masterclass</div>
           <div className="card-body">
             14 days to calibration. A lifetime of confidence from anywhere on the court. Self-paced video protocols. Lifetime access.
           </div>
-          <div className="card-cta">Learn more &rarr;</div>
+          <div className="card-price">$150</div>
+          <div className="card-cta">Enroll now &rarr;</div>
+        </Link>
+
+        <Link href="/apply" className="card">
+          <div className="card-eyebrow">FOR PLAYERS &middot; 1-ON-1</div>
+          <div className="card-title">Apply for Coaching</div>
+          <div className="card-body">
+            Direct work with Coach Tommy and the BB team. Custom assessment, calibration plan, and ongoing development. Limited spots.
+          </div>
+          <div className="card-price">By application</div>
+          <div className="card-cta">Apply now &rarr;</div>
         </Link>
 
         <Link href="/programs" className="card">
-          <div className="card-eyebrow">FOR PROGRAMS</div>
+          <div className="card-eyebrow">FOR PROGRAMS &middot; TEAMS</div>
           <div className="card-title">Program Implementation</div>
           <div className="card-body">
             12-week embedded engagement for NBA, NCAA, and HS programs. Assessment-based, system-wide implementation.
           </div>
+          <div className="card-price">By application</div>
           <div className="card-cta">Apply now &rarr;</div>
         </Link>
       </section>
@@ -190,12 +217,16 @@ export default function HomePage() {
         .cards {
           position: relative;
           z-index: 1;
-          max-width: 1000px;
+          max-width: 1100px;
           margin: 0 auto;
-          padding: 48px 0;
+          padding: 32px 0 48px;
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 24px;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 20px;
+        }
+
+        @media (max-width: 920px) {
+          .cards { grid-template-columns: 1fr; max-width: 600px; }
         }
 
         .card {
@@ -238,6 +269,15 @@ export default function HomePage() {
           margin-bottom: 20px;
         }
 
+        .card-price {
+          font-family: var(--font-oswald), sans-serif;
+          font-weight: 700;
+          font-size: 14px;
+          letter-spacing: 1px;
+          color: #fff;
+          margin-bottom: 12px;
+        }
+
         .card-cta {
           font-family: var(--font-oswald), sans-serif;
           font-weight: 700;
@@ -245,6 +285,39 @@ export default function HomePage() {
           letter-spacing: 2px;
           color: var(--gold);
           text-transform: uppercase;
+        }
+
+        .what-section {
+          position: relative;
+          z-index: 1;
+          max-width: 760px;
+          margin: 0 auto;
+          padding: 64px 0 32px;
+          text-align: center;
+        }
+
+        .eyebrow.center {
+          margin-bottom: 16px;
+        }
+
+        .what-title {
+          font-family: var(--font-oswald), sans-serif;
+          font-weight: 700;
+          font-size: clamp(28px, 4.5vw, 44px);
+          line-height: 1.15;
+          text-transform: uppercase;
+          letter-spacing: -0.5px;
+          margin-bottom: 24px;
+        }
+
+        .what-body {
+          color: var(--gray);
+          font-size: 16px;
+          line-height: 1.7;
+          margin-bottom: 16px;
+          max-width: 640px;
+          margin-left: auto;
+          margin-right: auto;
         }
 
         .footer {
