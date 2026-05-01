@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 
 // ─── DEADLINE ────────────────────────────────────────────────────────────────
-// May 1, 2026 12:00 AM Eastern Time (UTC-4 in EDT)
-const DEADLINE = new Date('2026-05-01T04:00:00Z').getTime();
+// 24 hours from when this code was deployed
+const DEADLINE = new Date('2026-05-02T20:00:00Z').getTime();
 
 function useCountdown() {
   const [mounted, setMounted] = useState(false);
@@ -58,7 +58,7 @@ function StickyBanner() {
       ) : (
         <>
           <p className="urgency-text">
-            This Masterclass is currently $150. On May 1st, the price goes to $250.{' '}
+            Price is going up in 24 hours.{' '}
             <span className="urgency-gold">This is not a sale. This is the last window at this price.</span>
           </p>
           <CountdownDisplay />
@@ -82,7 +82,7 @@ function InlineCountdown() {
       ) : (
         <>
           <p className="urgency-text">
-            $150 ends May 1st.{' '}
+            Price is going up in 24 hours.{' '}
             <span className="urgency-gold">This is the last window at this price.</span>
           </p>
           <CountdownDisplay />
@@ -477,7 +477,7 @@ export default function MasterclassPage() {
         <SectionLabel text="PRICING" />
         <div className="pricing-banner">
           <p className="pricing-banner-text">
-            This Masterclass is currently <span className="pricing-banner-gold">$150</span>. On May 1st, the price goes to $250.
+            This Masterclass is currently <span className="pricing-banner-gold">$150</span>. Price is going up in 24 hours.
           </p>
           <p className="pricing-banner-bold">This is not a sale. This is the last window at this price.</p>
           <CountdownDisplay />
