@@ -1,93 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
-// ─── DEADLINE ────────────────────────────────────────────────────────────────
-// 24 hours from when this code was deployed
-const DEADLINE = new Date('2026-05-02T20:00:00Z').getTime();
-
-function useCountdown() {
-  const [mounted, setMounted] = useState(false);
-  const [now, setNow] = useState(Date.now());
-
-  useEffect(() => {
-    setMounted(true);
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  const diff = Math.max(0, DEADLINE - now);
-  const expired = diff === 0;
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((diff / (1000 * 60)) % 60);
-  const seconds = Math.floor((diff / 1000) % 60);
-
-  return { days, hours, minutes, seconds, expired, mounted };
-}
-
-function CountdownDisplay() {
-  const { days, hours, minutes, seconds, expired, mounted } = useCountdown();
-
-  if (!mounted) {
-    return <span className="countdown-numbers">&nbsp;</span>;
-  }
-
-  if (expired) {
-    return <span className="countdown-expired">The price is now $250.</span>;
-  }
-
-  return (
-    <span className="countdown-numbers">
-      {days} DAYS : {String(hours).padStart(2, '0')} HOURS : {String(minutes).padStart(2, '0')} MIN : {String(seconds).padStart(2, '0')} SEC
-    </span>
-  );
-}
+import { useEffect } from 'react';
 
 // ─── STICKY BANNER ───────────────────────────────────────────────────────────
 
 function StickyBanner() {
-  const { expired } = useCountdown();
-
   return (
     <div className="urgency-banner urgency-banner--sticky">
-      {expired ? (
-        <p className="urgency-text">
-          <span className="urgency-gold">The price is now $250.</span>
-        </p>
-      ) : (
-        <>
-          <p className="urgency-text">
-            Price is going up in 24 hours.{' '}
-            <span className="urgency-gold">This is not a sale. This is the last window at this price.</span>
-          </p>
-          <CountdownDisplay />
-        </>
-      )}
-    </div>
-  );
-}
-
-// ─── INLINE COUNTDOWN (above enroll buttons) ────────────────────────────────
-
-function InlineCountdown() {
-  const { expired } = useCountdown();
-
-  return (
-    <div className="urgency-banner urgency-banner--inline">
-      {expired ? (
-        <p className="urgency-text">
-          <span className="urgency-gold">The price is now $250.</span>
-        </p>
-      ) : (
-        <>
-          <p className="urgency-text">
-            Price is going up in 24 hours.{' '}
-            <span className="urgency-gold">This is the last window at this price.</span>
-          </p>
-          <CountdownDisplay />
-        </>
-      )}
+      <p className="urgency-text">
+        These protocols work in <span className="urgency-gold">one session.</span>
+      </p>
     </div>
   );
 }
@@ -477,10 +399,9 @@ export default function MasterclassPage() {
         <SectionLabel text="PRICING" />
         <div className="pricing-banner">
           <p className="pricing-banner-text">
-            This Masterclass is currently <span className="pricing-banner-gold">$150</span>. Price is going up in 24 hours.
+            Get the Shooting Calibration Masterclass for <span className="pricing-banner-gold">$250</span>.
           </p>
-          <p className="pricing-banner-bold">This is not a sale. This is the last window at this price.</p>
-          <CountdownDisplay />
+          <p className="pricing-banner-bold">These protocols work in one session.</p>
           <div style={{ marginTop: '1rem' }}>
             <EnrollButton />
           </div>
