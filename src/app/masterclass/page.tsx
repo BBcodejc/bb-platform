@@ -399,7 +399,7 @@ export default function MasterclassPage() {
         <SectionLabel text="PRICING" />
         <div className="pricing-banner">
           <p className="pricing-banner-text">
-            Get the Shooting Calibration Masterclass for <span className="pricing-banner-gold">$250</span>.
+            Get the Shooting Calibration Masterclass for <span className="pricing-banner-gold">$297</span>.
           </p>
           <p className="pricing-banner-bold">These protocols work in one session.</p>
           <div style={{ marginTop: '1rem' }}>
