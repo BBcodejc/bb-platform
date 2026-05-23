@@ -18,7 +18,7 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: 'Shooting Calibration Masterclass | Basketball Biomechanics',
   description:
-    'Calibrate your shot in 14 days. The exact protocols used with NBA players. $150 lifetime access.',
+    'Calibrate your shot in 14 days. The exact protocols used with NBA players. $297 lifetime access.',
   keywords: [
     'shooting calibration',
     'basketball shooting course',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Calibrate Your Shot In 14 Days | Basketball Biomechanics',
     description:
-      'The exact protocols used with NBA players. $150. Lifetime access.',
+      'The exact protocols used with NBA players. $297. Lifetime access.',
     type: 'website',
   },
 };

@@ -54,7 +54,7 @@ export default function HomePage() {
           <div className="card-body">
             14 days to calibration. A lifetime of confidence from anywhere on the court. Self-paced video protocols. Lifetime access.
           </div>
-          <div className="card-price">$150</div>
+          <div className="card-price">$297</div>
           <div className="card-cta">Enroll now &rarr;</div>
         </Link>
 
