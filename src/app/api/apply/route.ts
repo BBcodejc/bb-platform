@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const TO_EMAIL = 'bbcodejc@gmail.com';
-const FROM_EMAIL = 'BB Apply <onboarding@resend.dev>';
+const FROM_EMAIL = 'BB Apply <jake@trainwjc.com>';
 
 // Simple in-memory rate limit per IP — prevents form spam
 const submissions = new Map<string, number[]>();

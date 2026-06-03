@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const TO_EMAIL = 'bbcodejc@gmail.com';
-const FROM_EMAIL = 'BB San Diego <onboarding@resend.dev>';
+const FROM_EMAIL = 'BB San Diego <jake@trainwjc.com>';
 
 // Simple per-IP rate limit
 const submissions = new Map<string, number[]>();
