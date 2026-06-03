@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const TO_EMAIL = 'bbcodejc@gmail.com';
-const FROM_EMAIL = 'BB San Diego <noreply@trainwjc.com>';
+const FROM_EMAIL = 'BB San Diego <onboarding@resend.dev>';
 
 // Simple per-IP rate limit
 const submissions = new Map<string, number[]>();
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       <p style="color:#888;font-size:12px;">Submitted from basketballbiomechanics.com/sandiego &middot; IP: ${escape(ip)}</p>
     `;
 
-    const { error } = await resend.emails.send({
+    const result = await resend.emails.send({
       from: FROM_EMAIL,
       to: TO_EMAIL,
       replyTo: email,
@@ -102,15 +102,26 @@ export async function POST(request: NextRequest) {
       html,
     });
 
-    if (error) {
-      console.error('Resend error:', error);
+    console.log('[sandiego] Resend result:', JSON.stringify(result));
+
+    if (result.error) {
+      console.error('[sandiego] Resend error:', result.error);
       return NextResponse.json(
         { error: 'Failed to send. Please try again or email bbcodejc@gmail.com directly.' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ ok: true });
+    if (!result.data?.id) {
+      console.error('[sandiego] No email ID returned:', result);
+      return NextResponse.json(
+        { error: 'Email send did not complete.' },
+        { status: 500 }
+      );
+    }
+
+    console.log(`[sandiego] Email sent — ID: ${result.data.id}`);
+    return NextResponse.json({ ok: true, id: result.data.id });
   } catch (err) {
     console.error('San Diego inquiry error:', err);
     return NextResponse.json(

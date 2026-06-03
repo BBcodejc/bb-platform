@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const TO_EMAIL = 'bbcodejc@gmail.com';
-const FROM_EMAIL = 'BB Apply <noreply@trainwjc.com>';
+const FROM_EMAIL = 'BB Apply <onboarding@resend.dev>';
 
 // Simple in-memory rate limit per IP — prevents form spam
 const submissions = new Map<string, number[]>();
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       <p style="color:#888;font-size:12px;">Submitted from basketballbiomechanics.com/apply &middot; IP: ${escape(ip)}</p>
     `;
 
-    const { error } = await resend.emails.send({
+    const result = await resend.emails.send({
       from: FROM_EMAIL,
       to: TO_EMAIL,
       replyTo: email,
@@ -113,15 +113,26 @@ export async function POST(request: NextRequest) {
       html,
     });
 
-    if (error) {
-      console.error('Resend error:', error);
+    console.log('[apply] Resend result:', JSON.stringify(result));
+
+    if (result.error) {
+      console.error('[apply] Resend error:', result.error);
       return NextResponse.json(
         { error: 'Failed to send. Please email bbcodejc@gmail.com directly.' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ ok: true });
+    if (!result.data?.id) {
+      console.error('[apply] No email ID returned:', result);
+      return NextResponse.json(
+        { error: 'Email send did not complete. Please email bbcodejc@gmail.com directly.' },
+        { status: 500 }
+      );
+    }
+
+    console.log(`[apply] Email sent successfully — ID: ${result.data.id}`);
+    return NextResponse.json({ ok: true, id: result.data.id });
   } catch (err) {
     console.error('Apply route error:', err);
     return NextResponse.json(
