@@ -1,7 +1,14 @@
 'use client';
 
+/* ============================================================
+   BB LANDING PAGE — Basketball Biomechanics (BB Code LLC)
+   Live /apply page. Reconfigure into variations (shooting, ball
+   handling, defense, offense, movement, off-season, in-season)
+   by editing ONLY the marked SWAP blocks. Structure stays identical.
+   Submissions POST to /api/apply (email + Google Sheet capture).
+   ============================================================ */
+
 import { useState } from 'react';
-import Link from 'next/link';
 
 export default function ApplyPage() {
   const [submitting, setSubmitting] = useState(false);
@@ -10,6 +17,10 @@ export default function ApplyPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!e.currentTarget.checkValidity()) {
+      e.currentTarget.reportValidity();
+      return;
+    }
     setError(null);
     setSubmitting(true);
 
@@ -29,354 +40,340 @@ export default function ApplyPage() {
         return;
       }
       setSubmitted(true);
-    } catch (err) {
+      window.scrollTo({ top: document.getElementById('apply')?.offsetTop || 0, behavior: 'smooth' });
+    } catch {
       setError('Network error. Please email bbcodejc@gmail.com directly.');
       setSubmitting(false);
     }
   }
 
   return (
-    <main className="apply">
-      <div className="bg-glow" />
+    <main className="bb">
 
-      <header className="header">
-        <Link href="/" className="logo">BASKETBALL BIOMECHANICS</Link>
+      {/* ============================================================
+          1. HERO  —  SWAP: headline + stacked impact lines.
+          ============================================================ */}
+      <header className="hero">
+        <div className="wrap">
+          {/* ===== BB LOGO ===== */}
+          <div className="logo">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="logo-img" src="/bb-logo-registered.png" alt="Basketball Biomechanics" />
+          </div>
+
+          {/* ===== SWAP: HEADLINE ===== */}
+          <h1>We find exactly what is limiting your game. Then we address it.</h1>
+
+          {/* ===== SWAP: STACKED IMPACT LINES ===== */}
+          <div className="hero-stack">
+            <span>Not in years.</span>
+            <span>Not in months.</span>
+            <span>In days.</span>
+          </div>
+
+          <p className="hero-support">
+            We provide solutions based on 25+ years of research with thousands of
+            NBA, NCAA, and high school athletes.
+          </p>
+
+          <a href="#apply" className="cta">Apply Now</a>
+        </div>
       </header>
 
-      <section className="hero">
-        <p className="eyebrow">APPLY</p>
-        <h1 className="headline">Tell us about you.</h1>
-        <p className="sub">
-          We work with a limited number of players, programs, and organizations at a time. Fill this out and we&rsquo;ll be in touch within 48 hours.
-        </p>
+      {/* ============================================================
+          APPLICATION FORM  —  moved high on the page. No prices, no tiers shown.
+          ============================================================ */}
+      <section id="apply">
+        <div className="wrap">
+          <div className="eyebrow">Apply</div>
+          <h2>Put your film through the lens.</h2>
+          <p className="apply-intro">
+            For consultation, apply here and our team will evaluate timing and fit.
+            Then you will get a response on advised next steps.
+          </p>
+
+          {submitted ? (
+            /* ===== THANK-YOU STATE ===== */
+            <div className="thanks">
+              <p>Application received. If it is a fit, we will reach out to put your film through the lens.</p>
+              <div className="closer">Measured. Not promised.</div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} noValidate>
+              {/* Honeypot — hidden from users, bots fill it */}
+              <input type="text" name="honeypot" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: '-9999px', opacity: 0 }} />
+
+              <div className="field">
+                <label htmlFor="name">Name</label>
+                <input id="name" name="name" type="text" required maxLength={80} autoComplete="name" />
+              </div>
+
+              <div className="field">
+                <label htmlFor="email">Email</label>
+                <input id="email" name="email" type="email" required maxLength={120} autoComplete="email" />
+              </div>
+
+              <div className="field">
+                <label htmlFor="role">Are you a player, parent, coach, or staff?</label>
+                <select id="role" name="role" required defaultValue="">
+                  <option value="" disabled>Select one</option>
+                  <option>Player</option>
+                  <option>Parent</option>
+                  <option>Coach</option>
+                  <option>Staff</option>
+                </select>
+              </div>
+
+              <div className="field">
+                <label htmlFor="level">Level</label>
+                <select id="level" name="level" required defaultValue="">
+                  <option value="" disabled>Select one</option>
+                  <option>Youth</option>
+                  <option>High School</option>
+                  <option>College</option>
+                  <option>Professional</option>
+                  <option>NBA</option>
+                </select>
+              </div>
+
+              <div className="field">
+                <label htmlFor="playerName">If applying on behalf of a player, player name (optional)</label>
+                <input id="playerName" name="playerName" type="text" maxLength={80} />
+              </div>
+
+              <div className="field">
+                <label htmlFor="improve">What are you trying to improve?</label>
+                <input id="improve" name="improve" type="text" required maxLength={300} />
+              </div>
+
+              <div className="field">
+                <label htmlFor="scope">Level of play or scope</label>
+                <select id="scope" name="scope" required defaultValue="">
+                  <option value="" disabled>Select one</option>
+                  <option>Youth</option>
+                  <option>High School</option>
+                  <option>College</option>
+                  <option>Professional (Overseas)</option>
+                  <option>NBA</option>
+                  <option>Organization</option>
+                  <option>Coach</option>
+                </select>
+              </div>
+
+              {error && <p className="form-error">{error}</p>}
+
+              <button type="submit" className="cta" disabled={submitting}>
+                {submitting ? 'Sending...' : 'Apply'}
+              </button>
+            </form>
+          )}
+        </div>
       </section>
 
-      {submitted ? (
-        <section className="success">
-          <h2>Application received.</h2>
-          <p>We&rsquo;ll be in touch within 48 hours at the email you provided.</p>
-          <Link href="/" className="btn btn-secondary">Back to home</Link>
-        </section>
-      ) : (
-        <form className="form" onSubmit={handleSubmit} noValidate>
-          {/* Honeypot — hidden from users, bots fill it */}
-          <input type="text" name="honeypot" tabIndex={-1} autoComplete="off" style={{ position: 'absolute', left: '-9999px' }} />
-
-          <div className="row">
-            <label className="field">
-              <span>First Name *</span>
-              <input name="firstName" type="text" required maxLength={50} autoComplete="given-name" />
-            </label>
-            <label className="field">
-              <span>Last Name *</span>
-              <input name="lastName" type="text" required maxLength={50} autoComplete="family-name" />
-            </label>
+      {/* ============================================================
+          2. TESTIMONIALS  —  SWAP / rotate quotes. Role descriptors only.
+          VSL NOTE: no video yet. A VSL block may be added here later.
+          ============================================================ */}
+      <section>
+        <div className="wrap">
+          <div className="eyebrow">What They Say</div>
+          <div className="quotes">
+            {/* ===== TESTIMONIAL ===== */}
+            <div className="quote">
+              <p>&ldquo;Nobody has ever broken down film like this before.&rdquo;</p>
+              <cite>Kyle Lowry, NBA champion</cite>
+            </div>
+            {/* ===== TESTIMONIAL ===== */}
+            <div className="quote">
+              <p>&ldquo;My shot feels effortless now.&rdquo;</p>
+              <cite>Paul Reed, Detroit Pistons</cite>
+            </div>
+            {/* ===== TESTIMONIAL ===== */}
+            <div className="quote">
+              <p>&ldquo;Coach Tommy&rsquo;s brain is like AI.&rdquo;</p>
+              <cite>Tobias Harris</cite>
+            </div>
           </div>
+          {/* ===== SWAP: TESTIMONIALS CLOSING TAGLINE ===== */}
+          <p className="quotes-tag">In a way, it is.</p>
+        </div>
+      </section>
 
-          <div className="row">
-            <label className="field">
-              <span>Email *</span>
-              <input name="email" type="email" required maxLength={120} autoComplete="email" />
-            </label>
-            <label className="field">
-              <span>Phone</span>
-              <input name="phone" type="tel" maxLength={30} autoComplete="tel" />
-            </label>
+      {/* ============================================================
+          3. WHAT WE DO  —  SWAP: framing of these blocks.
+          ============================================================ */}
+      <section>
+        <div className="wrap">
+          <div className="eyebrow">What We Do</div>
+          <div className="blocks">
+            <div className="block">
+              <h3>We assess before we train anything</h3>
+              <p>Nothing changes until we measure. The assessment comes first, always.</p>
+            </div>
+            <div className="block">
+              <h3>We find the real limiting factor</h3>
+              <p>Not the symptom you feel. The root factor holding the whole system back.</p>
+            </div>
+            <div className="block">
+              <h3>We calibrate the system for game conditions</h3>
+              <p>Calibration that holds up live, under fatigue, under pressure, at real game speed.</p>
+            </div>
+            <div className="block">
+              <h3>We maximize any player at any level</h3>
+              <p>Youth to NBA. The method scales because it starts from what is true for you.</p>
+            </div>
           </div>
+        </div>
+      </section>
 
-          <div className="row">
-            <label className="field">
-              <span>I am a... *</span>
-              <select name="role" required defaultValue="">
-                <option value="" disabled>Select one</option>
-                <option value="player">Player</option>
-                <option value="parent">Parent</option>
-                <option value="coach">Coach</option>
-                <option value="program">Program / Organization</option>
-              </select>
-            </label>
-            <label className="field">
-              <span>Level</span>
-              <select name="level" defaultValue="">
-                <option value="">Select one</option>
-                <option value="HS">High School</option>
-                <option value="College">College / D1</option>
-                <option value="Pro">Pro / NBA / Overseas</option>
-                <option value="Youth">Youth / AAU</option>
-                <option value="Other">Other</option>
-              </select>
-            </label>
+      {/* ============================================================
+          4. WHAT YOU GET
+          ============================================================ */}
+      <section>
+        <div className="wrap">
+          <div className="eyebrow">What You Get</div>
+          <h2>From an assessment</h2>
+          <ul className="getlist">
+            <li>A personal film breakdown video narrated by our coaches</li>
+            <li>Your full BB Lens Report of every limiting factor</li>
+            <li>Your Calibration Test results</li>
+            <li>Starting protocols</li>
+            <li>A live walkthrough call</li>
+            <li className="note">It applies in full to the engagement.</li>
+          </ul>
+        </div>
+      </section>
+
+      {/* ============================================================
+          5. THE PROOF  —  SWAP tiles. Role descriptors only.
+          ============================================================ */}
+      <section>
+        <div className="wrap">
+          <div className="eyebrow">The Proof</div>
+          <div className="proof">
+            <div className="tile">
+              <div className="role">An NBA wing</div>
+              <div className="stat"><span className="gold">18% to 47%</span> from three, in season.</div>
+            </div>
+            <div className="tile">
+              <div className="role">An NBA champion</div>
+              <div className="stat">A good shooter to <span className="gold">one of the best alive</span>, entirely remote.</div>
+            </div>
+            <div className="tile">
+              <div className="role">An NBA big</div>
+              <div className="stat"><span className="gold">15% to 40%</span> in four months.</div>
+            </div>
           </div>
+        </div>
+      </section>
 
-          <div className="row">
-            <label className="field">
-              <span>Location</span>
-              <input name="location" type="text" maxLength={100} placeholder="City, State" />
-            </label>
-            <label className="field">
-              <span>Instagram</span>
-              <input name="instagram" type="text" maxLength={50} placeholder="@username" />
-            </label>
-          </div>
-
-          <label className="field full">
-            <span>What are you looking to improve? *</span>
-            <textarea name="message" required maxLength={2000} rows={5} placeholder="Tell us about your goals, what you've tried, and what you're looking for..." />
-          </label>
-
-          {error && <p className="error">{error}</p>}
-
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
-            {submitting ? 'SENDING...' : 'SUBMIT APPLICATION'}
-          </button>
-
-          <p className="footnote">Or email <a href="mailto:bbcodejc@gmail.com">bbcodejc@gmail.com</a> directly.</p>
-        </form>
-      )}
-
-      <footer className="footer">
-        Basketball Biomechanics &bull; BB Code LLC &bull; Las Vegas, NV
+      {/* ============================================================
+          8. FOOTER
+          ============================================================ */}
+      <footer>
+        <div className="wrap">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="logo-img" src="/bb-logo-registered.png" alt="Basketball Biomechanics" />
+          <div className="closer">Researched and Tested</div>
+        </div>
       </footer>
 
-      <style>{`
-        :root {
-          --gold: #D4A843;
-          --gold-light: #E8C96A;
-          --dark: #0a0a0a;
-          --surface: #111111;
-          --gray: #aaaaaa;
-          --gray-dim: #888888;
+      <style dangerouslySetInnerHTML={{ __html: `
+        .bb {
+          --bg:#080808;
+          --gold:#D4A843;
+          --gold-bright:#e3bd5f;
+          --white:#ffffff;
+          --muted:rgba(255,255,255,0.60);
+          --line:rgba(255,255,255,0.08);
+          --gold-line:rgba(212,168,67,0.20);
+          --card:#0e0e0e;
+          --maxw:760px;
+          background:var(--bg);
+          color:var(--white);
+          min-height:100vh;
+          line-height:1.6;
+          overflow-x:hidden;
         }
+        .bb *{box-sizing:border-box;margin:0;padding:0}
+        .bb .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+        .bb section{padding:80px 0;border-bottom:1px solid var(--line)}
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .bb .eyebrow{color:var(--gold);font-size:12px;letter-spacing:0.3em;text-transform:uppercase;margin-bottom:24px;font-weight:600}
+        .bb h2{font-size:clamp(26px,5vw,34px);font-weight:700;letter-spacing:-0.02em;line-height:1.2;margin-bottom:36px}
+        .bb #apply h2{margin-bottom:18px}
+        .bb .apply-intro{color:var(--muted);font-size:clamp(15px,2.4vw,17px);max-width:560px;line-height:1.6;margin-bottom:34px}
+        .bb .gold{color:var(--gold)}
 
-        html, body {
-          background: var(--dark);
-          color: #fff;
+        .bb .cta{
+          display:inline-block;background:var(--gold);color:#080808;font-weight:800;
+          letter-spacing:0.04em;text-transform:uppercase;font-size:14px;padding:18px 46px;
+          border:none;border-radius:3px;cursor:pointer;text-decoration:none;
+          transition:transform .15s ease, background .15s ease;
         }
+        .bb .cta:hover{background:var(--gold-bright);transform:translateY(-1px)}
+        .bb .cta:disabled{opacity:0.6;cursor:not-allowed;transform:none}
 
-        .apply {
-          min-height: 100vh;
-          background: var(--dark);
-          color: #fff;
-          font-family: var(--font-dm-sans), -apple-system, BlinkMacSystemFont, sans-serif;
-          overflow-x: hidden;
-          position: relative;
-          padding: 0 24px 48px;
-        }
+        /* boxed BB logo (white art on its own black panel) sits directly on the page */
+        .bb .logo{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+        .bb .logo-img{height:170px;width:auto;display:block}
 
-        .bg-glow {
-          position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: radial-gradient(ellipse at 50% 20%, rgba(212,168,67,0.08) 0%, transparent 60%);
-          pointer-events: none;
-          z-index: 0;
-        }
+        .bb .hero{text-align:center;padding:64px 0 84px;border-bottom:1px solid var(--line)}
+        .bb .hero .logo{margin-bottom:52px}
+        .bb .hero h1{font-size:clamp(34px,7vw,54px);line-height:1.12;font-weight:700;letter-spacing:-0.025em;max-width:620px;margin:0 auto 34px}
+        .bb .hero-stack{margin:0 auto 34px;display:flex;flex-direction:column;gap:2px}
+        .bb .hero-stack span{font-size:clamp(24px,5vw,32px);font-weight:800;letter-spacing:-0.01em}
+        .bb .hero-stack span:last-child{color:var(--gold)}
+        .bb .hero-support{color:var(--muted);max-width:540px;margin:0 auto 42px;font-size:clamp(15px,2.4vw,17px)}
 
-        .header {
-          position: relative;
-          z-index: 1;
-          padding: 24px 0;
-          text-align: center;
-        }
+        .bb .quotes{display:flex;flex-direction:column;gap:24px}
+        .bb .quote{background:var(--card);border:1px solid var(--gold-line);border-left:3px solid var(--gold);padding:28px 30px;border-radius:3px}
+        .bb .quote p{font-size:clamp(16px,2.6vw,19px);font-style:italic;line-height:1.5;margin-bottom:16px}
+        .bb .quote cite{color:var(--gold);font-style:normal;font-size:13px;letter-spacing:0.06em;text-transform:uppercase}
+        .bb .quotes-tag{text-align:center;color:var(--gold);font-style:italic;font-size:clamp(16px,2.6vw,18px);margin-top:30px;letter-spacing:0.02em}
 
-        .logo {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 14px;
-          letter-spacing: 4px;
-          color: var(--gold);
-          text-decoration: none;
-        }
+        .bb .blocks{display:flex;flex-direction:column;gap:26px}
+        .bb .block h3{font-size:18px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:12px}
+        .bb .block h3::before{content:"";flex:0 0 auto;width:18px;height:2px;background:var(--gold)}
+        .bb .block p{color:var(--muted);font-size:16px;padding-left:30px}
 
-        .hero {
-          position: relative;
-          z-index: 1;
-          max-width: 720px;
-          margin: 0 auto;
-          padding: 40px 0 32px;
-          text-align: center;
-        }
+        .bb .getlist{list-style:none;display:flex;flex-direction:column;gap:18px}
+        .bb .getlist li{padding-left:30px;position:relative;font-size:clamp(16px,2.6vw,18px)}
+        .bb .getlist li::before{content:"";position:absolute;left:0;top:11px;width:8px;height:8px;background:var(--gold);border-radius:50%}
+        .bb .getlist .note{color:var(--muted);font-style:italic;font-size:15px;padding-left:0}
+        .bb .getlist .note::before{display:none}
 
-        .eyebrow {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 13px;
-          letter-spacing: 4px;
-          color: var(--gold);
-          margin-bottom: 16px;
-        }
+        .bb .proof{display:grid;grid-template-columns:1fr;gap:18px}
+        .bb .tile{background:var(--card);border:1px solid var(--gold-line);border-radius:3px;padding:28px;text-align:center}
+        .bb .tile .role{color:var(--muted);font-size:13px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px}
+        .bb .tile .stat{font-size:19px;font-weight:700;line-height:1.4}
 
-        .headline {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: clamp(36px, 6vw, 56px);
-          line-height: 1.1;
-          text-transform: uppercase;
-          letter-spacing: -1px;
-          margin-bottom: 16px;
+        .bb form{display:flex;flex-direction:column;gap:22px}
+        .bb .field{display:flex;flex-direction:column;gap:8px}
+        .bb .field label{font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted)}
+        .bb .field input,.bb .field select{
+          background:#0b0b0b;border:1px solid rgba(255,255,255,0.12);color:var(--white);
+          padding:15px 16px;font-size:16px;border-radius:3px;font-family:inherit;width:100%;
         }
+        .bb .field input:focus,.bb .field select:focus{outline:none;border-color:var(--gold)}
+        .bb .field select{appearance:none;cursor:pointer;
+          background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23D4A843' d='M6 8L0 0h12z'/></svg>");
+          background-repeat:no-repeat;background-position:right 16px center;padding-right:42px}
+        .bb form .cta{margin-top:8px;width:100%;text-align:center}
+        .bb .form-error{color:#ff6b6b;font-size:14px;padding:12px 16px;background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.3);border-radius:6px}
 
-        .sub {
-          font-size: 16px;
-          color: var(--gray);
-          line-height: 1.6;
-        }
+        .bb .thanks{text-align:center;padding:24px 0}
+        .bb .thanks p{font-size:clamp(17px,3vw,20px);margin-bottom:22px;line-height:1.5}
+        .bb .thanks .closer{color:var(--gold);text-transform:uppercase;letter-spacing:0.18em;font-size:14px;font-weight:700}
 
-        .form {
-          position: relative;
-          z-index: 1;
-          max-width: 720px;
-          margin: 0 auto;
-          padding: 32px 0;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
+        .bb footer{text-align:center;padding:60px 0;border-bottom:none}
+        .bb footer .logo-img{height:96px;width:auto;margin:0 auto 18px}
+        .bb footer .closer{color:var(--gold);text-transform:uppercase;letter-spacing:0.2em;font-size:13px;font-weight:700}
 
-        .row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
+        @media (min-width:640px){
+          .bb .proof{grid-template-columns:repeat(3,1fr)}
         }
-
-        @media (max-width: 600px) {
-          .row { grid-template-columns: 1fr; }
-        }
-
-        .field {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-
-        .field span {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 600;
-          font-size: 12px;
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          color: var(--gold);
-        }
-
-        .field input,
-        .field select,
-        .field textarea {
-          background: var(--surface);
-          border: 1px solid #222;
-          border-radius: 6px;
-          padding: 14px 16px;
-          color: #fff;
-          font-family: inherit;
-          font-size: 15px;
-          transition: border-color 0.2s;
-        }
-
-        .field input:focus,
-        .field select:focus,
-        .field textarea:focus {
-          outline: none;
-          border-color: var(--gold);
-        }
-
-        .field textarea {
-          resize: vertical;
-          min-height: 120px;
-        }
-
-        .error {
-          color: #ff6b6b;
-          font-size: 14px;
-          padding: 12px 16px;
-          background: rgba(255,107,107,0.08);
-          border: 1px solid rgba(255,107,107,0.3);
-          border-radius: 6px;
-        }
-
-        .btn {
-          display: inline-block;
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 14px;
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          text-decoration: none;
-          text-align: center;
-          padding: 16px 32px;
-          border-radius: 4px;
-          transition: all 0.2s ease;
-          border: none;
-          cursor: pointer;
-          margin-top: 8px;
-        }
-
-        .btn-primary {
-          background: var(--gold);
-          color: var(--dark);
-        }
-
-        .btn-primary:hover:not(:disabled) {
-          background: var(--gold-light);
-        }
-
-        .btn-primary:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .btn-secondary {
-          background: transparent;
-          color: #fff;
-          border: 1px solid rgba(212,168,67,0.4);
-          margin-top: 24px;
-        }
-
-        .footnote {
-          color: var(--gray-dim);
-          font-size: 13px;
-          text-align: center;
-          margin-top: 8px;
-        }
-
-        .footnote a {
-          color: var(--gold);
-          text-decoration: none;
-        }
-
-        .success {
-          position: relative;
-          z-index: 1;
-          max-width: 600px;
-          margin: 40px auto;
-          text-align: center;
-          padding: 48px 24px;
-          background: var(--surface);
-          border: 2px solid var(--gold);
-          border-radius: 12px;
-        }
-
-        .success h2 {
-          font-family: var(--font-oswald), sans-serif;
-          font-size: 28px;
-          color: var(--gold);
-          margin-bottom: 12px;
-        }
-
-        .success p {
-          color: var(--gray);
-          margin-bottom: 24px;
-        }
-
-        .footer {
-          position: relative;
-          z-index: 1;
-          text-align: center;
-          padding: 48px 0 24px;
-          font-size: 12px;
-          color: var(--gray-dim);
-          letter-spacing: 1px;
-        }
-      `}</style>
+      ` }} />
     </main>
   );
 }

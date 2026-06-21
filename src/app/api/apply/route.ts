@@ -4,10 +4,14 @@ import { Resend } from 'resend';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+// Where new-application notifications land:
 const TO_EMAIL = 'bbcodejc@gmail.com';
-const FROM_EMAIL = 'BB Apply <jake@trainwjc.com>';
+// Verified Resend sender. Friendly name shown to recipients:
+const FROM_NOTIFY = 'BB Apply <jake@trainwjc.com>';
+const FROM_CONFIRM = 'Basketball Biomechanics <jake@trainwjc.com>';
 
-// Simple in-memory rate limit per IP — prevents form spam
+// Simple in-memory rate limit per IP — prevents form spam.
+// Note: resets on each deploy/cold start. The Google Sheet is the durable record.
 const submissions = new Map<string, number[]>();
 const RATE_LIMIT = 3; // max submissions
 const WINDOW_MS = 10 * 60 * 1000; // per 10 min
@@ -29,6 +33,26 @@ function escape(s: string): string {
     .slice(0, 5000);
 }
 
+// Best-effort append to a Google Sheet via an Apps Script Web App.
+// Never throws — a sheet outage must not lose the applicant (email is the backup).
+async function appendToSheet(row: Record<string, string>): Promise<boolean> {
+  const url = process.env.GOOGLE_SHEET_WEBHOOK_URL;
+  const secret = process.env.GOOGLE_SHEET_SECRET;
+  if (!url) return false;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ secret: secret || '', ...row }),
+      redirect: 'follow',
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('[apply] Sheet append failed:', err);
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const ip =
@@ -45,94 +69,119 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      firstName = '',
-      lastName = '',
+      name = '',
       email = '',
-      phone = '',
       role = '',
       level = '',
-      location = '',
-      instagram = '',
-      message = '',
+      playerName = '',
+      improve = '',
+      scope = '',
       honeypot = '',
     } = body;
 
-    // Honeypot — bots fill this, humans don't
+    // Honeypot — bots fill this, humans don't. Pretend success, store nothing.
     if (honeypot) {
       return NextResponse.json({ ok: true });
     }
 
     // Required field validation
-    if (!firstName || !lastName || !email) {
+    if (!name || !email || !role || !level) {
       return NextResponse.json(
-        { error: 'First name, last name, and email are required.' },
+        { error: 'Name, email, role, and level are required.' },
         { status: 400 }
       );
     }
 
     // Basic email format check
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json(
-        { error: 'Invalid email address.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid email address.' }, { status: 400 });
     }
 
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      console.error('RESEND_API_KEY not configured');
-      return NextResponse.json(
-        { error: 'Server configuration error. Please email bbcodejc@gmail.com directly.' },
-        { status: 500 }
-      );
-    }
-
-    const resend = new Resend(apiKey);
-
-    const html = `
-      <h2>New Application — Basketball Biomechanics</h2>
-      <p><strong>Name:</strong> ${escape(firstName)} ${escape(lastName)}</p>
-      <p><strong>Email:</strong> ${escape(email)}</p>
-      <p><strong>Phone:</strong> ${escape(phone) || '—'}</p>
-      <p><strong>Role:</strong> ${escape(role) || '—'}</p>
-      <p><strong>Level:</strong> ${escape(level) || '—'}</p>
-      <p><strong>Location:</strong> ${escape(location) || '—'}</p>
-      <p><strong>Instagram:</strong> ${escape(instagram) || '—'}</p>
-      <hr />
-      <p><strong>Message:</strong></p>
-      <p style="white-space: pre-wrap;">${escape(message) || '—'}</p>
-      <hr />
-      <p style="color:#888;font-size:12px;">Submitted from basketballbiomechanics.com/apply &middot; IP: ${escape(ip)}</p>
-    `;
-
-    const result = await resend.emails.send({
-      from: FROM_EMAIL,
-      to: TO_EMAIL,
-      replyTo: email,
-      subject: `New Application — ${firstName} ${lastName}`,
-      html,
+    // 1) Durable capture: append to the Google Sheet (best effort).
+    const sheetOK = await appendToSheet({
+      name,
+      email,
+      role,
+      level,
+      playerName,
+      improve,
+      scope,
+      ip,
     });
 
-    console.log('[apply] Resend result:', JSON.stringify(result));
+    const apiKey = process.env.RESEND_API_KEY;
+    let notifyOK = false;
 
-    if (result.error) {
-      console.error('[apply] Resend error:', result.error);
+    if (apiKey) {
+      const resend = new Resend(apiKey);
+
+      // 2) Notify the team of the new application.
+      const notifyHtml = `
+        <h2>New Application — Basketball Biomechanics</h2>
+        <p><strong>Name:</strong> ${escape(name)}</p>
+        <p><strong>Email:</strong> ${escape(email)}</p>
+        <p><strong>Role:</strong> ${escape(role) || '—'}</p>
+        <p><strong>Level:</strong> ${escape(level) || '—'}</p>
+        <p><strong>Player (if on behalf):</strong> ${escape(playerName) || '—'}</p>
+        <p><strong>Level of play / scope:</strong> ${escape(scope) || '—'}</p>
+        <hr />
+        <p><strong>What they want to improve:</strong></p>
+        <p style="white-space: pre-wrap;">${escape(improve) || '—'}</p>
+        <hr />
+        <p style="color:#888;font-size:12px;">Submitted from basketballbiomechanics.com/apply &middot; IP: ${escape(ip)} &middot; Sheet: ${sheetOK ? 'saved' : 'NOT saved'}</p>
+      `;
+
+      try {
+        const result = await resend.emails.send({
+          from: FROM_NOTIFY,
+          to: TO_EMAIL,
+          replyTo: email,
+          subject: `New Application — ${name}`,
+          html: notifyHtml,
+        });
+        notifyOK = !result.error && !!result.data?.id;
+        if (!notifyOK) console.error('[apply] Notify email issue:', result.error || result);
+      } catch (err) {
+        console.error('[apply] Notify email threw:', err);
+      }
+
+      // 3) Applicant confirmation — ONE email, nothing after. "Application received."
+      const confirmHtml = `
+        <div style="background:#080808;color:#ffffff;font-family:Helvetica,Arial,sans-serif;padding:40px 24px;text-align:center;">
+          <p style="font-size:18px;line-height:1.6;max-width:480px;margin:0 auto 24px;">
+            Application received. If it is a fit, we will reach out to put your film through the lens.
+          </p>
+          <p style="color:#D4A843;text-transform:uppercase;letter-spacing:3px;font-size:13px;font-weight:700;">
+            Measured. Not promised.
+          </p>
+        </div>
+      `;
+
+      try {
+        await resend.emails.send({
+          from: FROM_CONFIRM,
+          to: email,
+          replyTo: TO_EMAIL,
+          subject: 'Application received — Basketball Biomechanics',
+          html: confirmHtml,
+        });
+      } catch (err) {
+        // Confirmation is best-effort; never fail the submission over it.
+        console.error('[apply] Confirmation email failed:', err);
+      }
+    } else {
+      console.error('RESEND_API_KEY not configured');
+    }
+
+    // Succeed if the applicant was captured anywhere (sheet OR team email).
+    if (!sheetOK && !notifyOK) {
       return NextResponse.json(
-        { error: 'Failed to send. Please email bbcodejc@gmail.com directly.' },
+        { error: 'Could not record your application. Please email bbcodejc@gmail.com directly.' },
         { status: 500 }
       );
     }
 
-    if (!result.data?.id) {
-      console.error('[apply] No email ID returned:', result);
-      return NextResponse.json(
-        { error: 'Email send did not complete. Please email bbcodejc@gmail.com directly.' },
-        { status: 500 }
-      );
-    }
-
-    console.log(`[apply] Email sent successfully — ID: ${result.data.id}`);
-    return NextResponse.json({ ok: true, id: result.data.id });
+    return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('Apply route error:', err);
     return NextResponse.json(
