@@ -95,8 +95,7 @@ export default function ApplyPage() {
           {submitted ? (
             /* ===== THANK-YOU STATE ===== */
             <div className="thanks">
-              <p>Application received. If it is a fit, we will reach out to put your film through the lens.</p>
-              <div className="closer">Measured. Not promised.</div>
+              <p>Application received. Our Team will coordinate the next steps.</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} noValidate>

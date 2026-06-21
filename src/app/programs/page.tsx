@@ -140,7 +140,6 @@ export default function ProgramsPage() {
               <div className="stat-context">See the pass before the defense sees you</div>
             </div>
           </div>
-          <p className="stats-tagline">Measured. Not promised.</p>
         </div>
       </section>
 

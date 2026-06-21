@@ -148,11 +148,8 @@ export async function POST(request: NextRequest) {
       // 3) Applicant confirmation — ONE email, nothing after. "Application received."
       const confirmHtml = `
         <div style="background:#080808;color:#ffffff;font-family:Helvetica,Arial,sans-serif;padding:40px 24px;text-align:center;">
-          <p style="font-size:18px;line-height:1.6;max-width:480px;margin:0 auto 24px;">
-            Application received. If it is a fit, we will reach out to put your film through the lens.
-          </p>
-          <p style="color:#D4A843;text-transform:uppercase;letter-spacing:3px;font-size:13px;font-weight:700;">
-            Measured. Not promised.
+          <p style="font-size:18px;line-height:1.6;max-width:480px;margin:0 auto;">
+            Application received. Our Team will coordinate the next steps.
           </p>
         </div>
       `;

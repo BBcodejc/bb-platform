@@ -4,7 +4,7 @@ Every application from **basketballbiomechanics.com/apply** now does three thing
 
 1. **Appends a row to your Google Sheet** (your durable record + email list).
 2. **Emails the team** at `bbcodejc@gmail.com` (reply-to is the applicant, so you can reply directly).
-3. **Sends the applicant one confirmation email** — "Application received… Measured. Not promised." — and nothing after that.
+3. **Sends the applicant one confirmation email** — "Application received. Our Team will coordinate the next steps." — and nothing after that.
 
 The Google Sheet is the system of record. Even if email ever fails, the applicant is still captured in the Sheet (and vice-versa).
 
