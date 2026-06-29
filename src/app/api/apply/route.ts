@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
     const {
       name = '',
       email = '',
+      phone = '',
       role = '',
       level = '',
       playerName = '',
@@ -85,9 +86,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Required field validation
-    if (!name || !email || !role || !level) {
+    if (!name || !email || !phone || !role || !level) {
       return NextResponse.json(
-        { error: 'Name, email, role, and level are required.' },
+        { error: 'Name, email, phone, role, and level are required.' },
         { status: 400 }
       );
     }
@@ -101,6 +102,7 @@ export async function POST(request: NextRequest) {
     const sheetOK = await appendToSheet({
       name,
       email,
+      phone,
       role,
       level,
       playerName,
@@ -120,6 +122,7 @@ export async function POST(request: NextRequest) {
         <h2>New Application — Basketball Biomechanics</h2>
         <p><strong>Name:</strong> ${escape(name)}</p>
         <p><strong>Email:</strong> ${escape(email)}</p>
+        <p><strong>Phone:</strong> ${escape(phone)}</p>
         <p><strong>Role:</strong> ${escape(role) || '—'}</p>
         <p><strong>Level:</strong> ${escape(level) || '—'}</p>
         <p><strong>Player (if on behalf):</strong> ${escape(playerName) || '—'}</p>

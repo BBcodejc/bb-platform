@@ -113,6 +113,11 @@ export default function ApplyPage() {
               </div>
 
               <div className="field">
+                <label htmlFor="phone">Phone</label>
+                <input id="phone" name="phone" type="tel" required maxLength={40} autoComplete="tel" />
+              </div>
+
+              <div className="field">
                 <label htmlFor="role">Are you a player, parent, coach, or staff?</label>
                 <select id="role" name="role" required defaultValue="">
                   <option value="" disabled>Select one</option>

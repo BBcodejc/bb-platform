@@ -30,7 +30,7 @@ function doPost(e) {
     // Write a header row once.
     if (sheet.getLastRow() === 0) {
       sheet.appendRow([
-        'Timestamp', 'Name', 'Email', 'Role', 'Level',
+        'Timestamp', 'Name', 'Email', 'Phone', 'Role', 'Level',
         'Player (on behalf)', 'Improving', 'Level of play / scope', 'IP',
       ]);
     }
@@ -39,6 +39,7 @@ function doPost(e) {
       new Date(),
       data.name || '',
       data.email || '',
+      data.phone || '',
       data.role || '',
       data.level || '',
       data.playerName || '',
