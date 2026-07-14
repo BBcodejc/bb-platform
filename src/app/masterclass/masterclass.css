@@ -485,6 +485,8 @@
 
 .mc-problem p { margin: 0; color: var(--mc-muted); }
 
+.mc-problem p + p { margin-top: 0.65rem; }
+
 /* ─── Lens ─── */
 
 .mc-lens-grid {

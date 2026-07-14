@@ -181,22 +181,45 @@ const PROBLEMS = [
   {
     num: '01',
     title: 'They chase volume.',
-    body: 'Five hundred makes from a spot proves you can make that shot, from that spot, at that speed, with nobody near you. The game never asks for that shot. Volume without variation grooves a shot the game will never let you take.',
+    lines: [
+      'Five hundred makes from a spot proves you can make that shot, from that spot, at that speed, with nobody near you. The game never asks for that shot. Volume without variation grooves a shot the game will never let you take.',
+    ],
   },
   {
     num: '02',
     title: 'They obsess over form.',
-    body: 'Look at the best shooters alive. Elbows in, elbows out, high releases, low releases. Elite form varies enormously. What does not vary is calibration. And the moment you start thinking about your body mid shot, your timing degrades. That is not a character flaw. That is how the motor system works under conscious interference.',
+    lines: [
+      'Look at the best shooters alive.',
+      'Slightly tucked elbows. More flared elbows. Higher release points. Lower release points.',
+      'Movement expression varies enormously.',
+      'What does not vary is the ability to adapt and calibrate.',
+      'The moment you start thinking about your body mid-shot, your coordination and rhythmic energy transfer begin to degrade.',
+      'This is not a character flaw.',
+      'It is an attentional focus problem.',
+      'The motor control system does not perform well under conscious interference, especially under pressure.',
+    ],
   },
   {
     num: '03',
     title: 'They train in sterile environments.',
-    body: 'Same ball. Same arc. Same rhythm. Same spot. Nothing challenges perception, timing, or distance control, so nothing adapts. The gym gets easier while the game stays hard.',
+    lines: [
+      'Same ball.',
+      'Same arc.',
+      'Same rhythm.',
+      'Same spot.',
+      'Nothing challenges perception, timing, distance control, or adaptation.',
+      'So nothing adapts.',
+      'Practice gets easier while the game stays hard.',
+    ],
   },
   {
     num: '04',
     title: 'They never identify what is actually limiting the shot.',
-    body: 'Random drills are prescription without diagnosis. If you do not know whether the limit is distance control, timing, visual calibration, or energy management, you are guessing. Most careers plateau on a guess.',
+    lines: [
+      'Random drills are prescription without diagnosis.',
+      'If you do not know whether the limitation is distance control, timing, visual calibration, or energy management, you are guessing.',
+      'Most careers plateau on a guess.',
+    ],
   },
 ];
 
@@ -542,7 +565,9 @@ export default function MasterclassPage() {
                 <div className="mc-problem">
                   <p className="mc-problem-num mc-mono">{p.num}</p>
                   <h3 className="mc-h3">{p.title}</h3>
-                  <p>{p.body}</p>
+                  {p.lines.map((line) => (
+                    <p key={line}>{line}</p>
+                  ))}
                 </div>
               </Reveal>
             ))}
