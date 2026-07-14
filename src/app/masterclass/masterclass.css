@@ -411,6 +411,59 @@
   font-size: 0.95rem;
 }
 
+/* ─── From the masterclass quotes ─── */
+
+.mc-mcquotes-head {
+  margin-top: 5rem;
+}
+
+.mc-mcquotes-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+.mc-mcq {
+  margin: 0;
+  background: var(--mc-white);
+  border: 1px solid var(--mc-hairline);
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.mc-mcq blockquote {
+  margin: 0;
+  flex: 1;
+}
+
+.mc-mcq p {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: var(--mc-ink);
+}
+
+.mc-mcq cite {
+  display: block;
+  font-family: var(--font-plex-mono), monospace;
+  font-style: normal;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mc-muted);
+}
+
+.mc-mcq-note {
+  display: block;
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--mc-gold-dark);
+  margin-top: 0.45rem;
+}
+
 /* ─── Problem ─── */
 
 .mc-problems {
@@ -927,6 +980,12 @@
   }
 
   .mc-lens-grid { grid-template-columns: 7fr 5fr; gap: 4.5rem; }
+
+  .mc-mcquotes-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+  .mc-mcquotes-grid .mc-mcq:last-child { grid-column: 1 / -1; }
+
+  .mc-mcq { padding: 2rem 2rem; }
 
   .mc-timeline {
     grid-template-columns: repeat(4, 1fr);

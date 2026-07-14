@@ -308,6 +308,38 @@ const QUOTES = [
    - "No one's ever broken down or analyzed film like this for me." Kyle Lowry
    - "You're the smartest basketball coach I've ever been around." Tyler Burton */
 
+const MASTERCLASS_QUOTES = [
+  {
+    quote:
+      '“Even after the first day of calibration my shot felt like a laser at team practice.”',
+    who: 'JALEN E. · PLAYER',
+    note: '',
+  },
+  {
+    quote:
+      '“Range is definitely increasing. Misses are more consistent. We are completely bought in.”',
+    who: 'TONY B. · ATHLETIC DIRECTOR / HS GIRLS BASKETBALL COACH',
+    note: '“I know it has already helped.” · After first weekend',
+  },
+  {
+    quote: '“Really loved this product.”',
+    who: 'BENEDICT P. · PLAYER',
+    note: '',
+  },
+  {
+    quote:
+      '“I’m currently on day 6 as a coach. So far we have had great results with ball flights to increase power and accuracy.”',
+    who: 'BEN M. · COACH',
+    note: '',
+  },
+  {
+    quote:
+      '“I did the full protocol over the Christmas break, and I did feel differences when it came to the smoothness of my shot.”',
+    who: 'KYLE O. · SEMI-PRO COACH',
+    note: '',
+  },
+];
+
 const FAQS = [
   {
     q: 'Is this for young players?',
@@ -506,6 +538,26 @@ export default function MasterclassPage() {
               learn.
             </p>
             <CtaBlock label="Start Calibrating Your Shot" />
+          </Reveal>
+
+          <Reveal>
+            <div className="mc-mcquotes-head">
+              <Kicker>From The Masterclass</Kicker>
+              <h3 className="mc-keep-title">Players and coaches already running the protocols.</h3>
+            </div>
+            <div className="mc-mcquotes-grid">
+              {MASTERCLASS_QUOTES.map((q) => (
+                <figure key={q.who} className="mc-mcq">
+                  <blockquote>
+                    <p>{q.quote}</p>
+                  </blockquote>
+                  <figcaption>
+                    <cite>{q.who}</cite>
+                    {q.note ? <span className="mc-mcq-note">{q.note}</span> : null}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
           </Reveal>
         </div>
       </section>
