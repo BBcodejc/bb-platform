@@ -1,0 +1,258 @@
+/* ─── BB Movement System: Early-Access Waitlist ─────────────────────────────
+   Same design system as /masterclass and the /movement sales page, rendered
+   as a single ink panel: near-black ground, white type, scarce gold. */
+
+.mea-page {
+  --mea-ink: #0b0b0c;
+  --mea-white: #ffffff;
+  --mea-muted: rgba(255, 255, 255, 0.64);
+  --mea-gold: #b8933e;
+  --mea-gold-dark: #a07f2e;
+  --mea-gold-onblack: #d4b45a;
+  --mea-hairline: rgba(255, 255, 255, 0.16);
+  --mea-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-inter), -apple-system, sans-serif;
+  color: var(--mea-white);
+  background: var(--mea-ink);
+  font-size: 1.075rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mea-page *,
+.mea-page *::before,
+.mea-page *::after {
+  box-sizing: border-box;
+}
+
+.mea-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4.5rem 1.25rem 3rem;
+}
+
+.mea-container {
+  width: 100%;
+  max-width: 640px;
+  text-align: center;
+}
+
+/* ─── Typography ─── */
+
+.mea-kicker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mea-gold-onblack);
+  margin: 0 0 1.5rem;
+}
+
+.mea-kicker::before,
+.mea-kicker::after {
+  content: '';
+  width: 2rem;
+  height: 1px;
+  background: var(--mea-hairline);
+}
+
+.mea-headline {
+  font-family: var(--font-space), sans-serif;
+  font-size: clamp(2.1rem, 7vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.25rem;
+}
+
+.mea-sub {
+  font-size: 1.15rem;
+  color: var(--mea-muted);
+  max-width: 52ch;
+  margin: 0 auto 1.5rem;
+}
+
+.mea-support {
+  font-size: 1rem;
+  color: var(--mea-muted);
+  max-width: 52ch;
+  margin: 0 auto 3rem;
+}
+
+/* ─── Form ─── */
+
+.mea-form-block {
+  border: 1px solid var(--mea-hairline);
+  border-radius: 6px;
+  padding: 2rem 1.5rem;
+  text-align: left;
+}
+
+.mea-form-heading {
+  font-family: var(--font-space), sans-serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-align: center;
+  margin: 0 0 1.5rem;
+}
+
+.mea-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.mea-label {
+  display: block;
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mea-muted);
+  margin: 0 0 0.4rem;
+}
+
+.mea-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--mea-hairline);
+  border-radius: 4px;
+  color: var(--mea-white);
+  font-family: var(--font-inter), sans-serif;
+  font-size: 1rem;
+  padding: 0.85rem 1rem;
+  min-height: 44px;
+  transition: border-color 0.25s var(--mea-ease);
+}
+
+.mea-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.mea-input:focus {
+  outline: none;
+  border-color: var(--mea-gold);
+}
+
+.mea-submit {
+  display: block;
+  width: 100%;
+  background: var(--mea-gold);
+  color: var(--mea-ink);
+  font-family: var(--font-space), sans-serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  padding: 1rem 2.25rem;
+  min-height: 48px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.25s var(--mea-ease), transform 0.25s var(--mea-ease);
+}
+
+.mea-submit:hover:not(:disabled) {
+  background: var(--mea-gold-dark);
+  transform: translateY(-1px);
+}
+
+.mea-submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.mea-microcopy {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 0.82rem;
+  color: var(--mea-muted);
+  text-align: center;
+  margin: 1rem 0 0;
+}
+
+.mea-error {
+  font-size: 0.9rem;
+  color: #e2b4b4;
+  text-align: center;
+  margin: 0.75rem 0 0;
+}
+
+/* ─── Success state ─── */
+
+.mea-success {
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.mea-success-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid var(--mea-gold);
+  border-radius: 50%;
+  color: var(--mea-gold-onblack);
+  font-size: 1.3rem;
+  margin-bottom: 1.25rem;
+}
+
+.mea-success-heading {
+  font-family: var(--font-space), sans-serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.mea-success-copy {
+  font-size: 1rem;
+  color: var(--mea-muted);
+  margin: 0;
+}
+
+/* ─── Footer ─── */
+
+.mea-footer {
+  border-top: 1px solid var(--mea-hairline);
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+}
+
+.mea-footer p {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 0.78rem;
+  color: var(--mea-muted);
+  margin: 0;
+}
+
+/* ─── Desktop ─── */
+
+@media (min-width: 768px) {
+  .mea-main {
+    padding: 6rem 2.5rem 4rem;
+  }
+
+  .mea-form-block {
+    padding: 2.5rem 2.5rem;
+  }
+
+  .mea-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 0.9rem;
+  }
+}
