@@ -161,6 +161,30 @@ export default function MasterclassPage() {
         <EnrollButton />
       </section>
 
+      {/* ── VISUAL EVIDENCE (PROOF) ─────────────────────────────────── */}
+      <section className="section">
+        <SectionLabel text="VISUAL EVIDENCE" />
+
+        <div className="evidence-block">
+          <p className="evidence-stat">
+            OG Anunoby shot over 50% from three during the NBA Finals while running calibration protocols.
+          </p>
+          <p className="evidence-stat">
+            Tobias Harris produced one of the best shooting stretches of his career while using calibration protocols.
+          </p>
+        </div>
+
+        <p className="evidence-body">
+          Hundreds of players around the world, from youth athletes to professionals, have used these same methods to gain more control over getting the ball to the target.
+        </p>
+        <p className="evidence-body">
+          Calibration isn&rsquo;t about rebuilding your shot.
+        </p>
+        <p className="evidence-body evidence-close">
+          It&rsquo;s about learning how to adapt, solve misses, and gain control over every shot the game demands.
+        </p>
+      </section>
+
       {/* ── PLAYER RESULTS ──────────────────────────────────────────── */}
       <section className="section">
         <SectionLabel text="PLAYER RESULTS" />
@@ -269,9 +293,9 @@ export default function MasterclassPage() {
         <EnrollButton />
       </section>
 
-      {/* ── VISUAL EVIDENCE ─────────────────────────────────────────── */}
+      {/* ── SEE IT IN ACTION (REELS) ────────────────────────────────── */}
       <section className="section">
-        <SectionLabel text="VISUAL EVIDENCE" />
+        <SectionLabel text="SEE IT IN ACTION" />
 
         <div className="reels-grid">
           {REELS.map((url) => (
@@ -626,6 +650,35 @@ export default function MasterclassPage() {
           font-size: 1rem;
           line-height: 1.6;
           margin-bottom: 1.25rem;
+        }
+
+        /* ── Visual Evidence ─────────────────────────────────────── */
+        .evidence-block {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          margin-bottom: 1.25rem;
+        }
+        .evidence-stat {
+          font-family: var(--font-oswald), sans-serif;
+          font-weight: 700;
+          font-size: 1.2rem;
+          line-height: 1.35;
+          color: #000000;
+          border-left: 4px solid #D4A843;
+          background: #FAFAFA;
+          border-radius: 0 8px 8px 0;
+          padding: 1rem 1.25rem;
+        }
+        .evidence-body {
+          color: #444444;
+          font-size: 1rem;
+          line-height: 1.6;
+          margin-bottom: 0.75rem;
+        }
+        .evidence-close {
+          color: #000000;
+          font-weight: 600;
         }
 
         /* ── Day Blocks ──────────────────────────────────────────── */
