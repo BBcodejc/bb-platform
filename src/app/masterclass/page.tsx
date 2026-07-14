@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 // ─── STICKY BANNER ───────────────────────────────────────────────────────────
 
@@ -46,74 +46,18 @@ function SectionLabel({ text }: { text: string }) {
   );
 }
 
-// ─── COUNT-UP NUMBER ─────────────────────────────────────────────────────────
+// ─── RESULT CARD ─────────────────────────────────────────────────────────────
 
-function Cu({ n }: { n: number }) {
-  const ref = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const reduce =
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce || !('IntersectionObserver' in window)) return;
-
-    const dec = String(n).includes('.') ? String(n).split('.')[1].length : 0;
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          io.unobserve(el);
-          let start: number | null = null;
-          const dur = 1300;
-          const step = (ts: number) => {
-            if (start === null) start = ts;
-            const p = Math.min((ts - start) / dur, 1);
-            const e = 1 - Math.pow(1 - p, 3);
-            el.textContent = (n * e).toFixed(dec);
-            if (p < 1) {
-              requestAnimationFrame(step);
-            } else {
-              el.textContent = String(n);
-            }
-          };
-          requestAnimationFrame(step);
-        });
-      },
-      { threshold: 0.6 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [n]);
-
-  return <span ref={ref}>{n}</span>;
-}
-
-// ─── RESULT ROW ──────────────────────────────────────────────────────────────
-
-function ResultRow({ name, tag, stat }: { name: string; tag: string; stat: React.ReactNode }) {
+function ResultCard({ name, result, quote, logo }: { name: string; result: string; quote?: string; logo?: string }) {
   return (
-    <li className="result-row">
-      <span className="result-row-who">
-        <span className="result-row-name">{name}</span>
-        <span className="result-row-tag">{tag}</span>
-      </span>
-      <span className="result-row-stat">{stat}</span>
-    </li>
-  );
-}
-
-// ─── QUOTE ───────────────────────────────────────────────────────────────────
-
-function Quote({ q, by, stat, small }: { q: string; by: string; stat?: string; small?: boolean }) {
-  return (
-    <li className={small ? 'quote quote--small' : 'quote'}>
-      <p className="quote-text">&ldquo;{q}&rdquo;</p>
-      <p className="quote-attr">{by}</p>
-      {stat && <p className="quote-stat">{stat}</p>}
-    </li>
+    <div className="result-card">
+      <div className="result-card-header">
+        {logo && <img src={logo} alt="" className="result-logo" />}
+        <p className="result-name">{name}</p>
+      </div>
+      {result && <p className="result-stat">{result}</p>}
+      {quote && <p className="result-quote">&ldquo;{quote}&rdquo;</p>}
+    </div>
   );
 }
 
@@ -218,111 +162,67 @@ export default function MasterclassPage() {
       </section>
 
       {/* ── PLAYER RESULTS ──────────────────────────────────────────── */}
-      <section className="section" id="results">
+      <section className="section">
         <SectionLabel text="PLAYER RESULTS" />
-        <h2 className="results-headline">The results on Calibration.</h2>
 
-        <div className="results-band">
-          <ul className="results-rows">
-            <ResultRow
-              name="Tobias Harris"
-              tag="NBA"
-              stat={<><Cu n={18} />% &rarr; <Cu n={47} />% from three, in season</>}
-            />
-            <ResultRow
-              name="Paul Reed"
-              tag="NBA"
-              stat={<><Cu n={15} />% &rarr; <Cu n={40} />%, in season. Seven times the makes</>}
-            />
-            <ResultRow
-              name="Tyler Burton"
-              tag="Grizzlies"
-              stat={<><Cu n={29} />% &rarr; <Cu n={44} />% in under two weeks</>}
-            />
-            <ResultRow
-              name="Matisse Thybulle"
-              tag="Trail Blazers"
-              stat={<>Finished the 2026 season shooting <Cu n={40} />%</>}
-            />
-            <ResultRow
-              name="Tyler Perkins"
-              tag="Villanova"
-              stat={<><Cu n={20} />% &rarr; <Cu n={40} />%, in season</>}
-            />
-            <ResultRow
-              name="Dominick Stewart"
-              tag="Penn State"
-              stat={<><Cu n={32} />% &rarr; <Cu n={42} />% in three weeks</>}
-            />
-            <ResultRow
-              name="Trey Drexler"
-              tag="HS, D1 Commit"
-              stat={<><Cu n={47} />% from three · <Cu n={26.5} /> PPG · <Cu n={90} />% FT</>}
-            />
-            <ResultRow
-              name="OG Anunoby"
-              tag="NBA Champion"
-              stat={<><Cu n={50} />% from three in the 2026 NBA Finals</>}
-            />
-          </ul>
+        <div className="results-grid">
+          <ResultCard
+            name="Tobias Harris (Pistons)"
+            result="18% to 47% (In less than 100 Days)"
+            logo="/players/pistons-logo.svg"
+          />
+          <ResultCard
+            name="Paul Reed (Pistons)"
+            result="15% to 40% and 7x'd Amount of Makes"
+            quote="My shot feels effortless"
+            logo="/players/pistons-logo.svg"
+          />
+          <ResultCard
+            name="Tyler Perkins (Villanova)"
+            result="20% to 40% (In-Season)"
+            logo="/players/villanova-logo.svg"
+          />
+          <ResultCard
+            name="OG Anunoby (Knicks)"
+            result="Career High 3pt % while being consulted by BB"
+            logo="/players/knicks-logo.svg"
+          />
+          <ResultCard
+            name="Tyler Burton (Grizzlies)"
+            result="29% to 44% In less than 2 weeks"
+            quote="My shot never has felt better"
+            logo="/players/grizzlies-logo.svg"
+          />
+          <ResultCard
+            name="Trey Drexler (HS PG, D1 Commit)"
+            result="47% from 3 this year, 26.5 PPG, 90% FT"
+            quote="Calibration changed my game"
+          />
+          <ResultCard
+            name="Dominick Stewart (Penn State)"
+            result="32% to 42% This season, In 3 weeks"
+            logo="/players/pennstate-logo.svg"
+          />
+          <ResultCard
+            name="Matisse Thybulle (Trail Blazers)"
+            result="Finished 2026 Season Shooting 40%"
+            logo="/players/blazers-logo.svg"
+          />
+          <ResultCard
+            name="Dylan Cardwell (Kings)"
+            result=""
+            quote="Applying BB Methods was the best basketball session of my life"
+            logo="/players/kings-logo.svg"
+          />
+          <ResultCard
+            name="HS Coach"
+            result=""
+            quote="Calibration has evolved our program and we shot the best in years on the methods"
+          />
         </div>
 
         <div style={{ marginTop: '1.25rem' }}>
           <EnrollButton />
-        </div>
-      </section>
-
-      {/* ── TESTIMONIALS ────────────────────────────────────────────── */}
-      <section className="section" id="testimonials">
-        <SectionLabel text="FROM THE PLAYERS" />
-        <h2 className="testimonials-headline">In their words.</h2>
-
-        <ul className="quote-list">
-          <Quote q="My shot feels effortless." by="Paul Reed · NBA" />
-          <Quote q="My shot never has felt better." by="Tyler Burton · Grizzlies" />
-          <Quote
-            q="Calibration changed my game."
-            by="Trey Drexler · D1 PG"
-            stat="47% From 3 · 26 PPG On Calibration"
-          />
-          <Quote
-            q="Applying BB methods was the best basketball session of my life."
-            by="Dylan Cardwell · Sacramento Kings"
-          />
-          <Quote
-            q="Calibration has evolved our program and we shot the best in years on the methods."
-            by="High School Coach"
-          />
-        </ul>
-
-        <div className="mc-sub">
-          <SectionLabel text="FROM THE MASTERCLASS" />
-          <p className="mc-intro">
-            Unprompted feedback from players and coaches running the protocols right now.
-          </p>
-          <ul className="quote-list">
-            <Quote
-              small
-              q="Even after the first day of calibration my shot felt like a laser at team practice."
-              by="Jalen E. · Player"
-            />
-            <Quote
-              small
-              q="Range is definitely increasing. Misses are more consistent. We are completely bought in."
-              by="Tony B. · Athletic Director / HS Girls Basketball Coach"
-            />
-            <Quote small q="Really loved this product." by="Benedict P. · Player" />
-            <Quote
-              small
-              q="I'm currently on day 6 as a coach. So far we have had great results with ball flights to increase power and accuracy."
-              by="Ben M. · Coach"
-            />
-            <Quote
-              small
-              q="I did the full protocol over the Christmas break, and I did feel differences when it came to the smoothness of my shot."
-              by="Kyle O. · Semi-Pro Coach"
-            />
-          </ul>
         </div>
       </section>
 
@@ -339,7 +239,7 @@ export default function MasterclassPage() {
             Shoot off the hop, 1-2 step, and in motion. We open your movement bandwidth so calibration transfers to game conditions.
           </DayBlock>
           <DayBlock days="Days 7-10" title="Precision Targeting from Deep">
-            Introduce precision from beyond the arc. You&rsquo;ll be knocking down threes from way outside the line, effortlessly.
+            Introduce precision from beyond the arc. You&rsquo;ll be knocking down threes from way outside the line &mdash; effortlessly.
           </DayBlock>
           <DayBlock days="Days 11-14" title="Precision At Its Best">
             Test your new calibration. Score above your average. Guaranteed. Your system has adapted, and the results prove it.
@@ -355,7 +255,7 @@ export default function MasterclassPage() {
         <p className="section-intro">The modules teach you more than just drills. They teach you how to think.</p>
 
         <ul className="after-list">
-          <li><strong>Understand your miss profile.</strong> Know exactly what your system needs</li>
+          <li><strong>Understand your miss profile</strong> &mdash; Know exactly what your system needs</li>
           <li><strong>Your system learns what to calibrate</strong> and explore to continue adapting</li>
           <li><strong>Game Days:</strong> Run the pre-game protocols to lock in calibration</li>
           <li><strong>Off-Days:</strong> Run modules 1-4 to maintain and evolve your system</li>
@@ -452,7 +352,7 @@ export default function MasterclassPage() {
           </div>
           <div className="compare-block compare-new">
             <p className="compare-label">Calibration-Based Training</p>
-            <p className="compare-text">Your nervous system adapts through strategic exploration. You don&rsquo;t just learn one shot. You learn to make any shot.</p>
+            <p className="compare-text">Your nervous system adapts through strategic exploration. You don&rsquo;t just learn one shot &mdash; you learn to make any shot.</p>
           </div>
         </div>
 
@@ -1070,118 +970,48 @@ export default function MasterclassPage() {
           line-height: 1.5;
         }
 
-        /* ── Results ─────────────────────────────────────────────── */
-        .results-headline {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 1.5rem;
-          color: #000000;
-          margin-bottom: 1.25rem;
-        }
-        .results-band {
-          background: #0A0A0A;
-          border-radius: 12px;
-          padding: 0.5rem 1.25rem;
-        }
-        .results-rows {
-          list-style: none;
-        }
-        .result-row {
+        /* ── Results Grid ────────────────────────────────────────── */
+        .results-grid {
           display: flex;
           flex-direction: column;
-          gap: 0.35rem;
-          padding: 1rem 0;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .result-row:last-child {
-          border-bottom: 0;
-        }
-        .result-row-who {
-          display: flex;
-          align-items: baseline;
           gap: 0.75rem;
-          flex-wrap: wrap;
         }
-        .result-row-name {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 600;
-          font-size: 0.9rem;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: #FFFFFF;
-          white-space: nowrap;
+        .result-card {
+          border: 2px solid #D4A843;
+          border-radius: 10px;
+          padding: 1rem 1.25rem;
+          background: #FFFFFF;
         }
-        .result-row-tag {
-          color: rgba(255, 255, 255, 0.55);
-          font-size: 0.68rem;
-          font-weight: 600;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          white-space: nowrap;
+        .result-card-header {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 0.25rem;
         }
-        .result-row-stat {
-          font-family: var(--font-plex-mono), ui-monospace, monospace;
-          color: #D4B45A;
-          font-size: 0.88rem;
-          line-height: 1.45;
+        .result-logo {
+          width: 28px;
+          height: 28px;
+          object-fit: contain;
+          flex-shrink: 0;
         }
-
-        /* ── Testimonials ────────────────────────────────────────── */
-        .testimonials-headline {
+        .result-name {
           font-family: var(--font-oswald), sans-serif;
           font-weight: 700;
-          font-size: 1.5rem;
-          color: #000000;
-          margin-bottom: 0.5rem;
-        }
-        .quote-list {
-          list-style: none;
-        }
-        .quote {
-          padding: 1.4rem 0;
-          border-bottom: 1px solid #EEE;
-        }
-        .quote:last-child {
-          border-bottom: 0;
-        }
-        .quote-text {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 600;
-          font-size: 1.4rem;
-          line-height: 1.25;
-          color: #000000;
-          max-width: 34ch;
-        }
-        .quote--small .quote-text {
           font-size: 1.05rem;
-          font-weight: 500;
-          max-width: 52ch;
-        }
-        .quote-attr {
-          margin-top: 0.6rem;
-          color: #666666;
-          font-size: 0.7rem;
-          font-weight: 600;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-        }
-        .quote-stat {
-          margin-top: 0.45rem;
-          font-family: var(--font-plex-mono), ui-monospace, monospace;
           color: #000000;
-          font-size: 0.78rem;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
         }
-        .mc-sub {
-          margin-top: 2.5rem;
-        }
-        .mc-intro {
-          color: #666666;
+        .result-stat {
+          color: #D4A843;
+          font-weight: 600;
           font-size: 0.95rem;
-          line-height: 1.5;
-          margin-top: -0.5rem;
-          margin-bottom: 0.5rem;
+          line-height: 1.4;
+        }
+        .result-quote {
+          color: #555555;
+          font-style: italic;
+          font-size: 0.9rem;
+          margin-top: 0.4rem;
+          line-height: 1.4;
         }
 
         /* ── CTA Section ─────────────────────────────────────────── */
@@ -1224,17 +1054,10 @@ export default function MasterclassPage() {
             grid-template-columns: 1fr 1fr;
             gap: 1.25rem;
           }
-          .results-band {
-            padding: 0.5rem 1.75rem;
-          }
-          .result-row {
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: baseline;
-            gap: 1.5rem;
-          }
-          .result-row-stat {
-            text-align: right;
+          .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
           }
           .compare-grid {
             flex-direction: row;
