@@ -752,8 +752,9 @@ export default function MasterclassPage() {
                 consulted for NBA and NCAA programs on player development and shooting calibration.
                 His work includes coaching and consulting with Tobias Harris, OG Anunoby, Paul
                 Reed, Matisse Thybulle, Moses Brown, and Tyler Burton. The methodology was not
-                designed to sound good online. It was tested on film, in season, for years, and
-                only what survived the evidence made it into the masterclass.
+                designed to sound good online. It was tested in real time with real players to
+                ensure transfer and guarantee results, in season, for years, and only what
+                survived the evidence made it into the masterclass.
               </p>
             </Reveal>
           </div>
