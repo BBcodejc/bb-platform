@@ -293,6 +293,15 @@ const QUOTES = [
    - "No one's ever broken down or analyzed film like this for me." Kyle Lowry
    - "You're the smartest basketball coach I've ever been around." Tyler Burton */
 
+const WHAT_YOU_GET = [
+  'Step-by-step 14 Day Calibration You Run Immediately',
+  'Deep Distance Protocol',
+  'Dip and energy-transfer exploration',
+  'Test-out sequences',
+  'On-court implementation guidance',
+  'Immediate access from any device',
+];
+
 const MASTERCLASS_QUOTES = [
   {
     quote:
@@ -433,15 +442,6 @@ export default function MasterclassPage() {
             </ul>
           </Reveal>
           <Reveal delay={120}>
-            <p className="mc-video-caption">
-              Watch this first. Why more reps will not save your shot, and what calibration
-              changes.
-            </p>
-            <div className="mc-video-frame">
-              <video controls playsInline preload="metadata" src="/vsl.mp4" />
-            </div>
-          </Reveal>
-          <Reveal delay={200}>
             <a href={ENROLL_URL} className="mc-cta mc-cta--large">
               Get Instant Access
             </a>
@@ -454,6 +454,84 @@ export default function MasterclassPage() {
               <span>Tobias Harris 18% to 47%</span>
               <span className="tick">·</span>
               <span>Paul Reed 15% to 40%</span>
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── Watch this first ── */}
+      <section id="watch" className="mc-section mc-bg-warm mc-center">
+        <div className="mc-container">
+          <Reveal>
+            <Kicker center>Watch This First</Kicker>
+            <h2 className="mc-h2">Why More Reps Alone Will Not Fix Inconsistent Shooting.</h2>
+          </Reveal>
+          <Reveal delay={100}>
+            <div className="mc-video-frame">
+              <video controls playsInline preload="metadata" src="/vsl.mp4" />
+            </div>
+            <div className="mc-cta-block" style={{ marginTop: '2.5rem' }}>
+              <a href={ENROLL_URL} className="mc-cta">
+                Get the Full Calibration System
+              </a>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── What you get ── */}
+      <section id="what-you-get" className="mc-section mc-bg-white">
+        <div className="mc-container">
+          <Reveal>
+            <Kicker>What You Get</Kicker>
+            <h2 className="mc-h2">A Complete, Self-Paced Shooting Calibration System.</h2>
+          </Reveal>
+          <Reveal delay={100}>
+            <ul className="mc-wyg-grid">
+              {WHAT_YOU_GET.map((item) => (
+                <li key={item} className="mc-wyg-card">
+                  <span className="mc-tick" aria-hidden="true">
+                    ✓
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <p className="mc-wyg-note">
+              This is not a collection of random drills. It is a structured system showing you
+              exactly what to explore when you step onto the court.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── Who it is for ── */}
+      <section id="who-for" className="mc-section mc-bg-pale">
+        <div className="mc-container">
+          <Reveal>
+            <Kicker>Who It Is For</Kicker>
+            <h2 className="mc-h2">One masterclass. Built for players and coaches.</h2>
+          </Reveal>
+          <Reveal delay={100}>
+            <div className="mc-who-grid">
+              <div className="mc-who-card">
+                <h3 className="mc-h3">For Players</h3>
+                <p>
+                  You want to stop thinking about mechanics, respond better to misses, and gain
+                  more control across the full shooting spectrum.
+                </p>
+              </div>
+              <div className="mc-who-card">
+                <h3 className="mc-h3">For Coaches</h3>
+                <p>
+                  You want the BB framework, language, and protocols to guide shooting
+                  exploration with your athletes.
+                </p>
+              </div>
+            </div>
+            <p className="mc-who-note">
+              Both are included in the same masterclass at the same price. There are no separate
+              editions.
             </p>
           </Reveal>
         </div>
