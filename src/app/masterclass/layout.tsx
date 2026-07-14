@@ -1,36 +1,42 @@
 import type { Metadata } from 'next';
-import { Oswald, DM_Sans } from 'next/font/google';
+import { Space_Grotesk, Inter, IBM_Plex_Mono } from 'next/font/google';
+import './masterclass.css';
 
-const oswald = Oswald({
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
-  variable: '--font-oswald',
+  variable: '--font-space',
   display: 'swap',
 });
 
-const dmSans = DM_Sans({
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-dm-sans',
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-plex-mono',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
   title: 'Shooting Calibration Masterclass | Basketball Biomechanics',
   description:
-    'Calibrate your shot in 14 days. The exact protocols used with NBA players. $297 lifetime access.',
+    'The calibration protocols used in season with NBA players. Recalibrate how you shoot. $297, lifetime access, Day 14 guarantee.',
   keywords: [
     'shooting calibration',
     'basketball shooting course',
     'BB masterclass',
     'motor learning basketball',
-    'back rim calibration',
     'basketball biomechanics course',
   ],
   openGraph: {
-    title: 'Calibrate Your Shot In 14 Days | Basketball Biomechanics',
+    title: 'The Calibration System Behind Real NBA Results',
     description:
-      'The exact protocols used with NBA players. $297. Lifetime access.',
+      'The calibration protocols used in season with NBA players. Recalibrate how you shoot. $297, lifetime access, Day 14 guarantee.',
     type: 'website',
   },
 };
@@ -41,7 +47,7 @@ export default function MasterclassLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`${oswald.variable} ${dmSans.variable} font-dm-sans`}>
+    <div className={`${spaceGrotesk.variable} ${inter.variable} ${plexMono.variable}`}>
       {children}
     </div>
   );

@@ -1,1318 +1,844 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-// ─── STICKY BANNER ───────────────────────────────────────────────────────────
+const ENROLL_URL = 'https://bbcode.thinkific.com/enroll/3585033';
 
-function StickyBanner() {
+// ─── Motion helpers ──────────────────────────────────────────────────────────
+
+/** Scroll reveal. The hidden state is applied by JS only, so content is fully
+    visible with JavaScript disabled. Animates once. */
+function Reveal({
+  children,
+  delay = 0,
+  group = false,
+  className = '',
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  group?: boolean;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce && !group) el.classList.add('mc-reveal');
+    if (group) el.classList.add('mc-reveal-group');
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          el.classList.add('is-in');
+          io.disconnect();
+        }
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [group]);
   return (
-    <div className="urgency-banner urgency-banner--sticky">
-      <p className="urgency-text">
-        These protocols work in <span className="urgency-gold">one session.</span>
-      </p>
+    <div ref={ref} className={className} style={delay ? { transitionDelay: `${delay}ms` } : undefined}>
+      {children}
     </div>
   );
 }
 
-// ─── CONSTANTS ────────────────────────────────────────────────────────────────
-
-const THINKIFIC_URL = 'https://bbcode.thinkific.com/enroll/3585033';
-
-const REELS = [
-  'https://www.instagram.com/reel/DXAZutfkXm_/',
-  'https://www.instagram.com/reel/DW8vktWBrPU/',
-  'https://www.instagram.com/reel/DVBd9SyEfnU/',
-  'https://www.instagram.com/reel/DUBOdZZEXRM/',
-];
-
-// ─── ENROLL BUTTON ───────────────────────────────────────────────────────────
-
-function EnrollButton({ label = 'ENROLL NOW' }: { label?: string }) {
+/** Count-up stat. Server-renders the final value so numbers are visible
+    statically with JavaScript disabled; animates once on first view. */
+function CountUp({ from = 0, to, suffix = '%' }: { from?: number; to: number; suffix?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0].isIntersecting) return;
+        io.disconnect();
+        const duration = 1200;
+        const start = performance.now();
+        const tick = (now: number) => {
+          const p = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = `${Math.round(from + (to - from) * eased)}${suffix}`;
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      },
+      { threshold: 0.5 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [from, to, suffix]);
   return (
-    <a href={THINKIFIC_URL} className="enroll-btn">
-      {label}
-    </a>
+    <span ref={ref}>
+      {to}
+      {suffix}
+    </span>
   );
 }
 
-// ─── FINALS POPUP ────────────────────────────────────────────────────────────
+// ─── Top bar ─────────────────────────────────────────────────────────────────
 
-function FinalsPopup() {
-  const [open, setOpen] = useState(false);
-
+function TopBar() {
+  const [solid, setSolid] = useState(false);
   useEffect(() => {
-    if (sessionStorage.getItem('bb-finals-popup')) return;
-    const onScroll = () => {
-      if (window.scrollY < 200) return;
-      window.removeEventListener('scroll', onScroll);
-      setOpen(true);
-      sessionStorage.setItem('bb-finals-popup', '1');
-    };
+    const onScroll = () => setSolid(window.scrollY > window.innerHeight * 0.55);
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
-    };
-  }, [open]);
-
-  if (!open) return null;
-
   return (
-    <div className="popup-overlay" role="dialog" aria-modal="true" onClick={() => setOpen(false)}>
-      <div className="popup-card" onClick={(e) => e.stopPropagation()}>
-        <button className="popup-close" aria-label="Close" onClick={() => setOpen(false)}>
-          &times;
-        </button>
-        <p className="popup-kicker">NBA Finals Proof</p>
-        <p className="popup-headline">
-          OG Anunoby Shot <span className="popup-gold">50% from 3</span> in the Finals on Calibration
-        </p>
-        <a href={THINKIFIC_URL} className="enroll-btn popup-btn">
-          ENROLL NOW
-        </a>
-      </div>
+    <header className={`mc-topbar${solid ? ' is-solid' : ''}`}>
+      <a href="#hero" className="mc-wordmark">
+        BASKETBALL <span>BIOMECHANICS</span>
+      </a>
+      <a href={ENROLL_URL} className="mc-topbar-cta">
+        Start Calibrating
+      </a>
+    </header>
+  );
+}
+
+// ─── Shared bits ─────────────────────────────────────────────────────────────
+
+function Kicker({ children, center = false }: { children: React.ReactNode; center?: boolean }) {
+  return <p className={`mc-kicker${center ? ' mc-kicker--center' : ''}`}>{children}</p>;
+}
+
+function CtaBlock({ label }: { label: string }) {
+  return (
+    <div className="mc-cta-block">
+      <a href={ENROLL_URL} className="mc-cta">
+        {label}
+      </a>
+      <p className="mc-microcopy">$297. Lifetime access. Day 14 guarantee.</p>
     </div>
   );
 }
 
-// ─── SECTION LABEL ───────────────────────────────────────────────────────────
+// ─── Lens diagram ────────────────────────────────────────────────────────────
 
-function SectionLabel({ text }: { text: string }) {
+const LENS_NODES = ['Perception', 'Rhythm', 'Timing', 'Energy', 'Adaptability'];
+
+function LensDiagram() {
   return (
-    <div className="section-label-wrapper">
-      <span className="section-label">{text}</span>
-      <div className="gold-divider" />
+    <svg
+      className="mc-diagram"
+      viewBox="0 0 440 340"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Diagram of the shooting system: Perception, Rhythm, Timing, Energy, and Adaptability converging into The Shot"
+    >
+      {LENS_NODES.map((label, i) => {
+        const y = 42 + i * 64;
+        return (
+          <g key={label}>
+            <line x1={130} y1={y} x2={344} y2={170} />
+            <circle cx={118} cy={y} r={5} />
+            <text x={104} y={y + 4} textAnchor="end">
+              {label}
+            </text>
+          </g>
+        );
+      })}
+      <circle className="shot-node" cx={352} cy={170} r={7} />
+      <text className="shot-label" x={368} y={175}>
+        The Shot
+      </text>
+    </svg>
+  );
+}
+
+// ─── Data ────────────────────────────────────────────────────────────────────
+
+const READOUT = [
+  {
+    name: 'Tyler Burton',
+    badge: 'GRIZZLIES',
+    stat: '29% to 44% in under two weeks',
+    quote: '“My shot never has felt better.”',
+  },
+  { name: 'Tyler Perkins', badge: 'VILLANOVA', stat: '20% to 40%, in season', quote: '' },
+  { name: 'Dominick Stewart', badge: 'PENN STATE', stat: '32% to 42% in three weeks', quote: '' },
+  {
+    name: 'Matisse Thybulle',
+    badge: 'TRAIL BLAZERS',
+    stat: 'finished the 2026 season shooting 40%',
+    quote: '',
+  },
+  {
+    name: 'Trey Drexler',
+    badge: 'HS PG, D1 COMMIT',
+    stat: '47% from three, 26.5 PPG, 90% FT',
+    quote: '“Calibration changed my game.”',
+  },
+];
+
+const PROBLEMS = [
+  {
+    num: '01',
+    title: 'They chase volume.',
+    body: 'Five hundred makes from a spot proves you can make that shot, from that spot, at that speed, with nobody near you. The game never asks for that shot. Volume without variation grooves a shot the game will never let you take.',
+  },
+  {
+    num: '02',
+    title: 'They obsess over form.',
+    body: 'Look at the best shooters alive. Elbows in, elbows out, high releases, low releases. Elite form varies enormously. What does not vary is calibration. And the moment you start thinking about your body mid shot, your timing degrades. That is not a character flaw. That is how the motor system works under conscious interference.',
+  },
+  {
+    num: '03',
+    title: 'They train in sterile environments.',
+    body: 'Same ball. Same arc. Same rhythm. Same spot. Nothing challenges perception, timing, or distance control, so nothing adapts. The gym gets easier while the game stays hard.',
+  },
+  {
+    num: '04',
+    title: 'They never identify what is actually limiting the shot.',
+    body: 'Random drills are prescription without diagnosis. If you do not know whether the limit is distance control, timing, visual calibration, or energy management, you are guessing. Most careers plateau on a guess.',
+  },
+];
+
+const PHASES = [
+  {
+    days: 'Days 1 to 3',
+    title: 'Deep Distance Calibration',
+    body: 'Your system learns distance control from ranges that force adaptation. By day three, the three point line starts to feel like a free throw.',
+  },
+  {
+    days: 'Days 4 to 6',
+    title: 'Movement Integration',
+    body: 'Calibration meets motion. Off the hop, off the one two, on the move, so the adaptation transfers to game conditions instead of staying on a spot.',
+  },
+  {
+    days: 'Days 7 to 10',
+    title: 'Precision From Deep',
+    body: 'Precision targeting beyond the arc. Range stops being a limit and becomes a comfort zone.',
+  },
+  {
+    days: 'Days 11 to 14',
+    title: 'The Test',
+    body: 'You test your new calibration against your Day 1 baseline. Your system has adapted, and the numbers show it.',
+  },
+];
+
+const KEEPS = [
+  'The calibration protocols: distance, ball flight, and energy control work you can return to for the rest of your career',
+  'Constraint based shooting methods that keep your system adapting instead of plateauing',
+  'Visual calibration methods that sharpen target acquisition',
+  'Oversized ball and contrast concepts that magnify feedback and remove room for error',
+  'Rhythm and timing work so your shot survives changing speeds and windows',
+  'The miss profile framework: learn to read your own misses the way a BB coach reads film',
+  'Pre game protocols to lock in calibration on game day, and off day modules to maintain it',
+  'Implementation guidance for players, parents, and coaches, including how to scale everything by age and level',
+];
+
+const FOR_ITEMS = [
+  {
+    title: 'Serious players',
+    body: 'who can shoot in practice but have not translated it to games, or who want range and consistency that hold up under pressure',
+  },
+  {
+    title: 'Parents of serious players',
+    body: "who want a proven system instead of another trainer's opinion, and a protocol they can run with their kid",
+  },
+  {
+    title: 'Coaches and trainers',
+    body: 'who want a shooting framework for a whole program, not a folder of random drills',
+  },
+  {
+    title: 'Pros and high level players',
+    body: 'who want the same calibration lens BB consults to NBA players, in a form they can run on their own schedule',
+  },
+  {
+    title: 'Anyone who wants a deeper framework',
+    body: 'for how shooting actually works, from someone accountable to public results',
+  },
+];
+
+const NOT_FOR_ITEMS = [
+  {
+    title: 'It is not a highlight reel of drills.',
+    body: 'If you want fifty random drills to scroll through, there are cheaper places to get them.',
+  },
+  {
+    title: 'It is not a quick fix.',
+    body: 'The protocols work fast, many players feel the difference in one session, but they work because you follow them as designed. If you will not run the protocols, do not buy them.',
+  },
+  {
+    title: 'It is not entertainment.',
+    body: 'It is a system with a beginning, a middle, an end, and a test. If you are not willing to be tested, this will frustrate you.',
+  },
+];
+
+const BEFORE = [
+  'Endless reps with inconsistent results',
+  'Guessing at what is wrong after every cold night',
+  'A shot that works in the gym and disappears in games',
+  'Form tips from every direction, none of them sticking',
+  'Confidence that depends on the last make',
+];
+
+const AFTER = [
+  'A clear process: you know what to run, why, and what your misses mean',
+  'A calibrated feel for the target from anywhere in your range',
+  'A shot that adapts to distance, rhythm, fatigue, and pressure',
+  'A framework that scales with you for the rest of your career',
+  'Confidence built on measurement, not mood',
+];
+
+const QUOTES = [
+  { quote: '“My shot feels effortless.”', who: 'PAUL REED · NBA' },
+  { quote: '“My shot never has felt better.”', who: 'TYLER BURTON · GRIZZLIES' },
+  { quote: '“Calibration changed my game.”', who: 'TREY DREXLER · HS PG, D1 COMMIT' },
+  {
+    quote: '“Applying BB methods was the best basketball session of my life.”',
+    who: 'DYLAN CARDWELL · KINGS',
+  },
+  {
+    quote: '“Calibration has evolved our program and we shot the best in years on the methods.”',
+    who: 'HIGH SCHOOL COACH',
+  },
+];
+
+/* PENDING NAME-USE CLEARANCE, do not render:
+   - "His brain is like AI." Tobias Harris
+   - "No one's ever broken down film this way in the NBA." OG Anunoby
+   - "No one's ever broken down or analyzed film like this for me." Kyle Lowry
+   - "You're the smartest basketball coach I've ever been around." Tyler Burton */
+
+const FAQS = [
+  {
+    q: 'Is this for young players?',
+    a: 'Yes. Every protocol includes scaling guidance: smaller ball, lower rim, shorter distances. Calibration is built on how the nervous system learns, which is the same at every age. Parents routinely run the protocols with their kids.',
+  },
+  {
+    q: 'Is this for pros?',
+    a: 'It was built on pros. The protocols in the masterclass are the same calibration methods BB consults to NBA players in season. The masterclass is the self paced version of that work.',
+  },
+  {
+    q: 'Do I need special equipment?',
+    a: 'You need a ball and a hoop. An oversized ball is recommended to run the full protocol stack and is inexpensive. Everything else in the BB toolkit is an optional layer, not a requirement.',
+  },
+  {
+    q: 'How quickly can I use it?',
+    a: 'The same day you get access. The protocols are designed to produce a felt difference in the first session and a measured difference by Day 14. They are also in season friendly. Most of our NBA results happened during the season, not the offseason.',
+  },
+  {
+    q: 'What if I am already a good shooter?',
+    a: 'Then you are exactly who calibration was built for. Good shooters plateau when practice stops transferring. Calibration raises the ceiling by training adaptability: deeper range, faster windows, unfamiliar rhythms. The pros in our proof stack were already professional shooters. The numbers still moved.',
+  },
+  {
+    q: 'Is this just form shooting?',
+    a: 'No. You will never be asked to think about your form. Calibration changes the demands on your system and lets your body reorganize the shot itself. That is the opposite of form shooting, and it is why it works under pressure when form cues fall apart.',
+  },
+  {
+    q: 'How is this different from a normal shooting course?',
+    a: 'A normal course gives you drills and opinions about the perfect shot. This gives you protocols: each one has a beginning, a progression, and a test, and each one calibrates a specific part of the system that aims and delivers your shot. It is the difference between collecting drills and owning a method. The proof is in the box scores above.',
+  },
+];
+
+// ─── FAQ accordion ───────────────────────────────────────────────────────────
+
+function Faq() {
+  const [open, setOpen] = useState<number | null>(null);
+  return (
+    <div className="mc-faq">
+      {FAQS.map((item, i) => {
+        const isOpen = open === i;
+        return (
+          <div key={item.q} className={`mc-faq-item${isOpen ? ' is-open' : ''}`}>
+            <button
+              type="button"
+              className="mc-faq-q"
+              aria-expanded={isOpen}
+              aria-controls={`mc-faq-panel-${i}`}
+              id={`mc-faq-button-${i}`}
+              onClick={() => setOpen(isOpen ? null : i)}
+            >
+              {item.q}
+              <span className="mc-faq-icon" aria-hidden="true" />
+            </button>
+            <div
+              id={`mc-faq-panel-${i}`}
+              role="region"
+              aria-labelledby={`mc-faq-button-${i}`}
+              hidden={!isOpen}
+            >
+              <p className="mc-faq-a">{item.a}</p>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
 
-// ─── RESULT CARD ─────────────────────────────────────────────────────────────
-
-function ResultCard({ name, result, quote, logo }: { name: string; result: string; quote?: string; logo?: string }) {
-  return (
-    <div className="result-card">
-      <div className="result-card-header">
-        {logo && <img src={logo} alt="" className="result-logo" />}
-        <p className="result-name">{name}</p>
-      </div>
-      {result && <p className="result-stat">{result}</p>}
-      {quote && <p className="result-quote">&ldquo;{quote}&rdquo;</p>}
-    </div>
-  );
-}
-
-// ─── DAY BLOCK ───────────────────────────────────────────────────────────────
-
-function DayBlock({ days, title, children }: { days: string; title: string; children: React.ReactNode }) {
-  return (
-    <div className="day-block">
-      <p className="day-range">{days}</p>
-      <p className="day-title">{title}</p>
-      <p className="day-desc">{children}</p>
-    </div>
-  );
-}
-
-// ─── FAQ ITEM ────────────────────────────────────────────────────────────────
-
-function FaqItem({ q, a }: { q: string; a: string }) {
-  return (
-    <div className="faq-item">
-      <p className="faq-q">{q}</p>
-      <p className="faq-a">{a}</p>
-    </div>
-  );
-}
-
-// ─── PAGE ────────────────────────────────────────────────────────────────────
+// ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function MasterclassPage() {
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !(window as any).instgrm) {
-      const s = document.createElement('script');
-      s.src = '//www.instagram.com/embed.js';
-      s.async = true;
-      document.body.appendChild(s);
-    } else if ((window as any).instgrm) {
-      (window as any).instgrm.Embeds.process();
-    }
-  }, []);
-
-  useEffect(() => {
-    const page = document.querySelector('.page');
-    const els = document.querySelectorAll('.section');
-    if (!page || !('IntersectionObserver' in window)) return;
-    page.classList.add('reveal-ready');
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('in');
-            io.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.06, rootMargin: '0px 0px -6% 0px' }
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
-
   return (
-    <main className="page">
-      <StickyBanner />
-      <FinalsPopup />
+    <main className="mc-page">
+      <TopBar />
 
-      {/* ── HERO ────────────────────────────────────────────────────── */}
-      <section className="hero">
-        <img
-          src="/players/bblogolandingpage.png"
-          alt="BB"
-          className="logo"
-        />
-        <h1 className="hero-headline">The Only Shooting System That You Will Ever Need</h1>
-        <p className="hero-sub">
-          14 days to calibration. A lifetime of confidence from anywhere on the court.
-        </p>
-
-        <div className="vsl-embed">
-          <video
-            controls
-            playsInline
-            preload="metadata"
-            className="vsl-video"
-          >
-            <source src="/vsl.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </div>
-
-        <EnrollButton />
-
-        <div className="hero-copy-block">
-          <p className="hero-body">
-            <strong>Your shot isn&rsquo;t broken.<br />You&rsquo;ve just never been calibrated.</strong>
-          </p>
-          <p className="hero-body">
-            Most players are taught to fix their form.
-          </p>
-          <p className="hero-body">
-            That&rsquo;s not how the game works.
-          </p>
-          <p className="hero-body">
-            We teach your system to adapt<br />so you can deliver the ball to the target<br />from any position, under any condition.
-          </p>
-          <p className="hero-body hero-proof">
-            18% &rarr; 47%.
-          </p>
-          <p className="hero-body hero-proof">
-            In-season.
-          </p>
-          <p className="hero-body hero-proof">
-            Without changing mechanics.
-          </p>
-          <p className="hero-body hero-proof">
-            Thousands of players calibrated.
-          </p>
-          <p className="hero-body hero-proof" style={{ fontSize: '1.15rem' }}>
-            <strong>Now it&rsquo;s your turn.</strong>
-          </p>
-        </div>
-
-        <EnrollButton />
-      </section>
-
-      {/* ── PLAYER RESULTS ──────────────────────────────────────────── */}
-      <section className="section">
-        <SectionLabel text="PLAYER RESULTS" />
-
-        <div className="results-grid">
-          <ResultCard
-            name="Tobias Harris (Pistons)"
-            result="18% to 47% (In less than 100 Days)"
-            logo="/players/pistons-logo.svg"
-          />
-          <ResultCard
-            name="Paul Reed (Pistons)"
-            result="15% to 40% and 7x'd Amount of Makes"
-            quote="My shot feels effortless"
-            logo="/players/pistons-logo.svg"
-          />
-          <ResultCard
-            name="Tyler Perkins (Villanova)"
-            result="20% to 40% (In-Season)"
-            logo="/players/villanova-logo.svg"
-          />
-          <ResultCard
-            name="OG Anunoby (Knicks)"
-            result="Career High 3pt % while being consulted by BB"
-            logo="/players/knicks-logo.svg"
-          />
-          <ResultCard
-            name="Tyler Burton (Grizzlies)"
-            result="29% to 44% In less than 2 weeks"
-            quote="My shot never has felt better"
-            logo="/players/grizzlies-logo.svg"
-          />
-          <ResultCard
-            name="Trey Drexler (HS PG, D1 Commit)"
-            result="47% from 3 this year, 26.5 PPG, 90% FT"
-            quote="Calibration changed my game"
-          />
-          <ResultCard
-            name="Dominick Stewart (Penn State)"
-            result="32% to 42% This season, In 3 weeks"
-            logo="/players/pennstate-logo.svg"
-          />
-          <ResultCard
-            name="Matisse Thybulle (Trail Blazers)"
-            result="Finished 2026 Season Shooting 40%"
-            logo="/players/blazers-logo.svg"
-          />
-          <ResultCard
-            name="Dylan Cardwell (Kings)"
-            result=""
-            quote="Applying BB Methods was the best basketball session of my life"
-            logo="/players/kings-logo.svg"
-          />
-          <ResultCard
-            name="HS Coach"
-            result=""
-            quote="Calibration has evolved our program and we shot the best in years on the methods"
-          />
-        </div>
-
-        <div style={{ marginTop: '1.25rem' }}>
-          <EnrollButton />
+      {/* ── 1. Hero ── */}
+      <section id="hero" className="mc-hero mc-bg-white">
+        <div className="mc-container">
+          <Reveal>
+            <Kicker center>The Shooting Calibration Masterclass</Kicker>
+            <h1 className="mc-h1">
+              Nothing is wrong with your shot. It has never been calibrated.
+            </h1>
+            <p className="mc-hero-sub">
+              The exact calibration protocols Basketball Biomechanics runs with NBA players in
+              season, when the shots count and the percentages are public. Now self paced, for any
+              player, in any gym.
+            </p>
+          </Reveal>
+          <Reveal delay={120}>
+            <p className="mc-video-caption">
+              Watch this first. Why more reps will not save your shot, and what calibration
+              changes.
+            </p>
+            <div className="mc-video-frame">
+              <video controls playsInline preload="metadata" src="/vsl.mp4" />
+            </div>
+          </Reveal>
+          <Reveal delay={200}>
+            <a href={ENROLL_URL} className="mc-cta mc-cta--large">
+              Start Calibrating Your Shot
+            </a>
+            <p className="mc-microcopy">$297. Lifetime access. Backed by the Day 14 guarantee.</p>
+            <p className="mc-proof-strip">
+              <span>OG Anunoby, 2026 NBA Champion</span>
+              <span className="tick">·</span>
+              <span>Tobias Harris 18% to 47%</span>
+              <span className="tick">·</span>
+              <span>Paul Reed 15% to 40%</span>
+            </p>
+          </Reveal>
         </div>
       </section>
 
-      {/* ── THE 14-DAY CALIBRATION JOURNEY ─────────────────────────── */}
-      <section className="section">
-        <SectionLabel text="THE 14-DAY CALIBRATION JOURNEY" />
-        <p className="section-subtitle">What You&rsquo;ll Experience:</p>
-
-        <div className="day-blocks">
-          <DayBlock days="Days 1-3" title="Deep Distance Calibration">
-            Explore extensively from deep range. By day 3, the three-point line will feel like a free throw. Your system learns distance control.
-          </DayBlock>
-          <DayBlock days="Days 4-6" title="Movement Integration">
-            Shoot off the hop, 1-2 step, and in motion. We open your movement bandwidth so calibration transfers to game conditions.
-          </DayBlock>
-          <DayBlock days="Days 7-10" title="Precision Targeting from Deep">
-            Introduce precision from beyond the arc. You&rsquo;ll be knocking down threes from way outside the line &mdash; effortlessly.
-          </DayBlock>
-          <DayBlock days="Days 11-14" title="Precision At Its Best">
-            Test your new calibration. Score above your average. Guaranteed. Your system has adapted, and the results prove it.
-          </DayBlock>
+      {/* ── 2. Proof ── */}
+      <section id="proof" className="mc-section mc-bg-warm" style={{ paddingBottom: 0 }}>
+        <div className="mc-container">
+          <Reveal>
+            <Kicker>Proven In Season</Kicker>
+            <h2 className="mc-h2">The results happened in season, on film, in public box scores.</h2>
+            <p className="mc-lead">
+              Anyone can look good in an empty gym. BB results are measured where they are hardest
+              to fake: live NBA seasons, real percentages, real stakes.
+            </p>
+          </Reveal>
         </div>
 
-        <EnrollButton />
-      </section>
+        <Reveal>
+          <div className="mc-og-panel">
+            <div className="mc-container">
+              <p className="mc-og-stat">
+                <CountUp to={50} />
+              </p>
+              <p className="mc-og-caps">From Three · 2026 NBA Finals · Champion</p>
+              <p className="mc-og-name">OG Anunoby. New York Knicks. 2026 NBA Champion.</p>
+              <p className="mc-og-body">
+                Shot 50% from three in the NBA Finals while being consulted by BB on shooting
+                calibration throughout the season. A career year, finished on the biggest stage in
+                basketball.
+              </p>
+            </div>
+          </div>
+        </Reveal>
 
-      {/* ── AFTER THE 14 DAYS ──────────────────────────────────────── */}
-      <section className="section">
-        <SectionLabel text="AFTER THE 14 DAYS: YOUR NEW SHOOTING SYSTEM" />
-        <p className="section-intro">The modules teach you more than just drills. They teach you how to think.</p>
+        <div className="mc-container" style={{ paddingBottom: '7rem' }}>
+          <div className="mc-featured-grid">
+            <Reveal>
+              <div className="mc-featured-card">
+                <p className="mc-featured-stat">
+                  18% to{' '}
+                  <span className="to">
+                    <CountUp from={18} to={47} />
+                  </span>
+                </p>
+                <p className="mc-featured-name">
+                  Tobias Harris <span className="mc-badge">NBA</span>
+                </p>
+                <p className="mc-featured-body">
+                  In season. In under 100 days. Without rebuilding his mechanics. The flagship
+                  proof that calibration changes shooting while the games are still being played.
+                </p>
+              </div>
+            </Reveal>
+            <Reveal delay={100}>
+              <div className="mc-featured-card">
+                <p className="mc-featured-stat">
+                  15% to{' '}
+                  <span className="to">
+                    <CountUp from={15} to={40} />
+                  </span>
+                </p>
+                <p className="mc-featured-name">
+                  Paul Reed <span className="mc-badge">NBA</span>
+                </p>
+                <p className="mc-featured-body">In season. Seven times the makes.</p>
+                <p className="mc-featured-quote">{'“My shot feels effortless.”'}</p>
+              </div>
+            </Reveal>
+          </div>
 
-        <ul className="after-list">
-          <li><strong>Understand your miss profile</strong> &mdash; Know exactly what your system needs</li>
-          <li><strong>Your system learns what to calibrate</strong> and explore to continue adapting</li>
-          <li><strong>Game Days:</strong> Run the pre-game protocols to lock in calibration</li>
-          <li><strong>Off-Days:</strong> Run modules 1-4 to maintain and evolve your system</li>
-        </ul>
+          <Reveal>
+            <div className="mc-readout">
+              {READOUT.map((row) => (
+                <div key={row.name} className="mc-readout-row">
+                  <span className="mc-readout-name">{row.name}</span>
+                  <span className="mc-badge">{row.badge}</span>
+                  <span className="mc-readout-stat">{row.stat}</span>
+                  {row.quote ? <span className="mc-readout-quote">{row.quote}</span> : <span />}
+                </div>
+              ))}
+            </div>
+          </Reveal>
 
-        <div className="closing-block">
-          <p className="closing-bold">This is the only shooting course you&rsquo;ll ever need.</p>
-          <p className="closing-text">Your form is not the problem. What you explore is. And this prepares you for any shot you will ever take in a game.</p>
+          <Reveal>
+            <p className="mc-closer">
+              Different levels. Different ages. The same protocols. The same lens you are about to
+              learn.
+            </p>
+            <CtaBlock label="Start Calibrating Your Shot" />
+          </Reveal>
         </div>
-
-        <EnrollButton />
       </section>
 
-      {/* ── VISUAL EVIDENCE ─────────────────────────────────────────── */}
-      <section className="section">
-        <SectionLabel text="VISUAL EVIDENCE" />
+      {/* ── 3. Problem ── */}
+      <section id="problem" className="mc-section mc-bg-white">
+        <div className="mc-container">
+          <Reveal>
+            <Kicker>Why Shooters Plateau</Kicker>
+            <h2 className="mc-h2">You do not have a rep problem. You have a calibration problem.</h2>
+            <p className="mc-lead">
+              Most players who are stuck are not lazy. They are doing more of the wrong work,
+              harder. There are four reasons the industry keeps producing practice shooters who
+              disappear in games.
+            </p>
+          </Reveal>
+          <div className="mc-problems">
+            {PROBLEMS.map((p, i) => (
+              <Reveal key={p.num} delay={i * 80}>
+                <div className="mc-problem">
+                  <p className="mc-problem-num mc-mono">{p.num}</p>
+                  <h3 className="mc-h3">{p.title}</h3>
+                  <p>{p.body}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+          <Reveal>
+            <p className="mc-closer">
+              More reps of the same shot make you better at practice. Calibration makes you better
+              at basketball.
+            </p>
+          </Reveal>
+        </div>
+      </section>
 
-        <div className="reels-grid">
-          {REELS.map((url) => (
-            <div key={url} className="reel-embed">
-              <blockquote
-                className="instagram-media"
-                data-instgrm-permalink={url}
-                data-instgrm-version="14"
-                style={{
-                  background: '#FFF',
-                  border: 0,
-                  borderRadius: '3px',
-                  boxShadow: 'none',
-                  margin: '0 auto',
-                  maxWidth: '540px',
-                  minWidth: '280px',
-                  padding: 0,
-                  width: '100%',
-                }}
+      {/* ── 4. The BB Lens ── */}
+      <section id="lens" className="mc-section mc-bg-warm">
+        <div className="mc-container">
+          <Reveal>
+            <Kicker>The BB Lens</Kicker>
+            <h2 className="mc-h2">Shooting is not a pose. It is a moving calculation.</h2>
+          </Reveal>
+          <div className="mc-lens-grid">
+            <div>
+              <Reveal>
+                <p className="mc-body">
+                  Every shot is a target acquisition problem solved under pressure. Your eyes find
+                  the rim. Your system reads the distance, selects the energy, and times the
+                  delivery, all in fractions of a second, while the game changes around you.
+                </p>
+                <p className="mc-body">
+                  That means shooting is not just mechanics. It is perception. Rhythm. Timing.
+                  Coordination. Distance control. Adaptability. When any one of those is
+                  uncalibrated, no amount of form work can compensate, because form was never the
+                  problem.
+                </p>
+              </Reveal>
+              <Reveal>
+                <blockquote className="mc-pullquote">
+                  {'“Shooting is about energy. When you can’t control the energy, you will not be a highly adaptable shooter.”'}
+                  <cite>Tommy Tempesta</cite>
+                </blockquote>
+              </Reveal>
+              <Reveal>
+                <p className="mc-body">
+                  BB calibrates that system directly. The protocols manipulate the exact variables
+                  your shot must cope with: distance, ball flight, airspace, and the ball itself.
+                  Each protocol places your system in conditions it cannot solve on autopilot, and
+                  your body recalibrates. No cues about your elbow. No slow-motion checklists. The
+                  demands change, and the shot that emerges is one that survives changing
+                  conditions.
+                </p>
+                <p className="mc-body">
+                  That is why the same lens works on an NBA champion in the Finals and a high
+                  school guard in a driveway. It is not built on someone&rsquo;s opinion of what a
+                  shot should look like. It is built on how shooting is actually controlled.
+                </p>
+              </Reveal>
+            </div>
+            <Reveal group>
+              <LensDiagram />
+            </Reveal>
+          </div>
+          <Reveal>
+            <p className="mc-closer">
+              This is the lens behind every result above. The masterclass hands it to you.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── 5. Inside the Masterclass ── */}
+      <section id="masterclass" className="mc-section mc-bg-white">
+        <div className="mc-container">
+          <Reveal>
+            <Kicker>Inside The Masterclass</Kicker>
+            <h2 className="mc-h2">A 14 day calibration. Then a system for life.</h2>
+            <p className="mc-lead">
+              The masterclass is delivered as a 14 day protocol arc with full video demonstrations.
+              You run it in a normal gym. Every protocol tells you what to do, why it works, and
+              what your misses are telling you.
+            </p>
+          </Reveal>
+
+          <Reveal group>
+            <div className="mc-timeline">
+              {PHASES.map((phase) => (
+                <div key={phase.days} className="mc-phase">
+                  <p className="mc-phase-days">{phase.days}</p>
+                  <p className="mc-phase-title">{phase.title}</p>
+                  <p>{phase.body}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+
+          <Reveal>
+            <h3 className="mc-keep-title">What you keep after the 14 days</h3>
+            <ul className="mc-checklist">
+              {KEEPS.map((item) => (
+                <li key={item}>
+                  <span className="mc-tick" aria-hidden="true">
+                    ✓
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <p className="mc-format-line">
+              Video demonstrations for every protocol. Lifetime access. Every future update
+              included.
+            </p>
+          </Reveal>
+
+          <Reveal>
+            <div className="mc-guarantee">
+              <p className="mc-guarantee-title">The Day 14 Guarantee.</p>
+              <p>
+                Run the 14 day protocol as designed. Test out on Day 14. Your score will be higher
+                than your Day 1 baseline. These protocols were built with players whose percentages
+                are public. That is the standard they are held to.
+              </p>
+            </div>
+            <CtaBlock label="Start Calibrating Your Shot" />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── 6. Who this is for ── */}
+      <section id="for" className="mc-section mc-bg-white" style={{ paddingTop: 0 }}>
+        <div className="mc-container">
+          <Reveal>
+            <Kicker>Who This Is For</Kicker>
+            <h2 className="mc-h2">Built for people who are serious about shooting.</h2>
+            <ul className="mc-for-list">
+              {FOR_ITEMS.map((item) => (
+                <li key={item.title}>
+                  <span className="mc-tick" aria-hidden="true">
+                    ✓
+                  </span>
+                  <span>
+                    <strong>{item.title}</strong> {item.body}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── 7. Who this is not for ── */}
+      <section id="not-for" className="mc-section mc-bg-pale">
+        <div className="mc-container">
+          <Reveal>
+            <Kicker>Read This Before You Buy</Kicker>
+            <h2 className="mc-h2">This is not for everyone. That is the point.</h2>
+            <ul className="mc-notfor-list">
+              {NOT_FOR_ITEMS.map((item) => (
+                <li key={item.title}>
+                  <span className="mc-cross" aria-hidden="true">
+                    ×
+                  </span>
+                  <span>
+                    <strong>{item.title}</strong> {item.body}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mc-notfor-closer">
+              If that filtered you out, no hard feelings. If it made you more interested, you are
+              exactly who this was built for.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── 8. Transformation ── */}
+      <section id="transformation" className="mc-section mc-bg-white">
+        <div className="mc-container">
+          <Reveal>
+            <Kicker>Before And After Calibration</Kicker>
+            <h2 className="mc-h2">The difference is not more effort. It is a different system.</h2>
+          </Reveal>
+          <Reveal group>
+            <div className="mc-transform-grid">
+              <div className="mc-transform-col mc-before">
+                <h3>Before calibration</h3>
+                <ul>
+                  {BEFORE.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mc-transform-divider" aria-hidden="true" />
+              <div className="mc-transform-col mc-after mc-after-col">
+                <h3>After calibration</h3>
+                <ul>
+                  {AFTER.map((item) => (
+                    <li key={item}>
+                      <span className="mc-tick" aria-hidden="true">
+                        ✓
+                      </span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── 9. Testimonials ── */}
+      <section id="testimonials" className="mc-section mc-bg-warm">
+        <div className="mc-container">
+          <Reveal>
+            <Kicker>From The Players</Kicker>
+            <h2 className="mc-h2">In their words.</h2>
+          </Reveal>
+          <div className="mc-quotes">
+            {QUOTES.map((q, i) => (
+              <Reveal key={q.who} delay={i * 80}>
+                <blockquote className="mc-quote">
+                  <p>{q.quote}</p>
+                  <cite>{q.who}</cite>
+                </blockquote>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 10. The Coach ── */}
+      <section id="coach" className="mc-section mc-bg-white">
+        <div className="mc-container">
+          <Reveal>
+            <Kicker>The Coach Behind Calibration</Kicker>
+            <h2 className="mc-h2">
+              Tommy Tempesta. NBA shooting consultant. Biomechanics specialist.
+            </h2>
+          </Reveal>
+          <div className="mc-coach-grid">
+            <Reveal>
+              <div className="mc-coach-photo-frame">
+                <img
+                  src="/players/tommy-coach.jpg"
+                  alt="Coach Tommy Tempesta"
+                  className="mc-coach-photo"
+                  loading="lazy"
+                />
+              </div>
+            </Reveal>
+            <Reveal delay={100}>
+              <p className="mc-body">
+                Twenty five years of research and application at the highest levels of basketball.
+                Tommy built the calibration system now used in season by NBA players, and has
+                consulted for NBA and NCAA programs on player development and shooting calibration.
+                His work includes coaching and consulting with Tobias Harris, OG Anunoby, Paul
+                Reed, Matisse Thybulle, Moses Brown, and Tyler Burton. The methodology was not
+                designed to sound good online. It was tested on film, in season, for years, and
+                only what survived the evidence made it into the masterclass.
+              </p>
+            </Reveal>
+          </div>
+          <Reveal>
+            <p className="mc-video-caption">Watch a full calibration session with an NBA player.</p>
+            <div className="mc-video-frame" style={{ margin: '0 auto' }}>
+              <iframe
+                src="https://www.youtube.com/embed/Bpm-jAX8c38"
+                title="Full calibration session with an NBA player"
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
               />
             </div>
-          ))}
-        </div>
-
-        {/* ── MEET THE COACH (inline) ──────────────────────────────── */}
-        <div className="coach-inline">
-          <SectionLabel text="MEET THE COACH BEHIND CALIBRATION" />
-
-          <div className="coach-photo-wrap">
-            <img
-              src="/players/tommy-coach.jpg"
-              alt="Coach Tommy Tempesta"
-              className="coach-photo"
-            />
-          </div>
-
-          <p className="coach-name">Tommy Tempesta</p>
-          <p className="coach-title">NBA Coach &amp; Biomechanics Specialist</p>
-
-          <p className="coach-bio">
-            With over 25 years of research and application at the highest levels of basketball, Coach Tommy has developed the shooting calibration system used by NBA players worldwide.
-          </p>
-
-          <p className="coach-work-label">His Work Includes:</p>
-          <ul className="coach-work-list">
-            <li>Coaching NBA players including Tobias Harris, OG Anunoby, Paul Reed, Moses Brown, and Tyler Burton</li>
-            <li>Consulting for NBA and NCAA teams like the Mavericks and Auburn University on player development and shooting calibration</li>
-            <li>Pioneering the Basketball Biomechanics methodology that revolutionizes how players learn to shoot</li>
-          </ul>
-        </div>
-
-        <div className="youtube-section">
-          <p className="youtube-label">Watch a Full Calibration Session Here:</p>
-          <div className="youtube-embed">
-            <iframe
-              src="https://www.youtube.com/embed/Bpm-jAX8c38"
-              title="Full Calibration Session"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-        </div>
-
-        <div style={{ marginTop: '1.25rem' }}>
-          <EnrollButton />
+          </Reveal>
         </div>
       </section>
 
-      {/* ── WHY THIS WORKS ─────────────────────────────────────────── */}
-      <section className="section">
-        <SectionLabel text="WHY THIS WORKS" />
-
-        <div className="compare-grid">
-          <div className="compare-block compare-old">
-            <p className="compare-label">Traditional Shooting Coaching</p>
-            <p className="compare-text">Fix your form. Repeat the same shot 1,000 times. Hope it translates to games.</p>
-          </div>
-          <div className="compare-block compare-new">
-            <p className="compare-label">Calibration-Based Training</p>
-            <p className="compare-text">Your nervous system adapts through strategic exploration. You don&rsquo;t just learn one shot &mdash; you learn to make any shot.</p>
-          </div>
-        </div>
-
-        <p className="compare-result">
-          The result? Confidence from anywhere. Consistency under pressure. Percentages that actually improve in games, not just in the gym.
-        </p>
-      </section>
-
-      {/* ── WHO THIS IS FOR ────────────────────────────────────────── */}
-      <section className="section">
-        <SectionLabel text="WHO THIS IS FOR" />
-
-        <ul className="check-list">
-          <li>Players who can shoot in practice but struggle in games</li>
-          <li>Athletes looking to expand their range beyond the arc</li>
-          <li>Coaches who want a system, not just drills</li>
-          <li>Anyone tired of &ldquo;fix your form&rdquo; advice that doesn&rsquo;t work</li>
-        </ul>
-      </section>
-
-      {/* ── WHAT'S INCLUDED ────────────────────────────────────────── */}
-      <section className="section">
-        <SectionLabel text="WHAT'S INCLUDED" />
-
-        <ul className="included-list">
-          <li>14-Day Calibration Protocol (video demonstrations)</li>
-          <li>Pre-Game Shooting Protocols</li>
-          <li>4 Core Modules for continuous adaptation</li>
-          <li>Miss Profile Analysis framework</li>
-          <li>Lifetime access to all updates</li>
-        </ul>
-      </section>
-
-      {/* ── THE GUARANTEE ──────────────────────────────────────────── */}
-      <section className="section guarantee-section">
-        <SectionLabel text="THE GUARANTEE" />
-        <p className="guarantee-text">
-          Complete the 14-day protocol as designed. Test out on day 14. <strong>Your Score will be Higher.</strong>
-        </p>
-      </section>
-
-      {/* ── PRICING ────────────────────────────────────────────────── */}
-      <section className="section pricing-section">
-        <SectionLabel text="PRICING" />
-        <div className="pricing-banner">
-          <p className="pricing-banner-text">
-            Get the Shooting Calibration Masterclass for <span className="pricing-banner-gold">$297</span>.
-          </p>
-          <p className="pricing-banner-bold">These protocols work in one session.</p>
-          <div style={{ marginTop: '1rem' }}>
-            <EnrollButton />
-          </div>
+      {/* ── 11. FAQ ── */}
+      <section id="faq" className="mc-section mc-bg-warm">
+        <div className="mc-container">
+          <Reveal>
+            <Kicker>Questions, Answered</Kicker>
+            <Faq />
+          </Reveal>
         </div>
       </section>
 
-      {/* ── FAQ ────────────────────────────────────────────────────── */}
-      <section className="section">
-        <SectionLabel text="FAQ" />
-
-        <div className="faq-list">
-          <FaqItem
-            q="Is this just another shooting drill program?"
-            a="No. This teaches your nervous system to adapt to any shot through strategic exploration. Drills are the vehicle, calibration is the outcome."
-          />
-          <FaqItem
-            q="Will this work if I'm a beginner?"
-            a="Yes. Calibration works at every level because it's based on how your nervous system learns, not your current skill level."
-          />
-          <FaqItem
-            q="How is this different from form-based coaching?"
-            a="Form coaching tries to make you shoot the same way every time. Calibration trains your system to adapt to every situation you'll face in a game."
-          />
+      {/* ── 12. Final CTA ── */}
+      <section id="start" className="mc-final">
+        <div className="mc-container">
+          <Reveal>
+            <h2 className="mc-h2">
+              Your next 14 days can change how you shoot for the rest of your career.
+            </h2>
+            <p className="mc-final-body">
+              You have seen the results, the lens, and the system. The only thing left is the part
+              BB cannot do for you.
+            </p>
+            <a href={ENROLL_URL} className="mc-cta mc-cta--large">
+              Start The Shooting Calibration Masterclass
+            </a>
+            <p className="mc-microcopy">$297. Lifetime access. Day 14 guarantee.</p>
+            <p className="mc-final-line">Proven In Season</p>
+          </Reveal>
         </div>
+        <footer className="mc-footer">
+          Basketball Biomechanics · Coach Tommy Tempesta · Trusted by NBA, D1, and high school
+          players worldwide.
+        </footer>
       </section>
-
-      {/* ── FINAL CTA ───────────────────────────────────────────────── */}
-      <section className="section cta-section">
-        <h2 className="cta-headline">Stop fixing your form. Start calibrating your system.</h2>
-        <EnrollButton label="JOIN THE MASTERCLASS NOW" />
-        <p className="trust-line">Trusted by NBA, D1, and high school players worldwide.</p>
-      </section>
-
-      {/* ── STYLES ──────────────────────────────────────────────────── */}
-      <style jsx global>{`
-        /* ── Design tokens (white + gold) ─────────────────────────
-           ink #161310 · body #4B463D · muted #948D7F
-           gold #D4A843 · gold-deep #A57E2C (small text on white)
-           hairline #ECE6D9 · warm #FAF7F1 · panel #0D0B08         */
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        html, body {
-          background: #FFFFFF !important;
-        }
-
-        .page {
-          background: #FFFFFF;
-          color: #161310;
-          font-family: var(--font-dm-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-          -webkit-font-smoothing: antialiased;
-          text-rendering: optimizeLegibility;
-          line-height: 1.65;
-          min-height: 100vh;
-        }
-
-        /* ── Urgency Banner ──────────────────────────────────────── */
-        .urgency-banner {
-          background: #0D0B08;
-          text-align: center;
-          padding: 0.8rem 1.25rem;
-        }
-        .urgency-banner--sticky {
-          position: sticky;
-          top: 0;
-          z-index: 1000;
-          border-bottom: 1px solid rgba(212, 168, 67, 0.25);
-        }
-        .urgency-banner--inline {
-          border-radius: 10px;
-          margin-bottom: 0.75rem;
-          padding: 0.6rem 1rem;
-        }
-        .urgency-text {
-          color: rgba(255, 255, 255, 0.85);
-          font-size: 0.8rem;
-          letter-spacing: 0.05em;
-          line-height: 1.5;
-        }
-        .urgency-gold {
-          color: #D4A843;
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-        }
-        .countdown-numbers {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 1rem;
-          color: #D4A843;
-          letter-spacing: 0.05em;
-        }
-        .countdown-expired {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 1.05rem;
-          color: #D4A843;
-        }
-        .enroll-wrapper {
-          width: 100%;
-          max-width: 400px;
-          margin: 0 auto;
-        }
-
-        /* ── Hero ────────────────────────────────────────────────── */
-        .logo {
-          height: 40px;
-          width: auto;
-          position: absolute;
-          top: 1.4rem;
-          left: 1.6rem;
-        }
-        .hero {
-          position: relative;
-          padding: 5.75rem 1.5rem 3.25rem;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          max-width: 760px;
-          margin: 0 auto;
-        }
-        .hero::before {
-          content: '';
-          position: absolute;
-          top: -120px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 900px;
-          max-width: 100vw;
-          height: 560px;
-          background: radial-gradient(ellipse at top, rgba(212, 168, 67, 0.10) 0%, rgba(212, 168, 67, 0) 65%);
-          pointer-events: none;
-          z-index: 0;
-        }
-        .hero > *:not(.logo) { position: relative; z-index: 1; }
-        .hero-headline {
-          font-family: var(--font-oswald), sans-serif;
-          font-size: clamp(2.4rem, 7vw, 4rem);
-          font-weight: 700;
-          text-transform: uppercase;
-          line-height: 1.04;
-          letter-spacing: 0.01em;
-          color: #161310;
-          margin-bottom: 1rem;
-        }
-        .hero-sub {
-          font-size: clamp(0.95rem, 2vw, 1.1rem);
-          color: #A57E2C;
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.14em;
-          margin-bottom: 1.9rem;
-          line-height: 1.55;
-        }
-        .hero-body {
-          font-size: 1.02rem;
-          color: #4B463D;
-          line-height: 1.65;
-          margin-bottom: 0.8rem;
-          max-width: 560px;
-        }
-        .hero-proof {
-          font-family: var(--font-oswald), sans-serif;
-          color: #A57E2C;
-          font-weight: 600;
-          font-size: 1.08rem;
-          text-transform: uppercase;
-          letter-spacing: 0.07em;
-          margin-bottom: 0.45rem;
-        }
-        .hero-copy-block {
-          margin-top: 2.25rem;
-          margin-bottom: 2rem;
-        }
-
-        /* ── VSL Video ───────────────────────────────────────────── */
-        .vsl-embed {
-          width: 100%;
-          margin-bottom: 1.9rem;
-          border-radius: 18px;
-          overflow: hidden;
-          border: 1px solid #E4D9BC;
-          background: #0D0B08;
-          box-shadow: 0 30px 70px -30px rgba(22, 19, 16, 0.45);
-        }
-        .vsl-video {
-          display: block;
-          width: 100%;
-          height: auto;
-        }
-
-        /* ── Enroll Button ───────────────────────────────────────── */
-        .enroll-btn {
-          display: block;
-          background: #D4A843;
-          color: #14110B;
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 1.05rem;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          text-align: center;
-          text-decoration: none;
-          padding: 1.2rem 3rem;
-          border-radius: 999px;
-          width: 100%;
-          max-width: 400px;
-          margin: 0 auto;
-          box-shadow: 0 16px 38px -14px rgba(212, 168, 67, 0.65);
-          transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
-        }
-        .enroll-btn:hover {
-          background: #E0B75A;
-          transform: translateY(-2px);
-          box-shadow: 0 22px 46px -14px rgba(212, 168, 67, 0.75);
-        }
-        .enroll-btn:active { transform: translateY(0); }
-
-        /* ── Section ─────────────────────────────────────────────── */
-        .section {
-          padding: 4.25rem 1.5rem;
-          max-width: 680px;
-          margin: 0 auto;
-          border-top: 1px solid #F1ECE1;
-        }
-        .page.reveal-ready .section {
-          opacity: 0;
-          transform: translateY(22px);
-          transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .page.reveal-ready .section.in {
-          opacity: 1;
-          transform: none;
-        }
-
-        /* ── Section Label ───────────────────────────────────────── */
-        .section-label-wrapper {
-          margin-bottom: 1.75rem;
-        }
-        .section-label {
-          font-family: var(--font-oswald), sans-serif;
-          font-size: 0.74rem;
-          font-weight: 600;
-          letter-spacing: 0.3em;
-          text-transform: uppercase;
-          color: #A57E2C;
-          display: block;
-          margin-bottom: 0.65rem;
-        }
-        .gold-divider {
-          height: 2px;
-          width: 44px;
-          background: #D4A843;
-        }
-
-        /* ── Section Subtitle / Intro ────────────────────────────── */
-        .section-subtitle {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 1.35rem;
-          color: #161310;
-          margin-bottom: 1rem;
-        }
-        .section-intro {
-          color: #4B463D;
-          font-size: 1.05rem;
-          line-height: 1.65;
-          margin-bottom: 1.5rem;
-        }
-
-        /* ── Results Grid ────────────────────────────────────────── */
-        .results-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 1rem;
-        }
-        .result-card {
-          background: #FFFFFF;
-          border: 1px solid #ECE6D9;
-          border-radius: 16px;
-          padding: 1.4rem 1.5rem;
-          box-shadow: 0 1px 2px rgba(22, 19, 16, 0.03);
-          transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-        }
-        .result-card:hover {
-          transform: translateY(-3px);
-          border-color: #DBC48C;
-          box-shadow: 0 18px 44px -22px rgba(22, 19, 16, 0.2);
-        }
-        .result-card-header {
-          display: flex;
-          align-items: center;
-          gap: 0.65rem;
-          margin-bottom: 0.5rem;
-        }
-        .result-logo {
-          width: 30px;
-          height: 30px;
-          object-fit: contain;
-          flex-shrink: 0;
-        }
-        .result-name {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 600;
-          font-size: 1.02rem;
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
-          color: #161310;
-        }
-        .result-stat {
-          color: #A57E2C;
-          font-weight: 700;
-          font-size: 0.96rem;
-          line-height: 1.45;
-        }
-        .result-quote {
-          color: #948D7F;
-          font-style: italic;
-          font-size: 0.9rem;
-          margin-top: 0.5rem;
-          line-height: 1.5;
-        }
-
-        /* ── Day Blocks ──────────────────────────────────────────── */
-        .day-blocks {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-          margin-bottom: 1.75rem;
-        }
-        .day-block {
-          background: #FAF7F1;
-          border: 1px solid #EFE8DA;
-          border-left: 3px solid #D4A843;
-          border-radius: 12px;
-          padding: 1.35rem 1.5rem;
-        }
-        .day-range {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 0.72rem;
-          letter-spacing: 0.2em;
-          text-transform: uppercase;
-          color: #A57E2C;
-        }
-        .day-title {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 1.15rem;
-          color: #161310;
-          margin: 0.3rem 0 0.4rem;
-        }
-        .day-desc {
-          color: #4B463D;
-          font-size: 0.95rem;
-          line-height: 1.6;
-        }
-
-        /* ── After List ──────────────────────────────────────────── */
-        .after-list {
-          list-style: none;
-          margin-bottom: 1.75rem;
-        }
-        .after-list li {
-          position: relative;
-          padding-left: 1.6rem;
-          margin-bottom: 0.8rem;
-          color: #161310;
-          font-size: 1rem;
-          line-height: 1.6;
-        }
-        .after-list li::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 0.58em;
-          width: 8px;
-          height: 8px;
-          background: #D4A843;
-          border-radius: 50%;
-        }
-
-        /* ── Closing Block ───────────────────────────────────────── */
-        .closing-block {
-          background: #0D0B08;
-          border-radius: 16px;
-          padding: 2rem 1.75rem;
-          margin-bottom: 1.75rem;
-          text-align: center;
-        }
-        .closing-bold {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 1.3rem;
-          color: #FFFFFF;
-          margin-bottom: 0.6rem;
-        }
-        .closing-text {
-          color: rgba(255, 255, 255, 0.66);
-          font-size: 0.95rem;
-          line-height: 1.6;
-        }
-
-        /* ── Coach Section ───────────────────────────────────────── */
-        .coach-inline {
-          text-align: center;
-          margin-top: 2.5rem;
-          margin-bottom: 2rem;
-          padding-top: 2.5rem;
-          border-top: 1px solid #F1ECE1;
-        }
-        .coach-photo-wrap {
-          width: 250px;
-          height: 295px;
-          margin: 0 auto 1.4rem;
-          border-radius: 16px;
-          overflow: hidden;
-          border: 1px solid #E4D9BC;
-          box-shadow: 0 24px 55px -26px rgba(22, 19, 16, 0.35);
-        }
-        .coach-photo {
-          width: 100%;
-          height: 180%;
-          object-fit: cover;
-          object-position: center 10%;
-        }
-        .coach-name {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 1.5rem;
-          color: #161310;
-          margin-bottom: 0.2rem;
-        }
-        .coach-title {
-          color: #A57E2C;
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 600;
-          font-size: 0.82rem;
-          text-transform: uppercase;
-          letter-spacing: 0.16em;
-          margin-bottom: 1.1rem;
-        }
-        .coach-bio {
-          color: #4B463D;
-          font-size: 1rem;
-          line-height: 1.65;
-          margin-bottom: 1.4rem;
-          text-align: left;
-        }
-        .coach-work-label {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 1.05rem;
-          color: #161310;
-          margin-bottom: 0.75rem;
-          text-align: left;
-        }
-        .coach-work-list {
-          list-style: none;
-          margin-bottom: 1.5rem;
-          text-align: left;
-        }
-        .coach-work-list li {
-          position: relative;
-          padding-left: 1.6rem;
-          margin-bottom: 0.75rem;
-          color: #161310;
-          font-size: 0.95rem;
-          line-height: 1.6;
-        }
-        .coach-work-list li::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 0.58em;
-          width: 8px;
-          height: 8px;
-          background: #D4A843;
-          border-radius: 50%;
-        }
-
-        /* ── Reels Grid ──────────────────────────────────────────── */
-        .reels-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 1rem;
-        }
-        .reel-embed {
-          width: 100%;
-          overflow: hidden;
-          border-radius: 12px;
-        }
-        .reel-embed .instagram-media {
-          margin: 0 auto !important;
-          width: 100% !important;
-          min-width: unset !important;
-        }
-
-        /* ── YouTube Embed ───────────────────────────────────────── */
-        .youtube-section {
-          margin-top: 2.25rem;
-        }
-        .youtube-label {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 1.15rem;
-          color: #161310;
-          text-align: center;
-          margin-bottom: 1rem;
-        }
-        .youtube-embed {
-          position: relative;
-          width: 100%;
-          padding-bottom: 56.25%;
-          height: 0;
-          overflow: hidden;
-          border-radius: 14px;
-          border: 1px solid #E4D9BC;
-          box-shadow: 0 24px 55px -28px rgba(22, 19, 16, 0.35);
-        }
-        .youtube-embed iframe {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          border: 0;
-        }
-
-        /* ── Compare Grid ────────────────────────────────────────── */
-        .compare-grid {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-          margin-bottom: 1.4rem;
-        }
-        .compare-block {
-          padding: 1.5rem 1.6rem;
-          border-radius: 14px;
-        }
-        .compare-old {
-          background: #F7F5F0;
-          border: 1px solid #E8E3D8;
-        }
-        .compare-new {
-          background: #FBF5E6;
-          border: 1px solid #E2CD97;
-        }
-        .compare-label {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 1.05rem;
-          margin-bottom: 0.45rem;
-          color: #161310;
-        }
-        .compare-text {
-          color: #4B463D;
-          font-size: 0.95rem;
-          line-height: 1.6;
-        }
-        .compare-result {
-          color: #A57E2C;
-          font-weight: 600;
-          font-size: 1.05rem;
-          line-height: 1.6;
-          text-align: center;
-          margin-bottom: 1rem;
-        }
-
-        /* ── Check List (Who This Is For) ────────────────────────── */
-        .check-list {
-          list-style: none;
-        }
-        .check-list li {
-          position: relative;
-          padding-left: 2rem;
-          margin-bottom: 0.85rem;
-          color: #161310;
-          font-size: 1rem;
-          line-height: 1.6;
-        }
-        .check-list li::before {
-          content: '✓';
-          position: absolute;
-          left: 0;
-          top: 0;
-          color: #D4A843;
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 1.15rem;
-        }
-
-        /* ── Included List ───────────────────────────────────────── */
-        .included-list {
-          list-style: none;
-        }
-        .included-list li {
-          position: relative;
-          padding-left: 1.6rem;
-          margin-bottom: 0.75rem;
-          color: #161310;
-          font-size: 1rem;
-          line-height: 1.6;
-        }
-        .included-list li::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 0.58em;
-          width: 8px;
-          height: 8px;
-          background: #D4A843;
-          border-radius: 50%;
-        }
-
-        /* ── Guarantee ───────────────────────────────────────────── */
-        .guarantee-section {
-          text-align: center;
-        }
-        .guarantee-section .section-label-wrapper {
-          display: inline-block;
-        }
-        .guarantee-section .gold-divider {
-          margin: 0.65rem auto 0;
-        }
-        .guarantee-text {
-          font-size: 1.15rem;
-          color: #161310;
-          line-height: 1.7;
-          max-width: 46ch;
-          margin: 0 auto;
-        }
-        .guarantee-text strong {
-          font-family: var(--font-oswald), sans-serif;
-          font-size: 1.2em;
-        }
-
-        /* ── Pricing ─────────────────────────────────────────────── */
-        .pricing-section {
-          text-align: center;
-        }
-        .pricing-section .section-label-wrapper {
-          display: inline-block;
-        }
-        .pricing-section .gold-divider {
-          margin: 0.65rem auto 0;
-        }
-        .pricing-banner {
-          background: #0D0B08;
-          border-radius: 20px;
-          padding: 2.75rem 2rem;
-          text-align: center;
-          box-shadow: 0 30px 70px -32px rgba(22, 19, 16, 0.55);
-        }
-        .pricing-banner-text {
-          color: rgba(255, 255, 255, 0.82);
-          font-size: 1rem;
-          line-height: 1.6;
-          margin-bottom: 0.5rem;
-        }
-        .pricing-banner-gold {
-          display: block;
-          color: #D4A843;
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 2.6rem;
-          line-height: 1.2;
-          margin-top: 0.35rem;
-        }
-        .pricing-banner-bold {
-          color: #D4A843;
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 600;
-          font-size: 0.9rem;
-          text-transform: uppercase;
-          letter-spacing: 0.14em;
-          margin-bottom: 0.9rem;
-        }
-
-        /* ── FAQ ─────────────────────────────────────────────────── */
-        .faq-list {
-          display: flex;
-          flex-direction: column;
-          gap: 1.25rem;
-        }
-        .faq-item {
-          border-bottom: 1px solid #EFE9DD;
-          padding-bottom: 1.25rem;
-        }
-        .faq-q {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: 1.08rem;
-          color: #161310;
-          margin-bottom: 0.45rem;
-        }
-        .faq-a {
-          color: #4B463D;
-          font-size: 0.95rem;
-          line-height: 1.6;
-        }
-
-        /* ── CTA Section ─────────────────────────────────────────── */
-        .cta-section {
-          text-align: center;
-          padding-bottom: 5.5rem;
-        }
-        .cta-headline {
-          font-family: var(--font-oswald), sans-serif;
-          font-size: clamp(1.9rem, 6vw, 2.9rem);
-          font-weight: 700;
-          text-transform: uppercase;
-          color: #161310;
-          line-height: 1.1;
-          margin-bottom: 1.6rem;
-        }
-        .trust-line {
-          color: #948D7F;
-          font-size: 0.74rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.2em;
-          text-align: center;
-          margin-top: 1.3rem;
-        }
-
-        /* ── Finals Popup ────────────────────────────────────────── */
-        .popup-overlay {
-          position: fixed;
-          inset: 0;
-          z-index: 2000;
-          background: rgba(13, 11, 8, 0.74);
-          backdrop-filter: blur(6px);
-          -webkit-backdrop-filter: blur(6px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 1.5rem;
-          animation: popupFade 0.35s ease both;
-        }
-        .popup-card {
-          position: relative;
-          background: #0D0B08;
-          border: 1px solid rgba(212, 168, 67, 0.75);
-          border-radius: 20px;
-          box-shadow: 0 30px 90px rgba(212, 168, 67, 0.22);
-          max-width: 480px;
-          width: 100%;
-          padding: 2.75rem 2rem 2.25rem;
-          text-align: center;
-          animation: popupIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-        .popup-close {
-          position: absolute;
-          top: 0.6rem;
-          right: 0.9rem;
-          background: none;
-          border: 0;
-          color: rgba(255, 255, 255, 0.55);
-          font-size: 1.9rem;
-          line-height: 1;
-          cursor: pointer;
-          padding: 0.25rem;
-        }
-        .popup-close:hover {
-          color: #FFFFFF;
-        }
-        .popup-kicker {
-          color: #D4A843;
-          font-family: var(--font-oswald), sans-serif;
-          font-size: 0.75rem;
-          font-weight: 600;
-          letter-spacing: 0.26em;
-          text-transform: uppercase;
-          margin-bottom: 0.9rem;
-        }
-        .popup-headline {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: clamp(1.5rem, 5.5vw, 2rem);
-          line-height: 1.2;
-          color: #FFFFFF;
-          margin-bottom: 1.5rem;
-        }
-        .popup-gold {
-          color: #D4A843;
-        }
-        .popup-btn {
-          max-width: 300px;
-        }
-        @keyframes popupFade {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes popupIn {
-          from { opacity: 0; transform: translateY(28px) scale(0.94); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        /* ── Motion preferences ──────────────────────────────────── */
-        @media (prefers-reduced-motion: reduce) {
-          .popup-overlay, .popup-card { animation: none; }
-          .page.reveal-ready .section {
-            opacity: 1;
-            transform: none;
-            transition: none;
-          }
-        }
-
-        /* ── Desktop ─────────────────────────────────────────────── */
-        @media (min-width: 768px) {
-          .section {
-            padding: 5rem 2rem;
-          }
-          .hero {
-            padding: 7rem 2rem 3.5rem;
-          }
-          .enroll-btn {
-            width: auto;
-            min-width: 340px;
-          }
-          .reels-grid {
-            grid-template-columns: 1fr 1fr;
-            gap: 1.25rem;
-          }
-          .results-grid {
-            grid-template-columns: 1fr 1fr;
-            gap: 1.1rem;
-          }
-          .compare-grid {
-            flex-direction: row;
-          }
-          .compare-block {
-            flex: 1;
-          }
-        }
-      `}</style>
     </main>
   );
 }
