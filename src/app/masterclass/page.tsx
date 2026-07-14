@@ -96,7 +96,7 @@ function TopBar() {
         BASKETBALL <span>BIOMECHANICS</span>
       </a>
       <a href={ENROLL_URL} className="mc-topbar-cta">
-        Start Calibrating
+        Get Instant Access
       </a>
     </header>
   );
@@ -404,14 +404,33 @@ export default function MasterclassPage() {
         <div className="mc-container">
           <Reveal>
             <Kicker center>The Shooting Calibration Masterclass</Kicker>
-            <h1 className="mc-h1">
-              Nothing is wrong with your shot. It has never been calibrated.
-            </h1>
+            <h1 className="mc-h1">Stop Thinking About Your Shot.</h1>
             <p className="mc-hero-sub">
-              The exact calibration protocols Basketball Biomechanics runs with NBA players in
-              season, when the shots count and the percentages are public. Now self paced, for any
-              player, in any gym.
+              Learn the proprietary Calibration Protocols Basketball Biomechanics uses with
+              players from youth basketball through the NBA to develop more control over getting
+              the ball to the target, without rebuilding their form or copying somebody
+              else&rsquo;s shot.
             </p>
+            <ul className="mc-hero-points">
+              <li>
+                <span className="mc-tick" aria-hidden="true">
+                  ✓
+                </span>
+                Used with NBA players in season and during the playoffs
+              </li>
+              <li>
+                <span className="mc-tick" aria-hidden="true">
+                  ✓
+                </span>
+                Built for players of every age and level
+              </li>
+              <li>
+                <span className="mc-tick" aria-hidden="true">
+                  ✓
+                </span>
+                Self-paced protocols you can run in any gym
+              </li>
+            </ul>
           </Reveal>
           <Reveal delay={120}>
             <p className="mc-video-caption">
@@ -424,9 +443,11 @@ export default function MasterclassPage() {
           </Reveal>
           <Reveal delay={200}>
             <a href={ENROLL_URL} className="mc-cta mc-cta--large">
-              Start Calibrating Your Shot
+              Get Instant Access
             </a>
-            <p className="mc-microcopy">$297. Lifetime access. Backed by the Day 14 guarantee.</p>
+            <p className="mc-microcopy">
+              Self-paced access. Take the protocols directly onto the court.
+            </p>
             <p className="mc-proof-strip">
               <span>OG Anunoby, 2026 NBA Champion</span>
               <span className="tick">·</span>
@@ -552,11 +573,13 @@ export default function MasterclassPage() {
         <div className="mc-container">
           <Reveal>
             <Kicker>Why Shooters Plateau</Kicker>
-            <h2 className="mc-h2">You do not have a rep problem. You have a calibration problem.</h2>
+            <h2 className="mc-h2">
+              Nothing is wrong with your shot. It has never been calibrated.
+            </h2>
             <p className="mc-lead">
-              Most players who are stuck are not lazy. They are doing more of the wrong work,
-              harder. There are four reasons the industry keeps producing practice shooters who
-              disappear in games.
+              You do not have a rep problem. You have a calibration problem. Most players who are
+              stuck are not lazy. They are doing more of the wrong work, harder. There are four
+              reasons the industry keeps producing practice shooters who disappear in games.
             </p>
           </Reveal>
           <div className="mc-problems">
