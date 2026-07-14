@@ -234,44 +234,6 @@ const KEEPS = [
   'Implementation guidance for players, parents, and coaches, including how to scale everything by age and level',
 ];
 
-const FOR_ITEMS = [
-  {
-    title: 'Serious players',
-    body: 'who can shoot in practice but have not translated it to games, or who want range and consistency that hold up under pressure',
-  },
-  {
-    title: 'Parents of serious players',
-    body: "who want a proven system instead of another trainer's opinion, and a protocol they can run with their kid",
-  },
-  {
-    title: 'Coaches and trainers',
-    body: 'who want a shooting framework for a whole program, not a folder of random drills',
-  },
-  {
-    title: 'Pros and high level players',
-    body: 'who want the same calibration lens BB consults to NBA players, in a form they can run on their own schedule',
-  },
-  {
-    title: 'Anyone who wants a deeper framework',
-    body: 'for how shooting actually works, from someone accountable to public results',
-  },
-];
-
-const NOT_FOR_ITEMS = [
-  {
-    title: 'It is not a highlight reel of drills.',
-    body: 'If you want fifty random drills to scroll through, there are cheaper places to get them.',
-  },
-  {
-    title: 'It is not a quick fix.',
-    body: 'The protocols work fast, many players feel the difference in one session, but they work because you follow them as designed. If you will not run the protocols, do not buy them.',
-  },
-  {
-    title: 'It is not entertainment.',
-    body: 'It is a system with a beginning, a middle, an end, and a test. If you are not willing to be tested, this will frustrate you.',
-  },
-];
-
 const BEFORE = [
   'Endless reps with inconsistent results',
   'Guessing at what is wrong after every cold night',
@@ -707,55 +669,7 @@ export default function MasterclassPage() {
         </div>
       </section>
 
-      {/* ── 6. Who this is for ── */}
-      <section id="for" className="mc-section mc-bg-white" style={{ paddingTop: 0 }}>
-        <div className="mc-container">
-          <Reveal>
-            <Kicker>Who This Is For</Kicker>
-            <h2 className="mc-h2">Built for people who are serious about shooting.</h2>
-            <ul className="mc-for-list">
-              {FOR_ITEMS.map((item) => (
-                <li key={item.title}>
-                  <span className="mc-tick" aria-hidden="true">
-                    ✓
-                  </span>
-                  <span>
-                    <strong>{item.title}</strong> {item.body}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ── 7. Who this is not for ── */}
-      <section id="not-for" className="mc-section mc-bg-pale">
-        <div className="mc-container">
-          <Reveal>
-            <Kicker>Read This Before You Buy</Kicker>
-            <h2 className="mc-h2">This is not for everyone. That is the point.</h2>
-            <ul className="mc-notfor-list">
-              {NOT_FOR_ITEMS.map((item) => (
-                <li key={item.title}>
-                  <span className="mc-cross" aria-hidden="true">
-                    ×
-                  </span>
-                  <span>
-                    <strong>{item.title}</strong> {item.body}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className="mc-notfor-closer">
-              If that filtered you out, no hard feelings. If it made you more interested, you are
-              exactly who this was built for.
-            </p>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ── 8. Transformation ── */}
+      {/* ── 6. Transformation ── */}
       <section id="transformation" className="mc-section mc-bg-white">
         <div className="mc-container">
           <Reveal>

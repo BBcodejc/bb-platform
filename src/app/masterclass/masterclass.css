@@ -671,62 +671,6 @@
 
 .mc-guarantee p { margin: 0; color: var(--mc-muted); }
 
-/* ─── For / Not for ─── */
-
-.mc-for-list {
-  list-style: none;
-  margin: 2.5rem 0 0;
-  padding: 0;
-  display: grid;
-  gap: 1.5rem;
-}
-
-.mc-for-list li {
-  display: flex;
-  gap: 0.85rem;
-  align-items: flex-start;
-  max-width: 66ch;
-}
-
-.mc-for-list strong {
-  font-family: var(--font-space), sans-serif;
-  font-weight: 600;
-}
-
-.mc-notfor-list {
-  list-style: none;
-  margin: 2.5rem 0;
-  padding: 0;
-  display: grid;
-  gap: 1.5rem;
-}
-
-.mc-notfor-list li {
-  display: flex;
-  gap: 0.85rem;
-  align-items: flex-start;
-  max-width: 62ch;
-  font-size: 0.98rem;
-}
-
-.mc-cross {
-  color: var(--mc-ink);
-  font-weight: 700;
-  flex-shrink: 0;
-  line-height: 1.65;
-}
-
-.mc-notfor-list strong {
-  font-family: var(--font-space), sans-serif;
-  font-weight: 600;
-}
-
-.mc-notfor-closer {
-  max-width: 56ch;
-  margin: 0;
-  color: var(--mc-muted);
-}
-
 /* ─── Transformation ─── */
 
 .mc-transform-grid {
