@@ -231,8 +231,12 @@
 /* ─── Hero ─── */
 
 .mc-hero {
-  padding: 8rem 0 4rem;
+  padding: 4.5rem 0 4rem;
   text-align: center;
+}
+
+.mc-first {
+  padding-top: 7.5rem;
 }
 
 .mc-hero .mc-kicker { justify-content: center; }
@@ -1015,7 +1019,9 @@
 @media (min-width: 768px) {
   .mc-section { padding: 7rem 0; }
 
-  .mc-hero { padding: 10rem 0 6rem; }
+  .mc-hero { padding: 6.5rem 0 6rem; }
+
+  .mc-first { padding-top: 9rem; }
 
   .mc-topbar { padding: 1rem 2.5rem; }
 

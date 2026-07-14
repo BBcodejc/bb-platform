@@ -408,8 +408,28 @@ export default function MasterclassPage() {
     <main className="mc-page">
       <TopBar />
 
-      {/* ── 1. Hero ── */}
-      <section id="hero" className="mc-hero mc-bg-white">
+      {/* ── Watch this first ── */}
+      <section id="watch" className="mc-section mc-bg-white mc-center mc-first">
+        <div className="mc-container">
+          <Reveal>
+            <Kicker center>Watch This First</Kicker>
+            <h2 className="mc-h2">Why More Reps Alone Will Not Fix Inconsistent Shooting.</h2>
+          </Reveal>
+          <Reveal delay={100}>
+            <div className="mc-video-frame">
+              <video controls playsInline preload="metadata" src="/vsl.mp4" />
+            </div>
+            <div className="mc-cta-block" style={{ marginTop: '2.5rem' }}>
+              <a href={ENROLL_URL} className="mc-cta">
+                Get the Full Calibration System
+              </a>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── Hero ── */}
+      <section id="hero" className="mc-hero mc-bg-warm">
         <div className="mc-container">
           <Reveal>
             <Kicker center>The Shooting Calibration Masterclass</Kicker>
@@ -455,26 +475,6 @@ export default function MasterclassPage() {
               <span className="tick">·</span>
               <span>Paul Reed 15% to 40%</span>
             </p>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ── Watch this first ── */}
-      <section id="watch" className="mc-section mc-bg-warm mc-center">
-        <div className="mc-container">
-          <Reveal>
-            <Kicker center>Watch This First</Kicker>
-            <h2 className="mc-h2">Why More Reps Alone Will Not Fix Inconsistent Shooting.</h2>
-          </Reveal>
-          <Reveal delay={100}>
-            <div className="mc-video-frame">
-              <video controls playsInline preload="metadata" src="/vsl.mp4" />
-            </div>
-            <div className="mc-cta-block" style={{ marginTop: '2.5rem' }}>
-              <a href={ENROLL_URL} className="mc-cta">
-                Get the Full Calibration System
-              </a>
-            </div>
           </Reveal>
         </div>
       </section>
