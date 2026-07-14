@@ -529,10 +529,6 @@ export default function MasterclassPage() {
                 </p>
               </div>
             </div>
-            <p className="mc-who-note">
-              Both are included in the same masterclass at the same price. There are no separate
-              editions.
-            </p>
           </Reveal>
         </div>
       </section>

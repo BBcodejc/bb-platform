@@ -512,13 +512,6 @@
   color: var(--mc-muted);
 }
 
-.mc-who-note {
-  margin: 2rem 0 0;
-  color: var(--mc-muted);
-  font-family: var(--font-plex-mono), monospace;
-  font-size: 0.85rem;
-}
-
 /* ─── From the masterclass quotes ─── */
 
 .mc-mcquotes-head {
