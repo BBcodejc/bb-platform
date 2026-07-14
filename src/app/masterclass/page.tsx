@@ -42,11 +42,14 @@ function FinalsPopup() {
 
   useEffect(() => {
     if (sessionStorage.getItem('bb-finals-popup')) return;
-    const t = setTimeout(() => {
+    const onScroll = () => {
+      if (window.scrollY < 200) return;
+      window.removeEventListener('scroll', onScroll);
       setOpen(true);
       sessionStorage.setItem('bb-finals-popup', '1');
-    }, 1400);
-    return () => clearTimeout(t);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   useEffect(() => {
