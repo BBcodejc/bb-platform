@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Oswald, DM_Sans } from 'next/font/google';
+import { Oswald, DM_Sans, IBM_Plex_Mono } from 'next/font/google';
 
 const oswald = Oswald({
   subsets: ['latin'],
@@ -12,6 +12,13 @@ const dmSans = DM_Sans({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-dm-sans',
+  display: 'swap',
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-plex-mono',
   display: 'swap',
 });
 
@@ -41,7 +48,7 @@ export default function MasterclassLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`${oswald.variable} ${dmSans.variable} font-dm-sans`}>
+    <div className={`${oswald.variable} ${dmSans.variable} ${plexMono.variable} font-dm-sans`}>
       {children}
     </div>
   );
