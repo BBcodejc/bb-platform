@@ -294,12 +294,23 @@ const QUOTES = [
    - "You're the smartest basketball coach I've ever been around." Tyler Burton */
 
 const WHAT_YOU_GET = [
-  'Step-by-step 14 Day Calibration You Run Immediately',
-  'Deep Distance Protocol',
-  'Dip and energy-transfer exploration',
-  'Test-out sequences',
-  'On-court implementation guidance',
-  'Immediate access from any device',
+  {
+    title: 'Deep Distance Protocol',
+    outcome: 'Learn to control the ball from extreme range so every closer shot feels easier.',
+  },
+  {
+    title: 'Calibration Sessions',
+    outcome: 'Learn how to respond to misses and regain control quickly.',
+  },
+  {
+    title: 'Shooting Variability Matrix',
+    outcome:
+      'Build adaptability across different passes, rhythms, releases, and game situations.',
+  },
+  {
+    title: 'Test Out Sequences',
+    outcome: 'Measure whether your calibration is actually transferring to performance.',
+  },
 ];
 
 const MASTERCLASS_QUOTES = [
@@ -408,58 +419,22 @@ export default function MasterclassPage() {
     <main className="mc-page">
       <TopBar />
 
-      {/* ── Watch this first ── */}
-      <section id="watch" className="mc-section mc-bg-white mc-center mc-first">
-        <div className="mc-container">
-          <Reveal>
-            <Kicker center>Watch This First</Kicker>
-            <h2 className="mc-h2">Why More Reps Alone Will Not Fix Inconsistent Shooting.</h2>
-          </Reveal>
-          <Reveal delay={100}>
-            <div className="mc-video-frame">
-              <video controls playsInline preload="metadata" src="/vsl.mp4" />
-            </div>
-            <div className="mc-cta-block" style={{ marginTop: '2.5rem' }}>
-              <a href={ENROLL_URL} className="mc-cta">
-                Get the Full Calibration System
-              </a>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
       {/* ── Hero ── */}
-      <section id="hero" className="mc-hero mc-bg-warm">
+      <section id="hero" className="mc-hero mc-bg-warm mc-first">
         <div className="mc-container">
           <Reveal>
             <Kicker center>The Shooting Calibration Masterclass</Kicker>
             <h1 className="mc-h1">Stop Thinking About Your Shot.</h1>
-            <p className="mc-hero-sub">
-              Learn the proprietary Calibration Protocols Basketball Biomechanics uses with
-              players from youth basketball through the NBA to develop more control over getting
-              the ball to the target, without rebuilding their form or copying somebody
-              else&rsquo;s shot.
+            <div className="mc-hero-if">
+              <p>If your shot feels different every day...</p>
+              <p>If you shoot well in workouts but struggle in games...</p>
+              <p>If one miss turns into three...</p>
+              <p>If you&rsquo;re constantly trying new form fixes...</p>
+            </div>
+            <p className="mc-hero-problem">The problem is not your form.</p>
+            <p className="mc-hero-answer">
+              The problem is that your shot has never been calibrated.
             </p>
-            <ul className="mc-hero-points">
-              <li>
-                <span className="mc-tick" aria-hidden="true">
-                  ✓
-                </span>
-                Used with NBA players in season and during the playoffs
-              </li>
-              <li>
-                <span className="mc-tick" aria-hidden="true">
-                  ✓
-                </span>
-                Built for players of every age and level
-              </li>
-              <li>
-                <span className="mc-tick" aria-hidden="true">
-                  ✓
-                </span>
-                Self-paced protocols you can run in any gym
-              </li>
-            </ul>
           </Reveal>
           <Reveal delay={120}>
             <a href={ENROLL_URL} className="mc-cta mc-cta--large">
@@ -479,55 +454,21 @@ export default function MasterclassPage() {
         </div>
       </section>
 
-      {/* ── What you get ── */}
-      <section id="what-you-get" className="mc-section mc-bg-white">
+      {/* ── Watch this first ── */}
+      <section id="watch" className="mc-section mc-bg-white mc-center">
         <div className="mc-container">
           <Reveal>
-            <Kicker>What You Get</Kicker>
-            <h2 className="mc-h2">A Complete, Self-Paced Shooting Calibration System.</h2>
+            <Kicker center>Watch This First</Kicker>
+            <h2 className="mc-h2">Why More Reps Alone Will Not Fix Inconsistent Shooting.</h2>
           </Reveal>
           <Reveal delay={100}>
-            <ul className="mc-wyg-grid">
-              {WHAT_YOU_GET.map((item) => (
-                <li key={item} className="mc-wyg-card">
-                  <span className="mc-tick" aria-hidden="true">
-                    ✓
-                  </span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <p className="mc-wyg-note">
-              This is not a collection of random drills. It is a structured system showing you
-              exactly what to explore when you step onto the court.
-            </p>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ── Who it is for ── */}
-      <section id="who-for" className="mc-section mc-bg-pale">
-        <div className="mc-container">
-          <Reveal>
-            <Kicker>Who It Is For</Kicker>
-            <h2 className="mc-h2">One masterclass. Built for players and coaches.</h2>
-          </Reveal>
-          <Reveal delay={100}>
-            <div className="mc-who-grid">
-              <div className="mc-who-card">
-                <h3 className="mc-h3">For Players</h3>
-                <p>
-                  You want to stop thinking about mechanics, respond better to misses, and gain
-                  more control across the full shooting spectrum.
-                </p>
-              </div>
-              <div className="mc-who-card">
-                <h3 className="mc-h3">For Coaches</h3>
-                <p>
-                  You want the BB framework, language, and protocols to guide shooting
-                  exploration with your athletes.
-                </p>
-              </div>
+            <div className="mc-video-frame">
+              <video controls playsInline preload="metadata" src="/vsl.mp4" />
+            </div>
+            <div className="mc-cta-block" style={{ marginTop: '2.5rem' }}>
+              <a href={ENROLL_URL} className="mc-cta">
+                Get the Full Calibration System
+              </a>
             </div>
           </Reveal>
         </div>
@@ -537,7 +478,20 @@ export default function MasterclassPage() {
       <section id="proof" className="mc-section mc-bg-warm" style={{ paddingBottom: 0 }}>
         <div className="mc-container">
           <Reveal>
-            <Kicker>Proven In Season</Kicker>
+            <Kicker>Proven At The Highest Level</Kicker>
+            <div className="mc-proof-statements">
+              <p>
+                OG Anunoby shot over 50% from three in the NBA Finals while running Calibration
+                Protocols.
+              </p>
+              <p>
+                Tobias Harris used Calibration Protocols throughout one of the best shooting
+                stretches of his playoff career.
+              </p>
+              <p className="mc-proof-avail">
+                The exact same system is now available to players everywhere.
+              </p>
+            </div>
             <h2 className="mc-h2">The results happened in season, on film, in public box scores.</h2>
             <p className="mc-lead">
               Anyone can look good in an empty gym. BB results are measured where they are hardest
@@ -730,6 +684,58 @@ export default function MasterclassPage() {
             <p className="mc-closer">
               This is the lens behind every result above. The masterclass hands it to you.
             </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── What you get ── */}
+      <section id="what-you-get" className="mc-section mc-bg-white">
+        <div className="mc-container">
+          <Reveal>
+            <Kicker>What You Get</Kicker>
+            <h2 className="mc-h2">A Complete, Self-Paced Shooting Calibration System.</h2>
+          </Reveal>
+          <Reveal delay={100}>
+            <ul className="mc-wyg-grid">
+              {WHAT_YOU_GET.map((item) => (
+                <li key={item.title} className="mc-wyg-card">
+                  <h3 className="mc-wyg-title">{item.title}</h3>
+                  <p className="mc-wyg-outcome">{item.outcome}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="mc-wyg-note">
+              This is not a collection of random drills. It is a structured system showing you
+              exactly what to explore when you step onto the court.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── Who it is for ── */}
+      <section id="who-for" className="mc-section mc-bg-pale">
+        <div className="mc-container">
+          <Reveal>
+            <Kicker>Who It Is For</Kicker>
+            <h2 className="mc-h2">One masterclass. Built for players and coaches.</h2>
+          </Reveal>
+          <Reveal delay={100}>
+            <div className="mc-who-grid">
+              <div className="mc-who-card">
+                <h3 className="mc-h3">For Players</h3>
+                <p>
+                  You want to stop thinking about mechanics, respond better to misses, and gain
+                  more control across the full shooting spectrum.
+                </p>
+              </div>
+              <div className="mc-who-card">
+                <h3 className="mc-h3">For Coaches</h3>
+                <p>
+                  You want the BB framework, language, and protocols to guide shooting
+                  exploration with your athletes.
+                </p>
+              </div>
+            </div>
           </Reveal>
         </div>
       </section>

@@ -248,39 +248,56 @@
   margin: 0 auto 3rem;
 }
 
-.mc-hero-points {
-  list-style: none;
-  margin: 0 auto 3rem;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.6rem;
-  max-width: 34rem;
+.mc-hero-if {
+  margin: 0 auto 2.25rem;
+  max-width: 44ch;
+  display: grid;
+  gap: 0.55rem;
 }
 
-.mc-hero-points li {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-  font-size: 0.98rem;
+.mc-hero-if p {
+  margin: 0;
+  font-size: 1.1rem;
   color: var(--mc-muted);
-  text-align: left;
 }
 
-@media (min-width: 900px) {
-  .mc-hero-points {
-    flex-direction: row;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 2.25rem;
-    max-width: none;
-  }
+.mc-hero-problem {
+  font-family: var(--font-space), sans-serif;
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: var(--mc-ink);
+  margin: 0 0 0.6rem;
+}
 
-  .mc-hero-points li {
-    font-size: 0.92rem;
-    max-width: 15rem;
-  }
+.mc-hero-answer {
+  font-family: var(--font-space), sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.4rem, 2.8vw, 2rem);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--mc-ink);
+  max-width: 26ch;
+  margin: 0 auto 2.75rem;
+}
+
+.mc-proof-statements {
+  display: grid;
+  gap: 1.4rem;
+  margin: 0 0 4rem;
+  max-width: 34ch;
+}
+
+.mc-proof-statements p {
+  margin: 0;
+  font-family: var(--font-space), sans-serif;
+  font-weight: 600;
+  font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.mc-proof-statements .mc-proof-avail {
+  color: var(--mc-gold-dark);
 }
 
 .mc-video-caption {
@@ -476,16 +493,25 @@
 }
 
 .mc-wyg-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
   background: var(--mc-white);
   border: 1px solid var(--mc-hairline);
-  padding: 1.35rem 1.35rem;
+  padding: 1.75rem 1.6rem;
+}
+
+.mc-wyg-title {
   font-family: var(--font-space), sans-serif;
   font-weight: 600;
-  font-size: 1.02rem;
-  line-height: 1.45;
+  font-size: 1.12rem;
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--mc-gold);
+  display: inline-block;
+}
+
+.mc-wyg-outcome {
+  margin: 0.35rem 0 0;
+  color: var(--mc-muted);
+  font-size: 0.98rem;
 }
 
 .mc-wyg-note {
@@ -1030,7 +1056,7 @@
 
   .mc-lens-grid { grid-template-columns: 7fr 5fr; gap: 4.5rem; }
 
-  .mc-wyg-grid { grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; }
+  .mc-wyg-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 
   .mc-who-grid { grid-template-columns: 1fr 1fr; gap: 1.75rem; }
 
