@@ -250,7 +250,6 @@ const KEEPS = [
   'The calibration protocols: distance, ball flight, and energy control work you can return to for the rest of your career',
   'Constraint based shooting methods that keep your system adapting instead of plateauing',
   'Visual calibration methods that sharpen target acquisition',
-  'Oversized ball and contrast concepts that magnify feedback and remove room for error',
   'Rhythm and timing work so your shot survives changing speeds and windows',
   'The miss profile framework: learn to read your own misses the way a BB coach reads film',
   'Pre game protocols to lock in calibration on game day, and off day modules to maintain it',
