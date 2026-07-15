@@ -93,7 +93,7 @@ function TopBar() {
   return (
     <header className={`mc-topbar${solid ? ' is-solid' : ''}`}>
       <a href="#hero" className="mc-wordmark">
-        BASKETBALL <span>BIOMECHANICS</span>
+        <img src="/bb-logo-registered.png" alt="Basketball Biomechanics" />
       </a>
       <a href={ENROLL_URL} className="mc-topbar-cta">
         Get Instant Access
