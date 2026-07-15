@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { bbTrack } from '../../lib/analytics';
 
 /* Kit destination: form "BB Movement System Early Access" (created 2026-07-14
    in the Basketball Biomechanics Kit account); endpoint verified live. */
@@ -24,6 +25,7 @@ export default function MovementEarlyAccessPage() {
     }
 
     setStatus('submitting');
+    bbTrack('movement_waitlist_submit', { product: 'BB Movement System' });
     try {
       const res = await fetch(KIT_FORM_ACTION, {
         method: 'POST',
@@ -35,6 +37,7 @@ export default function MovementEarlyAccessPage() {
         }),
       });
       if (!res.ok) throw new Error(`Kit responded ${res.status}`);
+      bbTrack('movement_waitlist_success', { product: 'BB Movement System' });
       setStatus('success');
     } catch {
       setStatus('error');

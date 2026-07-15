@@ -95,7 +95,7 @@ function TopBar() {
       <a href="#hero" className="mc-wordmark">
         <img src="/bb-logo-registered.png" alt="Basketball Biomechanics" />
       </a>
-      <a href={ENROLL_URL} className="mc-topbar-cta">
+      <a href={ENROLL_URL} className="mc-topbar-cta" data-bb-cta="hero">
         Get Instant Access
       </a>
     </header>
@@ -111,7 +111,7 @@ function Kicker({ children, center = false }: { children: React.ReactNode; cente
 function CtaBlock({ label }: { label: string }) {
   return (
     <div className="mc-cta-block">
-      <a href={ENROLL_URL} className="mc-cta">
+      <a href={ENROLL_URL} className="mc-cta" data-bb-cta="midpage">
         {label}
       </a>
       <p className="mc-microcopy">$297. Lifetime access. Day 14 guarantee.</p>
@@ -355,7 +355,7 @@ const FAQS = [
   },
   {
     q: 'Do I need special equipment?',
-    a: 'You need a ball and a hoop. An oversized ball is recommended to run the full protocol stack and is inexpensive. Everything else in the BB toolkit is an optional layer, not a requirement.',
+    a: 'You need a ball and a hoop. Everything else in the BB toolkit is an optional layer, not a requirement.',
   },
   {
     q: 'How quickly can I use it?',
@@ -419,7 +419,7 @@ export default function MasterclassPage() {
       <TopBar />
 
       {/* ── Hero ── */}
-      <section id="hero" className="mc-hero mc-bg-warm mc-first">
+      <section id="hero" className="mc-hero mc-bg-warm mc-first" data-bb-hero>
         <div className="mc-container">
           <Reveal>
             <Kicker center>The Shooting Calibration Masterclass</Kicker>
@@ -436,7 +436,7 @@ export default function MasterclassPage() {
             </p>
           </Reveal>
           <Reveal delay={120}>
-            <a href={ENROLL_URL} className="mc-cta mc-cta--large">
+            <a href={ENROLL_URL} className="mc-cta mc-cta--large" data-bb-cta="hero">
               Get Instant Access
             </a>
             <p className="mc-microcopy">
@@ -462,10 +462,10 @@ export default function MasterclassPage() {
           </Reveal>
           <Reveal delay={100}>
             <div className="mc-video-frame">
-              <video controls playsInline preload="metadata" src="/vsl.mp4" />
+              <video controls playsInline preload="metadata" src="/vsl.mp4" data-bb-video="calibration-vsl" />
             </div>
             <div className="mc-cta-block" style={{ marginTop: '2.5rem' }}>
-              <a href={ENROLL_URL} className="mc-cta">
+              <a href={ENROLL_URL} className="mc-cta" data-bb-cta="hero">
                 Get the Full Calibration System
               </a>
             </div>
@@ -921,7 +921,7 @@ export default function MasterclassPage() {
               You have seen the results, the lens, and the system. The only thing left is the part
               BB cannot do for you.
             </p>
-            <a href={ENROLL_URL} className="mc-cta mc-cta--large">
+            <a href={ENROLL_URL} className="mc-cta mc-cta--large" data-bb-cta="bottom">
               Start The Shooting Calibration Masterclass
             </a>
             <p className="mc-microcopy">$297. Lifetime access. Day 14 guarantee.</p>
