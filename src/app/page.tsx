@@ -273,6 +273,57 @@ const ROADMAP = [
 const TRADITIONAL = ['Cone drills', 'Preset movements', 'Isolated techniques', 'Scripted outcomes'];
 const BB_WAY = ['Live interaction', 'Adaptability', 'Perception-action coupling', 'Real transfer'];
 
+const FEATURED = [
+  {
+    name: 'Tobias Harris',
+    title: 'NBA Veteran',
+    sub: 'Trusted implementation and performance support.',
+    img: '/players/tobiasharrislandingpage.webp',
+  },
+  {
+    name: 'OG Anunoby',
+    title: 'NBA Champion',
+    sub: 'Used throughout championship-level preparation and in-season development.',
+    img: '/players/og-featured.jpg',
+  },
+];
+
+const TICKER = [
+  'Paul Reed',
+  'Matisse Thybulle',
+  'Kyle Lowry',
+  'Tyler Burton',
+  'Auburn Men’s Basketball',
+  'Dallas Mavericks',
+  'Los Angeles Lakers',
+  'NBA Players',
+  'Professional Athletes',
+  'International Professionals',
+];
+
+const TEAM = [
+  {
+    name: 'Coach Tommy Tempesta',
+    title: 'Founder & Chief Methodologist',
+    img: '/players/tommy-team.jpg',
+    paras: [
+      'Inventor of the Basketball Biomechanics methodology.',
+      'Specializing in motor learning, movement systems, perception-action coupling, shooting development, and elite performance environments.',
+      'Years of work with professional athletes, championship-level performers, and high-level organizations have helped shape the Basketball Biomechanics framework used today.',
+    ],
+  },
+  {
+    name: 'Coach Jake Cioe',
+    title: 'Implementation Coach & Performance Consultant',
+    img: '/players/jake-team.jpg',
+    paras: [
+      'Former NCAA Division I guard.',
+      'Responsible for athlete implementation, coaching integration, remote consultation, content development, and assisting in the continued evolution and application of the Basketball Biomechanics system.',
+      'Works directly with athletes to bridge the gap between theory and real-world performance.',
+    ],
+  },
+];
+
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
@@ -492,6 +543,92 @@ export default function HomePage() {
                 </ul>
               </div>
             </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Who we work with ── */}
+      <section className="hb-section">
+        <div className="hb-container">
+          <Reveal>
+            <p className="hb-kicker">Trusted At Every Level</p>
+            <h2 className="hb-h2">Who We Work With</h2>
+            <p className="hb-lead">
+              From NBA champions and professionals to youth athletes, Basketball Biomechanics has
+              influenced players and organizations across every level of the game.
+            </p>
+          </Reveal>
+          <div className="hb-featured">
+            {FEATURED.map((f, i) => (
+              <Reveal key={f.name} delay={i * 0.12}>
+                <motion.div
+                  className="hb-featured-card"
+                  whileHover={{ y: -6 }}
+                  transition={{ duration: 0.35, ease: EASE }}
+                >
+                  <div className="hb-featured-media">
+                    <img src={f.img} alt={f.name} loading="lazy" />
+                  </div>
+                  <div className="hb-featured-body">
+                    <h3>{f.name}</h3>
+                    <p className="hb-featured-title">{f.title}</p>
+                    <p className="hb-featured-sub">{f.sub}</p>
+                  </div>
+                </motion.div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+        <Reveal>
+          <div className="hb-ticker" aria-label="Players and organizations Basketball Biomechanics has worked with">
+            <div className="hb-ticker-track">
+              {[...TICKER, ...TICKER].map((t, i) => (
+                <span key={`${t}-${i}`} className="hb-ticker-item" aria-hidden={i >= TICKER.length}>
+                  {t}
+                  <span className="hb-ticker-dot" aria-hidden="true">
+                    ·
+                  </span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* ── The team ── */}
+      <section className="hb-section">
+        <div className="hb-container">
+          <Reveal>
+            <p className="hb-kicker">The Team</p>
+            <h2 className="hb-h2">The Team Behind Basketball Biomechanics</h2>
+            <p className="hb-lead">
+              Combining decades of research, practical application, and elite-level
+              implementation.
+            </p>
+          </Reveal>
+          <div className="hb-team">
+            {TEAM.map((m, i) => (
+              <Reveal key={m.name} delay={i * 0.12}>
+                <motion.div
+                  className="hb-team-card"
+                  whileHover={{ y: -6 }}
+                  transition={{ duration: 0.35, ease: EASE }}
+                >
+                  <div className="hb-team-media">
+                    <img src={m.img} alt={m.name} loading="lazy" />
+                  </div>
+                  <div className="hb-team-body">
+                    <h3>{m.name}</h3>
+                    <p className="hb-team-title">{m.title}</p>
+                    {m.paras.map((p) => (
+                      <p key={p.slice(0, 24)} className="hb-team-para">
+                        {p}
+                      </p>
+                    ))}
+                  </div>
+                </motion.div>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
