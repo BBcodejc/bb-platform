@@ -5,6 +5,10 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { bbTrack } from '../../lib/analytics';
 
+/* Kit destination: form "Calibration Relaunch Waitlist" (created 2026-07-20
+   in the Basketball Biomechanics Kit account, form id 9703305). */
+const KIT_FORM_ACTION = 'https://app.kit.com/forms/9703305/subscriptions';
+
 // ─── Scroll reveal (same behavior as the sales page) ─────────────────────────
 
 function Reveal({
@@ -77,16 +81,26 @@ function WaitlistForm() {
     if (status === 'submitting') return;
     setStatus('submitting');
     bbTrack('calibration_waitlist_submit', { product: 'Shooting Calibration Masterclass' });
-    try {
-      const res = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), email: email.trim() }),
-      });
-      if (!res.ok) throw new Error(`waitlist responded ${res.status}`);
+    const kit = fetch(KIT_FORM_ACTION, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        email_address: email.trim(),
+        first_name: name.trim(),
+        fields: { first_name: name.trim() },
+      }),
+    });
+    const crm = fetch('/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name.trim(), email: email.trim() }),
+    });
+    const results = await Promise.allSettled([kit, crm]);
+    const ok = results.some((r) => r.status === 'fulfilled' && (r.value as Response).ok);
+    if (ok) {
       bbTrack('calibration_waitlist_success', { product: 'Shooting Calibration Masterclass' });
       setStatus('success');
-    } catch {
+    } else {
       setStatus('error');
     }
   }
