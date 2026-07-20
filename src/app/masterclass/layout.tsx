@@ -23,9 +23,9 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Shooting Calibration Masterclass | Basketball Biomechanics',
+  title: 'Shooting Calibration Masterclass | Relaunching Soon',
   description:
-    'The calibration protocols used in season with NBA players. Recalibrate how you shoot. $297, lifetime access, Day 14 guarantee.',
+    'The Calibration Protocols used in season with NBA players are relaunching soon. Join the waitlist for first access.',
   keywords: [
     'shooting calibration',
     'basketball shooting course',

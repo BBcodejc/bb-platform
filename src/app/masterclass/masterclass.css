@@ -1013,6 +1013,67 @@
   color: rgba(255, 255, 255, 0.55);
 }
 
+/* ─── Waitlist form ─── */
+
+.mc-wl-form {
+  display: grid;
+  gap: 0.85rem;
+  max-width: 420px;
+  margin: 2.5rem auto 0;
+}
+
+.mc-wl-form input {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 1rem;
+  padding: 0.95rem 1.1rem;
+  border: 1px solid var(--mc-hairline);
+  border-radius: 4px;
+  background: var(--mc-white);
+  color: var(--mc-ink);
+}
+
+.mc-wl-form input:focus {
+  outline: 2px solid var(--mc-gold);
+  outline-offset: 1px;
+  border-color: var(--mc-gold);
+}
+
+.mc-wl-form .mc-cta {
+  border: 0;
+  cursor: pointer;
+  width: 100%;
+}
+
+.mc-wl-form .mc-cta:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.mc-wl-error {
+  margin: 0;
+  color: #8a2b2b;
+  font-size: 0.9rem;
+}
+
+.mc-wl-success {
+  max-width: 420px;
+  margin: 2.5rem auto 0;
+  border: 1px solid var(--mc-gold);
+  padding: 2.25rem 2rem;
+  background: var(--mc-white);
+}
+
+.mc-wl-success .mc-tick {
+  font-size: 1.5rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.mc-wl-success p {
+  margin: 0.5rem 0 0;
+  color: var(--mc-muted);
+}
+
 /* ─── Scroll reveal ─── */
 
 .mc-reveal {
