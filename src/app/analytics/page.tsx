@@ -185,11 +185,12 @@ export default async function AnalyticsPage({
   const byPage = breakdown((e) => e.landing_page);
   const byReel = breakdown((e) => e.utm_content || e.utm_campaign);
 
-  const waitlist = {
-    views: uniqSessions(evs, (e) => e.event === 'movement_waitlist_view').size,
-    submits: uniqSessions(evs, (e) => e.event === 'movement_waitlist_submit').size,
-    success: uniqSessions(evs, (e) => e.event === 'movement_waitlist_success').size,
-  };
+  const waitlists = ['movement', 'calibration', 'community'].map((w) => ({
+    name: w === 'movement' ? 'Movement' : w === 'calibration' ? 'Calibration relaunch' : 'BB Community',
+    views: uniqSessions(evs, (e) => e.event === `${w}_waitlist_view`).size,
+    submits: uniqSessions(evs, (e) => e.event === `${w}_waitlist_submit`).size,
+    success: uniqSessions(evs, (e) => e.event === `${w}_waitlist_success`).size,
+  }));
 
   return (
     <main style={S.page}>
@@ -308,19 +309,27 @@ export default async function AnalyticsPage({
         <h2 style={S.h2}>Best Converting Reels (utm_content / utm_campaign)</h2>
         <BreakdownTable rows={byReel} label="Reel / campaign" />
 
-        <h2 style={S.h2}>Movement Waitlist</h2>
+        <h2 style={S.h2}>Waitlists</h2>
         <table style={S.table}>
-          <tbody>
+          <thead>
             <tr>
-              <td style={S.td}>Views</td>
-              <td style={S.td}>{waitlist.views}</td>
-              <td style={S.td}>Submits</td>
-              <td style={S.td}>{waitlist.submits}</td>
-              <td style={S.td}>Confirmed</td>
-              <td style={S.td}>{waitlist.success}</td>
-              <td style={S.td}>View → submit</td>
-              <td style={S.td}>{pct(waitlist.submits, waitlist.views)}</td>
+              <th style={S.th}>Waitlist</th>
+              <th style={S.th}>Views</th>
+              <th style={S.th}>Submits</th>
+              <th style={S.th}>Confirmed</th>
+              <th style={S.th}>View → submit</th>
             </tr>
+          </thead>
+          <tbody>
+            {waitlists.map((w) => (
+              <tr key={w.name}>
+                <td style={S.td}>{w.name}</td>
+                <td style={S.td}>{w.views}</td>
+                <td style={S.td}>{w.submits}</td>
+                <td style={S.td}>{w.success}</td>
+                <td style={S.td}>{pct(w.submits, w.views)}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

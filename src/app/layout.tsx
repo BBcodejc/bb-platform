@@ -22,9 +22,15 @@ const oswald = Oswald({
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export const metadata: Metadata = {
-  title: 'Basketball Biomechanics | Method-Based Shooting Development',
+  title: 'Basketball Biomechanics | A Complete Player Development Ecosystem',
   description:
-    'Calibration-based shooting development used by NBA players. The Shooting Calibration Masterclass.',
+    'Bridging the gap between movement, ball manipulation, shooting, and vision. A complete player development ecosystem built on real-world application and modern motor learning. Join the waitlist.',
+  openGraph: {
+    title: 'Basketball Biomechanics',
+    description:
+      'A complete player development ecosystem. Movement. Ball Manipulation. Shooting. Vision. Join the waitlist.',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({
