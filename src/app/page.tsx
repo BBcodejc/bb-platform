@@ -5,13 +5,14 @@
 // is preserved in git history.
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
-import { Space_Grotesk, IBM_Plex_Mono } from 'next/font/google';
+import { Oswald, IBM_Plex_Mono } from 'next/font/google';
 import { bbTrack } from '../lib/analytics';
 import './home.css';
 
-const display = Space_Grotesk({
+/* Oswald matches the condensed lettering of the BB logo mark. */
+const display = Oswald({
   subsets: ['latin'],
-  weight: ['500', '600', '700'],
+  weight: ['400', '500', '600', '700'],
   variable: '--hb-font-display',
   display: 'swap',
 });

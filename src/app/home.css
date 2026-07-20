@@ -65,19 +65,20 @@
 
 .hb-h1 {
   font-family: var(--hb-font-display), sans-serif;
-  font-size: clamp(2.6rem, 7vw, 5rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.02;
+  font-size: clamp(2.5rem, 6.5vw, 4.6rem);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.05;
   margin: 0;
 }
 
 .hb-h2 {
   font-family: var(--hb-font-display), sans-serif;
-  font-size: clamp(1.9rem, 4vw, 3.1rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.08;
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.12;
   margin: 0 0 1.25rem;
 }
 
@@ -99,7 +100,8 @@
   background: var(--hb-gold);
   color: #0b0b0c;
   font-family: var(--hb-font-display), sans-serif;
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 0.04em;
   font-size: 1rem;
   padding: 1rem 2.25rem;
   border-radius: 999px;
@@ -241,10 +243,11 @@
 
 .hb-hero-words li {
   font-family: var(--hb-font-display), sans-serif;
-  font-size: clamp(1.5rem, 3.4vw, 2.4rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  font-size: clamp(1.5rem, 3.4vw, 2.35rem);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.25;
   color: var(--hb-ink);
 }
 
